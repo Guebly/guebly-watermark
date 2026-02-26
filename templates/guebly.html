@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Guebly · Painel de Marca d'Água</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root{
+      --bg:#07070f;--s:rgba(255,255,255,.043);--b:rgba(255,255,255,.08);
+      --bh:rgba(152,84,241,.5);--p:#9854F1;--pl:#b47ef7;--pd:#6c2ec4;
+      --t:#EDE7F9;--m:#7d78a0;--g:#4ade80;--r:#f87171;--y:#fbbf24;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t);min-height:100vh;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+      background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E")}
+    .blob{position:fixed;z-index:0;pointer-events:none;border-radius:50%;filter:blur(140px);opacity:.13}
+    .ba{width:650px;height:650px;top:-200px;left:-200px;background:radial-gradient(circle,#7c3aed,#2e1065)}
+    .bb{width:500px;height:500px;bottom:-160px;right:-160px;background:radial-gradient(circle,#5b21b6,#1e1b4b)}
+
+    /* Header */
+    header{position:sticky;top:0;z-index:30;background:rgba(7,7,15,.85);backdrop-filter:blur(18px);border-bottom:1px solid var(--b)}
+    .bar{max-width:1360px;margin:0 auto;padding:0 32px;height:62px;display:flex;align-items:center;justify-content:space-between}
+    .logo-w{display:flex;align-items:center;gap:12px}
+    .logo-w img{height:30px;width:auto}
+    .logo-n{font-family:'Syne',sans-serif;font-weight:900;font-size:15px;letter-spacing:-.2px}
+    .logo-sep{width:1px;height:16px;background:var(--b)}
+    .logo-sub{font-size:12px;color:var(--m)}
+    .pill{padding:5px 12px;border-radius:999px;font-size:11px;font-weight:500;border:1px solid var(--b);color:var(--m)}
+    .pill.warn{background:rgba(251,191,36,.08);border-color:rgba(251,191,36,.28);color:var(--y)}
+
+    /* Hero */
+    .hero{position:relative;z-index:1;max-width:1360px;margin:0 auto;padding:40px 32px 16px}
+    .eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(251,191,36,.07);
+      border:1px solid rgba(251,191,36,.22);color:var(--y);font-size:11px;font-weight:600;
+      letter-spacing:.07em;text-transform:uppercase;padding:5px 12px;border-radius:999px;margin-bottom:14px}
+    .eyebrow::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--y)}
+    .hero h1{font-family:'Syne',sans-serif;font-weight:900;font-size:clamp(24px,3vw,40px);
+      line-height:1.1;letter-spacing:-.04em;margin-bottom:10px}
+    .hero h1 em{color:var(--p);font-style:normal}
+    .hero p{font-size:13px;color:var(--m);max-width:500px;line-height:1.6}
+
+    /* Shell */
+    .shell{position:relative;z-index:1;max-width:1360px;margin:0 auto;padding:22px 32px 80px}
+    .grid{display:grid;grid-template-columns:500px minmax(0,1fr);gap:22px;align-items:start}
+    @media(max-width:1100px){.grid{grid-template-columns:1fr}}
+
+    /* Panel */
+    .panel{background:var(--s);border:1px solid var(--b);border-radius:22px;padding:26px;
+      box-shadow:0 16px 48px rgba(0,0,0,.4);backdrop-filter:blur(4px)}
+    .pt{font-family:'Syne',sans-serif;font-weight:900;font-size:10px;text-transform:uppercase;
+      letter-spacing:.1em;color:var(--p);margin-bottom:22px;display:flex;align-items:center;gap:8px}
+    .pt::after{content:'';flex:1;height:1px;background:var(--b)}
+    .sl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--m);margin-bottom:8px;margin-top:20px}
+    .sl:first-child{margin-top:0}
+    .div{height:1px;background:var(--b);margin:20px 0}
+
+    /* ══ Company picker ══ */
+    .picker{display:flex;flex-direction:column;gap:6px}
+
+    /* Group header */
+    .group-label{
+      font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;
+      color:var(--m);padding:10px 4px 4px;opacity:.7
+    }
+
+    /* Company row */
+    .comp-row{
+      display:flex;align-items:center;gap:12px;
+      padding:11px 14px;border-radius:14px;
+      border:1.5px solid var(--b);cursor:pointer;
+      transition:background .18s,border-color .18s,transform .1s;
+      position:relative;overflow:hidden;
+    }
+    .comp-row::before{
+      content:'';position:absolute;inset:0;
+      background:linear-gradient(135deg, var(--cc,#9854F1) 0%, transparent 60%);
+      opacity:0;transition:opacity .25s;
+    }
+    .comp-row:hover::before{opacity:.06}
+    .comp-row:hover{background:rgba(255,255,255,.04);transform:translateX(2px)}
+    .comp-row:active{transform:translateX(3px) scale(.99)}
+    .comp-row.active{
+      border-color:var(--cc,#9854F1);
+      background:rgba(255,255,255,.05);
+      transform:translateX(4px);
+    }
+    .comp-row.active::before{opacity:.1}
+
+    /* Avatar */
+    .comp-avatar{
+      width:42px;height:42px;border-radius:11px;flex-shrink:0;
+      display:flex;align-items:center;justify-content:center;
+      font-family:'Syne',sans-serif;font-weight:900;font-size:13px;
+      color:#fff;letter-spacing:-.02em;
+      background:linear-gradient(135deg, var(--cc,#9854F1), color-mix(in srgb, var(--cc,#9854F1) 60%, #000));
+      box-shadow:0 4px 12px rgba(0,0,0,.3);
+      position:relative;z-index:1;overflow:hidden;
+      transition:transform .18s,box-shadow .18s;
+    }
+    .av-logo{width:100%;height:100%;object-fit:contain;padding:6px;display:block}
+    .av-ini{display:flex;align-items:center;justify-content:center;width:100%;height:100%}
+    .comp-row:hover .comp-avatar{transform:scale(1.08);box-shadow:0 6px 18px rgba(0,0,0,.4)}
+    .comp-row.active .comp-avatar{transform:scale(1.1);box-shadow:0 6px 20px color-mix(in srgb,var(--cc,#9854F1) 40%,transparent)}
+
+    /* Info */
+    .comp-info{flex:1;min-width:0;position:relative;z-index:1}
+    .comp-name{font-size:13px;font-weight:700;line-height:1.2;color:var(--t)}
+    .comp-row.active .comp-name{color:#fff}
+    .comp-meta{font-size:10px;color:var(--m);margin-top:2px}
+
+    /* Right indicator */
+    .comp-right{position:relative;z-index:1;display:flex;align-items:center;gap:6px}
+    .comp-check{
+      width:18px;height:18px;border-radius:50%;border:1.5px solid var(--b);
+      display:flex;align-items:center;justify-content:center;
+      font-size:10px;transition:background .2s,border-color .2s;
+    }
+    .comp-row.active .comp-check{
+      background:var(--cc,#9854F1);border-color:var(--cc,#9854F1);color:#fff;
+    }
+    .logo-dot{
+      width:6px;height:6px;border-radius:50%;
+      background:var(--g);box-shadow:0 0 6px var(--g);
+      display:none;
+    }
+    .logo-dot.vis{display:block}
+
+    /* Selected company banner */
+    .sel-banner{
+      display:none;margin-top:0;padding:12px 14px;border-radius:12px;
+      background:rgba(255,255,255,.04);border:1px solid var(--b);
+      align-items:center;gap:12px;
+    }
+    .sel-banner.vis{display:flex}
+    .sel-banner-avatar{
+      width:36px;height:36px;border-radius:9px;flex-shrink:0;
+      display:flex;align-items:center;justify-content:center;
+      font-family:'Syne',sans-serif;font-weight:900;font-size:11px;color:#fff;
+      overflow:hidden;
+    }
+    .sel-banner-avatar img{width:100%;height:100%;object-fit:contain;padding:5px}
+    .sel-banner-avatar span{display:flex;align-items:center;justify-content:center;width:100%;height:100%}
+    .sel-banner-info{flex:1}
+    .sel-banner-name{font-size:12px;font-weight:700}
+    .sel-banner-status{font-size:10px;color:var(--m);margin-top:1px}
+    .sel-banner-status.ok{color:var(--g)}
+    .sel-banner-status.miss{color:var(--y)}
+
+    /* Override box */
+    .override-box{
+      padding:14px;border-radius:14px;
+      border:1px dashed rgba(255,255,255,.1);background:rgba(255,255,255,.02);
+    }
+    .override-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--m);margin-bottom:10px}
+    .tabs{display:flex;gap:3px;background:rgba(0,0,0,.35);border-radius:12px;padding:3px;margin-bottom:10px}
+    .tab{flex:1;padding:6px 8px;border-radius:9px;text-align:center;font-size:10px;font-weight:600;
+      cursor:pointer;color:var(--m);transition:background .2s,color .2s;user-select:none}
+    .tab.active{background:rgba(152,84,241,.22);color:var(--t)}
+    .tp{display:none}
+    .tp.active{display:block}
+
+    .dz{position:relative;border:1.5px dashed var(--b);border-radius:11px;padding:14px;
+      text-align:center;cursor:pointer;transition:border-color .2s,background .2s}
+    .dz:hover,.dz.over{border-color:var(--p);background:rgba(152,84,241,.05)}
+    .dz input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0}
+    .dz-i{font-size:20px;margin-bottom:3px}
+    .dz-t{font-size:11px;font-weight:500}
+    .dz-h{font-size:10px;color:var(--m);margin-top:2px}
+    .lthumb{display:none;margin-top:8px;background:rgba(0,0,0,.3);border-radius:9px;padding:10px;text-align:center}
+    .lthumb.vis{display:block}
+    .lthumb img{max-height:52px;max-width:100%;object-fit:contain}
+    .lthumb-n{font-size:10px;color:var(--m);margin-top:4px}
+    .urow{display:flex;gap:7px}
+    .urow input{flex:1}
+    .bsm{padding:8px 12px;border-radius:9px;border:1px solid var(--b);background:rgba(255,255,255,.06);
+      color:var(--t);font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;
+      transition:background .15s;font-family:inherit}
+    .bsm:hover{background:rgba(255,255,255,.1)}
+    .field{width:100%;padding:9px 12px;background:rgba(0,0,0,.3);border:1px solid var(--b);
+      border-radius:9px;color:var(--t);font-family:'DM Sans',sans-serif;font-size:13px;
+      transition:border-color .2s}
+    .field:focus{outline:none;border-color:var(--bh)}
+    input[type=range].field{padding:3px 0;background:transparent;border:none;cursor:pointer;accent-color:var(--p)}
+
+    /* Image drop */
+    .flist{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+    .fi{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--m);
+      background:rgba(0,0,0,.25);padding:5px 10px;border-radius:8px}
+    .fi-n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--t)}
+
+    /* Position */
+    .pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+    .chip{padding:9px 4px;border-radius:10px;text-align:center;border:1.5px solid var(--b);
+      cursor:pointer;font-size:15px;transition:background .15s,border-color .15s;user-select:none}
+    .chip:hover{border-color:var(--pl)}
+    .chip.active{background:rgba(152,84,241,.2);border-color:rgba(152,84,241,.6)}
+
+    /* Sliders */
+    .slrow{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .slb .slh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+    .sl-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--m)}
+    .sl-val{font-size:12px;font-weight:700;color:var(--pl)}
+
+    /* CTA */
+    .cta{width:100%;padding:14px;background:linear-gradient(135deg,#9854F1,#6c2ec4);
+      border:none;border-radius:13px;color:#fff;font-family:'Syne',sans-serif;font-weight:900;
+      font-size:14px;cursor:pointer;margin-top:22px;letter-spacing:-.01em;
+      box-shadow:0 6px 28px rgba(152,84,241,.35);transition:filter .15s,transform .1s,box-shadow .15s}
+    .cta:hover{filter:brightness(1.1);}
+    .cta:active{transform:translateY(1px)}
+    .cta:disabled{opacity:.35;cursor:not-allowed;filter:none;box-shadow:none}
+    .cta-m{font-size:11px;color:var(--m);text-align:center;margin-top:7px}
+
+    /* Preview */
+    .prev-wrap{background:rgba(0,0,0,.4);border-radius:16px;display:flex;align-items:center;
+      justify-content:center;min-height:340px;overflow:hidden}
+    canvas{max-width:100%;border-radius:14px;display:block}
+    .prev-empty{color:var(--m);text-align:center;padding:60px 20px;
+      display:flex;flex-direction:column;align-items:center;gap:10px}
+    .pe-i{font-size:48px;opacity:.25}
+    .pe-t{font-size:13px;font-weight:500;color:var(--t);opacity:.5}
+    .prev-meta{font-size:10px;color:var(--m);margin-top:8px}
+
+    /* Toast */
+    .toast{position:fixed;bottom:24px;right:24px;z-index:100;padding:11px 16px;
+      border-radius:12px;background:rgba(18,18,28,.97);border:1px solid var(--b);
+      font-size:12px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.5);
+      transform:translateY(18px);opacity:0;transition:opacity .25s,transform .25s;max-width:320px}
+    .toast.show{opacity:1;transform:translateY(0)}
+    .toast.ok{border-color:rgba(74,222,128,.35);color:var(--g)}
+    .toast.err{border-color:rgba(248,113,113,.35);color:var(--r)}
+    .toast.warn{border-color:rgba(251,191,36,.35);color:var(--y)}
+    .spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.15);
+      border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @media(max-width:600px){.bar,.hero,.shell{padding-left:16px;padding-right:16px}}
+  </style>
+</head>
+<body>
+<div class="blob ba"></div>
+<div class="blob bb"></div>
+
+<header>
+  <div class="bar">
+    <div class="logo-w">
+      <img src="https://www.guebly.com.br/guebly.png" alt="Guebly" onerror="this.onerror=null;this.src='/static/img/guebly.png'"/>
+      <span class="logo-n">Guebly Holding</span>
+      <span class="logo-sep"></span>
+      <span class="logo-sub">Painel de Marca d'Água</span>
+    </div>
+    <span class="pill warn">🔒 Acesso interno</span>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="eyebrow">Uso interno · Guebly Holding</div>
+  <h1>Selecione a empresa e aplique<br/>a <em>marca d'água</em></h1>
+  <p>Escolha uma empresa do grupo, carregue as imagens e baixe com a logo configurada.</p>
+</div>
+
+<div class="shell">
+  <div class="grid">
+    <!-- PAINEL ESQUERDO -->
+    <div class="panel">
+      <div class="pt">Configuração</div>
+      <form id="mainForm" action="/guebly/process" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="company_id" id="companyId" value=""/>
+
+        <!-- Company picker -->
+        <div class="sl">Empresa</div>
+        <div class="picker" id="picker">
+
+          <!-- GUEBLY GROUP -->
+          <div class="group-label">Guebly</div>
+          {% for c in companies if c.id in ['guebly-holding','guebly-ltda','guebly-studio','trocai','guebly-games','vendai','guebly-pay'] %}
+          <div class="comp-row" data-id="{{ c.id }}" data-logo="{{ c.logo_url }}" data-color="{{ c.color }}" style="--cc:{{ c.color }}">
+            <div class="comp-avatar" style="background:linear-gradient(135deg,{{ c.color }},color-mix(in srgb,{{ c.color }} 55%,#000 45%))">
+              {% if c.logo_url %}<img src="{{ c.logo_url }}" alt="{{ c.name }}" class="av-logo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/><span class="av-ini" style="display:none">{{ c.name[:2].upper() }}</span>{% else %}<span class="av-ini">{{ c.name[:2].upper() }}</span>{% endif %}
+            </div>
+            <div class="comp-info">
+              <div class="comp-name">{{ c.name }}</div>
+              <div class="comp-meta">
+                {% if c.id == 'guebly-holding' %}[REDACTED]
+                {% elif c.id == 'guebly-ltda' %}[REDACTED]
+                {% elif c.id in ['guebly-studio','trocai','guebly-games','vendai','guebly-pay'] %}Guebly LTDA
+                {% endif %}
+              </div>
+            </div>
+            <div class="comp-right">
+              <div class="logo-dot {% if c.logo_url %}vis{% endif %}"></div>
+              <div class="comp-check">✓</div>
+            </div>
+          </div>
+          {% endfor %}
+
+          <!-- AYON GROUP -->
+          <div class="group-label">Ayon</div>
+          {% for c in companies if c.id in ['ayon-ltda','ayon-studios','ayon-plus','ayon-academy'] %}
+          <div class="comp-row" data-id="{{ c.id }}" data-logo="{{ c.logo_url }}" data-color="{{ c.color }}" style="--cc:{{ c.color }}">
+            <div class="comp-avatar" style="background:linear-gradient(135deg,{{ c.color }},color-mix(in srgb,{{ c.color }} 55%,#000 45%))">
+              {% if c.logo_url %}<img src="{{ c.logo_url }}" alt="{{ c.name }}" class="av-logo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/><span class="av-ini" style="display:none">{{ c.name[:2].upper() }}</span>{% else %}<span class="av-ini">{{ c.name[:2].upper() }}</span>{% endif %}
+            </div>
+            <div class="comp-info">
+              <div class="comp-name">{{ c.name }}</div>
+              <div class="comp-meta">
+                {% if c.id == 'ayon-ltda' %}[REDACTED]
+                {% else %}Ayon LTDA
+                {% endif %}
+              </div>
+            </div>
+            <div class="comp-right">
+              <div class="logo-dot {% if c.logo_url %}vis{% endif %}"></div>
+              <div class="comp-check">✓</div>
+            </div>
+          </div>
+          {% endfor %}
+
+          <!-- OUTROS -->
+          <div class="group-label">Outros</div>
+          {% for c in companies if c.id in ['guebly-contabil','sentrion'] %}
+          <div class="comp-row" data-id="{{ c.id }}" data-logo="{{ c.logo_url }}" data-color="{{ c.color }}" style="--cc:{{ c.color }}">
+            <div class="comp-avatar" style="background:linear-gradient(135deg,{{ c.color }},color-mix(in srgb,{{ c.color }} 55%,#000 45%))">
+              {% if c.logo_url %}<img src="{{ c.logo_url }}" alt="{{ c.name }}" class="av-logo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/><span class="av-ini" style="display:none">{{ c.name[:2].upper() }}</span>{% else %}<span class="av-ini">{{ c.name[:2].upper() }}</span>{% endif %}
+            </div>
+            <div class="comp-info">
+              <div class="comp-name">{{ c.name }}</div>
+              <div class="comp-meta">
+                {% if c.id == 'guebly-contabil' %}[REDACTED]
+                {% elif c.id == 'sentrion' %}[REDACTED]
+                {% endif %}
+              </div>
+            </div>
+            <div class="comp-right">
+              <div class="logo-dot {% if c.logo_url %}vis{% endif %}"></div>
+              <div class="comp-check">✓</div>
+            </div>
+          </div>
+          {% endfor %}
+
+        </div>
+
+        <!-- Selected banner -->
+        <div class="sel-banner" id="selBanner">
+          <div class="sel-banner-avatar" id="selAvatar">
+            <img id="selAvatarImg" src="" alt="" style="display:none" onerror="this.style.display='none';document.getElementById('selAvatarText').style.display='flex'"/>
+            <span id="selAvatarText"></span>
+          </div>
+          <div class="sel-banner-info">
+            <div class="sel-banner-name" id="selName"></div>
+            <div class="sel-banner-status" id="selStatus"></div>
+          </div>
+        </div>
+
+        <div class="div"></div>
+
+        <!-- Override logo -->
+        <div class="override-box">
+          <div class="override-title">⚙ Sobrescrever logo <span style="font-weight:400;text-transform:none;letter-spacing:0;opacity:.6">(opcional — deixe em branco para usar a logo da empresa)</span></div>
+          <div class="tabs">
+            <div class="tab active" data-tab="upload">📁 Upload</div>
+            <div class="tab" data-tab="url">🔗 URL</div>
+          </div>
+          <div class="tp active" id="tp-upload">
+            <div class="dz" id="logoDrop">
+              <input type="file" id="logoFileIn" accept="image/png,image/jpeg,image/webp"/>
+              <div class="dz-i">🏷️</div>
+              <div class="dz-t">Arraste a logo ou clique</div>
+              <div class="dz-h">PNG com transparência recomendado</div>
+            </div>
+            <div class="lthumb" id="uploadThumb">
+              <img id="uploadThumbImg" src="" alt=""/>
+              <div class="lthumb-n" id="uploadThumbName"></div>
+            </div>
+            <input type="hidden" name="logo_token" id="logoToken"/>
+          </div>
+          <div class="tp" id="tp-url">
+            <div class="urow">
+              <input type="url" class="field" id="urlIn" placeholder="https://exemplo.com/logo.png"/>
+              <button type="button" class="bsm" id="loadUrlBtn">Carregar</button>
+            </div>
+            <div class="lthumb" id="urlThumb">
+              <img id="urlThumbImg" src="" alt="" crossorigin="anonymous"/>
+              <div class="lthumb-n" id="urlThumbName"></div>
+            </div>
+            <input type="hidden" name="logo_url" id="logoUrlHidden"/>
+          </div>
+        </div>
+
+        <div class="div"></div>
+
+        <!-- Imagens -->
+        <div class="sl" style="margin-top:0">Imagens de entrada</div>
+        <div class="dz" id="imgDrop">
+          <input type="file" name="images" id="imgInput" accept="image/*" multiple required/>
+          <div class="dz-i">🖼️</div>
+          <div class="dz-t">Arraste ou clique para selecionar</div>
+          <div class="dz-h">Múltiplas imagens → ZIP automático</div>
+        </div>
+        <div class="flist" id="flist"></div>
+
+        <div class="div"></div>
+
+        <!-- Posição -->
+        <div class="sl" style="margin-top:0">Posição da logo</div>
+        <div class="pgrid" id="posGrid">
+          <div class="chip" data-pos="top-left">↖</div>
+          <div class="chip" data-pos="top-center">↑</div>
+          <div class="chip" data-pos="top-right">↗</div>
+          <div class="chip" data-pos="center">✦</div>
+          <div class="chip" data-pos="bottom-left">↙</div>
+          <div class="chip" data-pos="bottom-center">↓</div>
+          <div class="chip" data-pos="bottom-right">↘</div>
+        </div>
+        <input type="hidden" name="position" id="posHidden" value="{{ cfg.default_position }}"/>
+
+        <div class="div"></div>
+
+        <!-- Sliders -->
+        <div class="slrow">
+          <div class="slb">
+            <div class="slh"><span class="sl-label">Escala</span><span class="sl-val" id="scaleV">{{ cfg.default_scale_pct }}%</span></div>
+            <input type="range" class="field" name="scale_pct" id="scaleIn" min="3" max="40" step="1" value="{{ cfg.default_scale_pct }}"/>
+          </div>
+          <div class="slb">
+            <div class="slh"><span class="sl-label">Opacidade</span><span class="sl-val" id="opacityV">{{ cfg.default_opacity_pct }}%</span></div>
+            <input type="range" class="field" name="opacity_pct" id="opacityIn" min="20" max="100" step="1" value="{{ cfg.default_opacity_pct }}"/>
+          </div>
+        </div>
+        <div class="slb" style="margin-top:14px">
+          <div class="slh"><span class="sl-label">Margem</span><span class="sl-val" id="marginV">{{ cfg.default_margin_pct }}%</span></div>
+          <input type="range" class="field" name="margin_pct" id="marginIn" min="0" max="12" step="0.5" value="{{ cfg.default_margin_pct }}"/>
+        </div>
+
+        <button class="cta" type="submit" id="submitBtn" disabled>← Selecione uma empresa</button>
+        <div class="cta-m">1 imagem → PNG &nbsp;·&nbsp; Múltiplas → ZIP</div>
+      </form>
+    </div>
+
+    <!-- PAINEL PREVIEW -->
+    <div class="panel" style="position:sticky;top:80px">
+      <div class="pt">Pré-visualização ao vivo</div>
+      <div class="prev-wrap">
+        <div class="prev-empty" id="prevEmpty">
+          <div class="pe-i">🏢</div>
+          <div class="pe-t">Selecione uma empresa e uma imagem</div>
+        </div>
+        <canvas id="canvas" style="display:none"></canvas>
+      </div>
+      <div class="prev-meta">✓ Prévia local — nada é enviado antes de clicar em "Aplicar"</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const companies = {{ companies | tojson }};
+
+// Refs
+const picker     = document.getElementById('picker');
+const companyId  = document.getElementById('companyId');
+const selBanner  = document.getElementById('selBanner');
+const selAvatar  = document.getElementById('selAvatar');
+const selName    = document.getElementById('selName');
+const selStatus  = document.getElementById('selStatus');
+const imgInput   = document.getElementById('imgInput');
+const imgDrop    = document.getElementById('imgDrop');
+const flist      = document.getElementById('flist');
+const logoFileIn = document.getElementById('logoFileIn');
+const logoDrop   = document.getElementById('logoDrop');
+const logoToken  = document.getElementById('logoToken');
+const urlIn      = document.getElementById('urlIn');
+const loadUrlBtn = document.getElementById('loadUrlBtn');
+const logoUrlH   = document.getElementById('logoUrlHidden');
+const uploadThumb    = document.getElementById('uploadThumb');
+const uploadThumbImg = document.getElementById('uploadThumbImg');
+const uploadThumbName= document.getElementById('uploadThumbName');
+const urlThumb    = document.getElementById('urlThumb');
+const urlThumbImg = document.getElementById('urlThumbImg');
+const urlThumbName= document.getElementById('urlThumbName');
+const posGrid    = document.getElementById('posGrid');
+const posHidden  = document.getElementById('posHidden');
+const scaleIn    = document.getElementById('scaleIn');
+const opacityIn  = document.getElementById('opacityIn');
+const marginIn   = document.getElementById('marginIn');
+const scaleV     = document.getElementById('scaleV');
+const opacityV   = document.getElementById('opacityV');
+const marginV    = document.getElementById('marginV');
+const canvas     = document.getElementById('canvas');
+const ctx        = canvas.getContext('2d');
+const prevEmpty  = document.getElementById('prevEmpty');
+const submitBtn  = document.getElementById('submitBtn');
+const toastEl    = document.getElementById('toast');
+
+let baseImg=null, logoImg=null, companyLogoImg=null;
+let activeTab='upload', toastTmr=null, selectedCompany=null;
+
+function toast(msg,type='ok',ms=3500){
+  clearTimeout(toastTmr);
+  toastEl.textContent=msg;
+  toastEl.className='toast '+type+' show';
+  toastTmr=setTimeout(()=>toastEl.classList.remove('show'),ms);
+}
+
+function initials(name){ return name.replace(/[^a-zA-ZÀ-ú0-9+]/g,' ').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
+
+// ── Company selection
+picker.querySelectorAll('.comp-row').forEach(row=>{
+  row.addEventListener('click',()=>{
+    picker.querySelectorAll('.comp-row').forEach(r=>r.classList.remove('active'));
+    row.classList.add('active');
+
+    const id    = row.dataset.id;
+    const color = row.dataset.color;
+    const logo  = row.dataset.logo;
+    selectedCompany = companies.find(c=>c.id===id);
+    companyId.value = id;
+
+    // Banner
+    selBanner.classList.add('vis');
+    const avatarImg = document.getElementById('selAvatarImg');
+    const avatarTxt = document.getElementById('selAvatarText');
+    selAvatar.style.background = `linear-gradient(135deg,${color},color-mix(in srgb,${color} 55%,#000 45%))`;
+    if(selectedCompany.logo_url){
+      avatarImg.src = selectedCompany.logo_url;
+      avatarImg.style.display = 'block';
+      avatarTxt.style.display = 'none';
+      avatarTxt.textContent = initials(selectedCompany.name);
+    } else {
+      avatarImg.style.display = 'none';
+      avatarTxt.style.display = 'flex';
+      avatarTxt.textContent = initials(selectedCompany.name);
+    }
+    selName.textContent = selectedCompany.name;
+
+    if(logo){
+      selStatus.textContent='✓ Logo configurada — pronta para uso';
+      selStatus.className='sel-banner-status ok';
+      loadCompanyLogo(logo);
+    } else {
+      selStatus.textContent='⚠ Logo não configurada — use o override abaixo ou preencha logo_url no config.json';
+      selStatus.className='sel-banner-status miss';
+      companyLogoImg=null;
+      if(!logoToken.value&&!logoUrlH.value){ logoImg=null; draw(); }
+    }
+
+    // CTA
+    submitBtn.disabled=false;
+    submitBtn.textContent='⬇ Aplicar — '+selectedCompany.name;
+    submitBtn.style.background=`linear-gradient(135deg,${color},color-mix(in srgb,${color} 60%,#000 40%))`;
+
+    draw();
+  });
+});
+
+function loadCompanyLogo(url){
+  const img=new Image();
+  img.crossOrigin='anonymous';
+  img.onload=()=>{
+    companyLogoImg=img;
+    if(!logoToken.value&&!logoUrlH.value){ logoImg=img; draw(); }
+  };
+  img.onerror=()=>{ companyLogoImg=null; };
+  img.src=url;
+}
+
+// ── Tabs override
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    activeTab=t.dataset.tab;
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.tp').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('tp-'+activeTab).classList.add('active');
+    if(activeTab==='upload'){ logoUrlH.value=''; }
+    else { logoToken.value=''; }
+    // Se limpar override, volta pra logo da empresa
+    logoImg=companyLogoImg||null;
+    draw();
+  });
+});
+
+// ── Position
+function setPos(pos){
+  posGrid.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  const el=posGrid.querySelector('[data-pos="'+pos+'"]');
+  if(el) el.classList.add('active');
+  posHidden.value=pos;
+}
+setPos(posHidden.value||'bottom-right');
+posGrid.querySelectorAll('.chip').forEach(c=>{ c.addEventListener('click',()=>{ setPos(c.dataset.pos); draw(); }); });
+
+// ── Sliders
+function upLabels(){
+  scaleV.textContent=scaleIn.value+'%';
+  opacityV.textContent=opacityIn.value+'%';
+  marginV.textContent=marginIn.value+'%';
+}
+upLabels();
+[scaleIn,opacityIn,marginIn].forEach(r=>r.addEventListener('input',()=>{ upLabels(); draw(); }));
+
+// ── Drag
+[imgDrop,logoDrop].forEach(dz=>{
+  dz.addEventListener('dragover',e=>{ e.preventDefault(); dz.classList.add('over'); });
+  dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
+  dz.addEventListener('drop',()=>dz.classList.remove('over'));
+});
+
+// ── Base images
+imgInput.addEventListener('change',e=>{
+  const files=Array.from(e.target.files);
+  flist.innerHTML='';
+  files.forEach(f=>{
+    const d=document.createElement('div');
+    d.className='fi';
+    d.innerHTML='<span>📄</span><span class="fi-n">'+f.name+'</span><span>'+(f.size/1024).toFixed(0)+' KB</span>';
+    flist.appendChild(d);
+  });
+  if(files[0]) readBase(files[0]);
+});
+function readBase(file){
+  const r=new FileReader();
+  r.onload=ev=>{ const img=new Image(); img.onload=()=>{ baseImg=img; draw(); }; img.src=ev.target.result; };
+  r.readAsDataURL(file);
+}
+
+// ── Logo override: upload
+logoFileIn.addEventListener('change',e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    const img=new Image();
+    img.onload=()=>{ logoImg=img; draw(); };
+    img.src=ev.target.result;
+    uploadThumbImg.src=ev.target.result;
+    uploadThumbName.textContent=f.name;
+    uploadThumb.classList.add('vis');
+  };
+  r.readAsDataURL(f);
+  const fd=new FormData(); fd.append('logo_file',f);
+  fetch('/upload-logo',{method:'POST',body:fd}).then(r=>r.json()).then(d=>{
+    if(d.error){ toast('Erro: '+d.error,'err'); return; }
+    logoToken.value=d.token; logoUrlH.value='';
+    toast('Logo de override carregada ✓');
+  }).catch(()=>toast('Falha no upload','err'));
+});
+
+// ── Logo override: URL
+loadUrlBtn.addEventListener('click',loadFromUrl);
+urlIn.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); loadFromUrl(); } });
+function loadFromUrl(){
+  const url=urlIn.value.trim(); if(!url){ toast('URL inválida','err'); return; }
+  loadUrlBtn.textContent='…'; loadUrlBtn.disabled=true;
+  const img=new Image(); img.crossOrigin='anonymous';
+  img.onload=()=>{
+    logoImg=img; logoUrlH.value=url; logoToken.value='';
+    urlThumbImg.src=url; urlThumbName.textContent=url.split('/').pop().split('?')[0]||'logo';
+    urlThumb.classList.add('vis'); draw(); toast('Logo de override carregada ✓');
+    loadUrlBtn.textContent='Carregar'; loadUrlBtn.disabled=false;
+  };
+  img.onerror=()=>{
+    logoUrlH.value=url; logoToken.value=''; logoImg=null;
+    urlThumbName.textContent='Preview CORS bloqueado — processamento funcionará ✓';
+    urlThumb.classList.add('vis');
+    toast('CORS bloqueou o preview, mas o download vai funcionar.','warn',5000);
+    loadUrlBtn.textContent='Carregar'; loadUrlBtn.disabled=false;
+  };
+  img.src=url;
+}
+
+// ── Canvas
+function draw(){
+  if(!baseImg) return;
+  prevEmpty.style.display='none';
+  canvas.style.display='block';
+  const maxW=1080,maxH=720;
+  const ratio=Math.min(1,maxW/baseImg.width,maxH/baseImg.height);
+  canvas.width=Math.round(baseImg.width*ratio);
+  canvas.height=Math.round(baseImg.height*ratio);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.drawImage(baseImg,0,0,canvas.width,canvas.height);
+  if(!logoImg||!logoImg.naturalWidth) return;
+  const ref=Math.min(canvas.width,canvas.height);
+  const lw=Math.max(1,Math.round(ref*parseFloat(scaleIn.value)/100));
+  const lh=Math.max(1,Math.round(lw/(logoImg.naturalWidth/logoImg.naturalHeight)));
+  const mp=Math.round(ref*parseFloat(marginIn.value)/100);
+  const op=parseFloat(opacityIn.value)/100;
+  const pos=posHidden.value;
+  const cw=canvas.width,ch=canvas.height;
+  const cx=Math.round((cw-lw)/2),cy=Math.round((ch-lh)/2);
+  let x=cw-lw-mp,y=ch-lh-mp;
+  if(pos==='top-left'){x=mp;y=mp;}
+  if(pos==='top-center'){x=cx;y=mp;}
+  if(pos==='top-right'){x=cw-lw-mp;y=mp;}
+  if(pos==='center'){x=cx;y=cy;}
+  if(pos==='bottom-left'){x=mp;y=ch-lh-mp;}
+  if(pos==='bottom-center'){x=cx;y=ch-lh-mp;}
+  ctx.save(); ctx.globalAlpha=op;
+  ctx.drawImage(logoImg,x,y,lw,lh);
+  ctx.restore();
+}
+
+// ── Submit
+document.getElementById('mainForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(!companyId.value){ toast('Selecione uma empresa primeiro','err'); return; }
+  if(activeTab==='upload') logoUrlH.value='';
+  else logoToken.value='';
+  submitBtn.disabled=true;
+  submitBtn.innerHTML='<span class="spin"></span>Processando…';
+  try{
+    const res=await fetch('/guebly/process',{method:'POST',body:new FormData(e.target)});
+    if(!res.ok){ toast('Erro: '+(await res.text()),'err'); return; }
+    const blob=await res.blob();
+    const cd=res.headers.get('Content-Disposition')||'';
+    const m=cd.match(/filename="?([^";]+)"?/);
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download=m?m[1]:'watermarked.png'; a.click();
+    URL.revokeObjectURL(url);
+    toast('Download iniciado ✓');
+  }catch(err){
+    toast('Falha: '+err.message,'err');
+  }finally{
+    submitBtn.disabled=false;
+    const n=selectedCompany?selectedCompany.name:'empresa';
+    submitBtn.textContent='⬇ Aplicar — '+n;
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+{
+  "default_position":    "bottom-right",
+  "default_scale_pct":   15,
+  "default_margin_pct":  3,
+  "default_opacity_pct": 90,
+
+  "guebly_companies": [
+    {
+      "id":       "guebly-holding",
+      "name":     "Guebly Holding",
+      "logo_url": "",
+      "color":    "#9854F1"
+    },
+    {
+      "id":       "guebly-ltda",
+      "name":     "Guebly LTDA",
+      "logo_url": "",
+      "color":    "#7c3aed"
+    },
+    {
+      "id":       "guebly-studio",
+      "name":     "Guebly Studio",
+      "logo_url": "",
+      "color":    "#6d28d9"
+    },
+    {
+      "id":       "trocai",
+      "name":     "Trocaí",
+      "logo_url": "",
+      "color":    "#4f46e5"
+    },
+    {
+      "id":       "guebly-games",
+      "name":     "Guebly Games",
+      "logo_url": "",
+      "color":    "#0ea5e9"
+    },
+    {
+      "id":       "vendai",
+      "name":     "Vendaí",
+      "logo_url": "",
+      "color":    "#10b981"
+    },
+    {
+      "id":       "guebly-pay",
+      "name":     "Guebly Pay",
+      "logo_url": "",
+      "color":    "#f59e0b"
+    },
+    {
+      "id":       "ayon-ltda",
+      "name":     "Ayon LTDA",
+      "logo_url": "",
+      "color":    "#ec4899"
+    },
+    {
+      "id":       "ayon-studios",
+      "name":     "Ayon Studios",
+      "logo_url": "",
+      "color":    "#db2777"
+    },
+    {
+      "id":       "ayon-plus",
+      "name":     "Ayon+",
+      "logo_url": "",
+      "color":    "#be185d"
+    },
+    {
+      "id":       "ayon-academy",
+      "name":     "Ayon Academy",
+      "logo_url": "",
+      "color":    "#9d174d"
+    },
+    {
+      "id":       "guebly-contabil",
+      "name":     "Guebly Contábil",
+      "logo_url": "",
+      "color":    "#0891b2"
+    },
+    {
+      "id":       "sentrion",
+      "name":     "Sentrion",
+      "logo_url": "",
+      "color":    "#374151"
+    }
+  ]
+}
