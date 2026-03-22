@@ -3,19 +3,13 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>WatermarkTool — Aplicador de Marca d'Água</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <title>WatermarkTool</title>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
   <style>
-    :root{
-      --bg:#07070f;--s:rgba(255,255,255,.043);--b:rgba(255,255,255,.08);
-      --bh:rgba(152,84,241,.5);--p:#9854F1;--pl:#b47ef7;--pd:#6c2ec4;
-      --t:#EDE7F9;--m:#7d78a0;--g:#4ade80;--r:#f87171;
-    }
+    :root{--bg:#07070f;--s:rgba(255,255,255,.043);--b:rgba(255,255,255,.08);--bh:rgba(152,84,241,.5);--p:#9854F1;--pl:#b47ef7;--t:#EDE7F9;--m:#7d78a0;--g:#4ade80;--r:#f87171;}
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t);min-height:100vh;overflow-x:hidden}
-    body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
-      background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E")}
+    body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E")}
     .blob{position:fixed;z-index:0;pointer-events:none;border-radius:50%;filter:blur(140px);opacity:.13}
     .ba{width:650px;height:650px;top:-200px;left:-200px;background:radial-gradient(circle,#7c3aed,#2e1065)}
     .bb{width:500px;height:500px;bottom:-160px;right:-160px;background:radial-gradient(circle,#5b21b6,#1e1b4b)}
@@ -23,107 +17,108 @@
     .bar{max-width:1360px;margin:0 auto;padding:0 32px;height:62px;display:flex;align-items:center;justify-content:space-between}
     .logo-w{display:flex;align-items:center;gap:12px}
     .logo-w img{height:30px;width:auto}
-    .logo-n{font-family:'Syne',sans-serif;font-weight:900;font-size:15px;letter-spacing:-.2px}
+    .logo-n{font-family:'Syne',sans-serif;font-weight:900;font-size:15px}
     .logo-sep{width:1px;height:16px;background:var(--b)}
     .logo-sub{font-size:12px;color:var(--m)}
     .pill{padding:5px 12px;border-radius:999px;font-size:11px;font-weight:500;border:1px solid var(--b);color:var(--m)}
     .pill.p{background:rgba(152,84,241,.12);border-color:rgba(152,84,241,.3);color:var(--pl)}
     .hero{position:relative;z-index:1;max-width:1360px;margin:0 auto;padding:44px 32px 18px}
-    .eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(152,84,241,.1);
-      border:1px solid rgba(152,84,241,.25);color:var(--pl);font-size:11px;font-weight:600;
-      letter-spacing:.07em;text-transform:uppercase;padding:5px 12px;border-radius:999px;margin-bottom:14px}
+    .eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(152,84,241,.1);border:1px solid rgba(152,84,241,.25);color:var(--pl);font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;padding:5px 12px;border-radius:999px;margin-bottom:14px}
     .eyebrow::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--p)}
-    .hero h1{font-family:'Syne',sans-serif;font-weight:900;font-size:clamp(26px,3.5vw,44px);
-      line-height:1.08;letter-spacing:-.04em;margin-bottom:12px}
+    .hero h1{font-family:'Syne',sans-serif;font-weight:900;font-size:clamp(26px,3.5vw,44px);line-height:1.08;letter-spacing:-.04em;margin-bottom:12px}
     .hero h1 em{color:var(--p);font-style:normal}
-    .hero p{font-size:14px;color:var(--m);max-width:520px;line-height:1.65}
+    .hero p{font-size:14px;color:var(--m);max-width:560px;line-height:1.65}
     .shell{position:relative;z-index:1;max-width:1360px;margin:0 auto;padding:22px 32px 80px}
-    .grid{display:grid;grid-template-columns:430px minmax(0,1fr);gap:22px;align-items:start}
+    .grid{display:grid;grid-template-columns:460px minmax(0,1fr);gap:22px;align-items:start}
     @media(max-width:1080px){.grid{grid-template-columns:1fr}}
-    .panel{background:var(--s);border:1px solid var(--b);border-radius:22px;padding:26px;
-      box-shadow:0 16px 48px rgba(0,0,0,.4);backdrop-filter:blur(4px)}
-    .pt{font-family:'Syne',sans-serif;font-weight:900;font-size:10px;text-transform:uppercase;
-      letter-spacing:.1em;color:var(--p);margin-bottom:22px;display:flex;align-items:center;gap:8px}
+    .panel{background:var(--s);border:1px solid var(--b);border-radius:22px;padding:26px;box-shadow:0 16px 48px rgba(0,0,0,.4);backdrop-filter:blur(4px)}
+    .pt{font-family:'Syne',sans-serif;font-weight:900;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--p);margin-bottom:20px;display:flex;align-items:center;gap:8px}
     .pt::after{content:'';flex:1;height:1px;background:var(--b)}
-    .sl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;
-      color:var(--m);margin-bottom:7px;margin-top:20px}
+    .sl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--m);margin-bottom:7px;margin-top:18px}
     .sl:first-child{margin-top:0}
-    .dz{position:relative;border:1.5px dashed var(--b);border-radius:13px;padding:20px 14px;
-      text-align:center;cursor:pointer;transition:border-color .2s,background .2s}
+    .dz{position:relative;border:1.5px dashed var(--b);border-radius:13px;padding:18px 14px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s}
     .dz:hover,.dz.over{border-color:var(--p);background:rgba(152,84,241,.05)}
     .dz input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0}
-    .dz-i{font-size:24px;margin-bottom:5px}
+    .dz-i{font-size:22px;margin-bottom:4px}
     .dz-t{font-size:12px;font-weight:500}
-    .dz-h{font-size:11px;color:var(--m);margin-top:3px}
+    .dz-h{font-size:11px;color:var(--m);margin-top:2px}
     .flist{display:flex;flex-direction:column;gap:4px;margin-top:8px}
-    .fi{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--m);
-      background:rgba(0,0,0,.25);padding:5px 10px;border-radius:8px}
+    .fi{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--m);background:rgba(0,0,0,.25);padding:5px 10px;border-radius:8px}
     .fi-n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--t)}
-    .tabs{display:flex;gap:3px;background:rgba(0,0,0,.35);border-radius:12px;padding:3px;margin-bottom:12px}
-    .tab{flex:1;padding:7px 8px;border-radius:10px;text-align:center;font-size:11px;font-weight:600;
-      cursor:pointer;color:var(--m);transition:background .2s,color .2s;user-select:none}
+    .tabs{display:flex;gap:3px;background:rgba(0,0,0,.35);border-radius:12px;padding:3px;margin-bottom:10px}
+    .tab{flex:1;padding:7px 6px;border-radius:10px;text-align:center;font-size:10px;font-weight:600;cursor:pointer;color:var(--m);transition:background .2s,color .2s;user-select:none;white-space:nowrap}
     .tab.active{background:rgba(152,84,241,.22);color:var(--t)}
-    .tp{display:none}
-    .tp.active{display:block}
-    .lthumb{display:none;margin-top:9px;background:rgba(0,0,0,.3);border-radius:11px;padding:12px;text-align:center}
+    .tp{display:none}.tp.active{display:block}
+    .lthumb{display:none;margin-top:8px;background:rgba(0,0,0,.3);border-radius:11px;padding:10px;text-align:center}
     .lthumb.vis{display:block}
-    .lthumb img{max-height:64px;max-width:100%;object-fit:contain;border-radius:5px}
-    .lthumb-n{font-size:10px;color:var(--m);margin-top:5px}
-    .urow{display:flex;gap:7px}
-    .urow input{flex:1}
-    .bsm{padding:9px 13px;border-radius:10px;border:1px solid var(--b);background:rgba(255,255,255,.06);
-      color:var(--t);font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;
-      transition:background .15s;font-family:inherit}
+    .lthumb img{max-height:56px;max-width:100%;object-fit:contain;border-radius:5px}
+    .lthumb-n{font-size:10px;color:var(--m);margin-top:4px}
+    .urow{display:flex;gap:7px}.urow input{flex:1}
+    .bsm{padding:9px 13px;border-radius:10px;border:1px solid var(--b);background:rgba(255,255,255,.06);color:var(--t);font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .15s;font-family:inherit}
     .bsm:hover{background:rgba(255,255,255,.1)}
-    .field{width:100%;padding:9px 13px;background:rgba(0,0,0,.3);border:1px solid var(--b);
-      border-radius:10px;color:var(--t);font-family:'DM Sans',sans-serif;font-size:13px;
-      transition:border-color .2s;appearance:none}
+    .field{width:100%;padding:9px 13px;background:rgba(0,0,0,.3);border:1px solid var(--b);border-radius:10px;color:var(--t);font-family:'DM Sans',sans-serif;font-size:13px;transition:border-color .2s;appearance:none}
     .field:focus{outline:none;border-color:var(--bh)}
     input[type=range].field{padding:3px 0;background:transparent;border:none;cursor:pointer;accent-color:var(--p)}
+    input[type=color].field{padding:3px 5px;height:38px;cursor:pointer}
     .pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
-    .chip{padding:9px 4px;border-radius:10px;text-align:center;border:1.5px solid var(--b);
-      cursor:pointer;font-size:15px;transition:background .15s,border-color .15s;user-select:none}
+    .chip{padding:8px 4px;border-radius:10px;text-align:center;border:1.5px solid var(--b);cursor:pointer;font-size:15px;transition:background .15s,border-color .15s;user-select:none}
     .chip:hover{border-color:var(--pl)}
     .chip.active{background:rgba(152,84,241,.2);border-color:rgba(152,84,241,.6)}
+    .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:2px}
+    .mchip{padding:9px 8px;border-radius:10px;text-align:center;border:1.5px solid var(--b);cursor:pointer;font-size:11px;font-weight:600;transition:background .15s,border-color .15s;user-select:none;line-height:1.4}
+    .mchip .sub{font-size:9px;opacity:.55;display:block;margin-top:1px}
+    .mchip:hover{border-color:var(--pl)}
+    .mchip.active{background:rgba(152,84,241,.2);border-color:rgba(152,84,241,.6);color:var(--pl)}
     .slrow{display:grid;grid-template-columns:1fr 1fr;gap:14px}
     .slb .slh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
     .sl-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--m)}
     .sl-val{font-size:12px;font-weight:700;color:var(--pl)}
-    .div{height:1px;background:var(--b);margin:20px 0}
-    .cta{width:100%;padding:14px;background:linear-gradient(135deg,#9854F1,#6c2ec4);
-      border:none;border-radius:13px;color:#fff;font-family:'Syne',sans-serif;font-weight:900;
-      font-size:14px;cursor:pointer;margin-top:22px;letter-spacing:-.01em;
-      box-shadow:0 6px 28px rgba(152,84,241,.35);transition:filter .15s,transform .1s,box-shadow .15s}
-    .cta:hover{filter:brightness(1.1);box-shadow:0 10px 40px rgba(152,84,241,.5)}
+    .div{height:1px;background:var(--b);margin:18px 0}
+    .cta{width:100%;padding:14px;background:linear-gradient(135deg,#9854F1,#6c2ec4);border:none;border-radius:13px;color:#fff;font-family:'Syne',sans-serif;font-weight:900;font-size:14px;cursor:pointer;margin-top:20px;letter-spacing:-.01em;box-shadow:0 6px 28px rgba(152,84,241,.35);transition:filter .15s,transform .1s}
+    .cta:hover{filter:brightness(1.1)}
     .cta:active{transform:translateY(1px)}
-    .cta:disabled{opacity:.4;cursor:not-allowed;filter:none;box-shadow:none}
+    .cta:disabled{opacity:.4;cursor:not-allowed;filter:none}
     .cta-m{font-size:11px;color:var(--m);text-align:center;margin-top:7px}
-    .prev-wrap{background:rgba(0,0,0,.4);border-radius:16px;display:flex;align-items:center;
-      justify-content:center;min-height:340px;overflow:hidden}
-    canvas{max-width:100%;border-radius:14px;display:block}
-    .prev-empty{color:var(--m);text-align:center;padding:60px 20px;
-      display:flex;flex-direction:column;align-items:center;gap:10px}
-    .pe-i{font-size:48px;opacity:.25}
-    .pe-t{font-size:13px;font-weight:500;color:var(--t);opacity:.5}
-    .pe-s{font-size:11px;opacity:.35}
+    /* Preview */
+    .prev-wrap{background:rgba(0,0,0,.4);border-radius:16px;display:flex;align-items:center;justify-content:center;min-height:320px;overflow:hidden;position:relative}
+    canvas{max-width:100%;border-radius:12px;display:block}
+    .prev-empty{text-align:center;padding:60px 20px;display:flex;flex-direction:column;align-items:center;gap:10px}
+    .pe-i{font-size:44px;opacity:.2}
+    .pe-t{font-size:13px;font-weight:500;color:var(--t);opacity:.4}
+    .pe-s{font-size:11px;color:var(--m);opacity:.35}
     .prev-meta{font-size:10px;color:var(--m);margin-top:8px}
-    .toast{position:fixed;bottom:24px;right:24px;z-index:100;padding:11px 16px;
-      border-radius:12px;background:rgba(18,18,28,.97);border:1px solid var(--b);
-      font-size:12px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.5);
-      transform:translateY(18px);opacity:0;transition:opacity .25s,transform .25s;max-width:320px}
+    .vbadge{position:absolute;top:10px;right:10px;background:rgba(152,84,241,.85);color:#fff;font-size:9px;font-weight:700;padding:3px 8px;border-radius:999px;text-transform:uppercase;pointer-events:none}
+    .abadge{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);color:var(--pl);font-size:9px;font-weight:700;padding:4px 10px;border-radius:999px;pointer-events:none;white-space:nowrap;display:none}
+    .abadge.vis{display:block}
+    .trow{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:end;margin-top:8px}
+    .ccol{display:flex;flex-direction:column;gap:3px}
+    .info-box{background:rgba(152,84,241,.08);border:1px solid rgba(152,84,241,.2);border-radius:10px;padding:9px 12px;font-size:11px;color:var(--pl);margin-top:8px;line-height:1.5}
+    /* Modal de progresso */
+    .overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.78);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+    .overlay.vis{opacity:1;pointer-events:all}
+    .pcard{background:#0d0d1c;border:1px solid var(--b);border-radius:24px;padding:36px 40px;width:min(460px,90vw);box-shadow:0 32px 80px rgba(0,0,0,.7)}
+    .ptitle{font-family:'Syne',sans-serif;font-weight:900;font-size:17px;margin-bottom:5px}
+    .psub{font-size:12px;color:var(--m);margin-bottom:26px;line-height:1.5}
+    .ptrack{background:rgba(255,255,255,.07);border-radius:999px;height:8px;overflow:hidden;margin-bottom:12px}
+    .pbar{height:100%;border-radius:999px;background:linear-gradient(90deg,#9854F1,#b47ef7);width:0%;transition:width .5s ease;box-shadow:0 0 14px rgba(152,84,241,.5)}
+    .prow{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+    .pmsg{font-size:12px;color:var(--m);flex:1;margin-right:12px}
+    .ppct{font-family:'Syne',sans-serif;font-weight:900;font-size:22px;color:var(--pl)}
+    .pfiles{display:flex;flex-direction:column;gap:5px;max-height:110px;overflow-y:auto}
+    .pfile{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--m);background:rgba(0,0,0,.3);padding:6px 10px;border-radius:8px}
+    .pcancel{margin-top:18px;width:100%;padding:10px;background:transparent;border:1px solid var(--b);border-radius:10px;color:var(--m);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;transition:border-color .15s,color .15s}
+    .pcancel:hover{border-color:var(--r);color:var(--r)}
+    .toast{position:fixed;bottom:24px;right:24px;z-index:300;padding:11px 16px;border-radius:12px;background:rgba(18,18,28,.97);border:1px solid var(--b);font-size:12px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.5);transform:translateY(18px);opacity:0;transition:opacity .25s,transform .25s;max-width:320px}
     .toast.show{opacity:1;transform:translateY(0)}
     .toast.ok{border-color:rgba(74,222,128,.35);color:var(--g)}
     .toast.err{border-color:rgba(248,113,113,.35);color:var(--r)}
-    .spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.15);
-      border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;
-      vertical-align:middle;margin-right:6px}
+    .spin{display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,.15);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
     @keyframes spin{to{transform:rotate(360deg)}}
-    @media(max-width:600px){.bar,.hero,.shell{padding-left:16px;padding-right:16px}}
+    @media(max-width:600px){.bar,.hero,.shell{padding-left:16px;padding-right:16px}.mgrid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
-<div class="blob ba"></div>
-<div class="blob bb"></div>
+<div class="blob ba"></div><div class="blob bb"></div>
 
 <header>
   <div class="bar">
@@ -131,10 +126,10 @@
       <img src="https://www.guebly.com.br/guebly.png" alt="Logo" onerror="this.onerror=null;this.src='/static/img/guebly.png'"/>
       <span class="logo-n">WatermarkTool</span>
       <span class="logo-sep"></span>
-      <span class="logo-sub">Aplicador de Marca d'Água</span>
+      <span class="logo-sub">Imagens &amp; Videos</span>
     </div>
     <div style="display:flex;gap:8px">
-      <span class="pill">v2.0</span>
+      <span class="pill">v3.1</span>
       <span class="pill p">Open Source</span>
     </div>
   </div>
@@ -142,39 +137,47 @@
 
 <div class="hero">
   <div class="eyebrow">Ferramenta gratuita &amp; open source</div>
-  <h1>Adicione sua marca d'água<br/>em <em>segundos</em></h1>
-  <p>Faça upload das imagens, carregue sua logo por arquivo ou URL, ajuste posição, escala e opacidade — e baixe em PNG ou ZIP. Nenhum dado é armazenado.</p>
+  <h1>Marca d'agua em imagens<br/>e <em>videos</em></h1>
+  <p>Upload em lote, logo ou texto animado, progresso em tempo real. Processado localmente com FFmpeg.</p>
 </div>
 
 <div class="shell">
   <div class="grid">
+    <!-- Painel esquerdo -->
     <div class="panel">
-      <div class="pt">Configuração</div>
-      <form id="mainForm" action="/process" method="post" enctype="multipart/form-data">
+      <div class="pt">Configuracao</div>
+      <form id="mainForm">
 
-        <div class="sl">Imagens de entrada</div>
-        <div class="dz" id="imgDrop">
-          <input type="file" name="images" id="imgInput" accept="image/*" multiple required/>
-          <div class="dz-i">🖼️</div>
+        <!-- Arquivos -->
+        <div class="sl">Imagens e/ou Videos</div>
+        <div class="dz" id="mediaDrop">
+          <input type="file" name="images" id="mediaInput"
+            accept="image/*,video/mp4,video/avi,video/quicktime,video/x-matroska,video/webm,.mkv,.mov,.avi,.flv,.wmv"
+            multiple required/>
+          <div class="dz-i">&#128444; &#127916;</div>
           <div class="dz-t">Arraste ou clique para selecionar</div>
-          <div class="dz-h">PNG · JPG · WEBP — múltiplas imagens geram ZIP</div>
+          <div class="dz-h">PNG JPG MP4 MOV MKV AVI WEBM — varios = ZIP automatico</div>
         </div>
         <div class="flist" id="flist"></div>
 
         <div class="div"></div>
 
-        <div class="sl" style="margin-top:0">Logo / Marca d'Água</div>
-        <div class="tabs">
-          <div class="tab active" data-tab="upload">📁 Upload de arquivo</div>
-          <div class="tab" data-tab="url">🔗 URL da logo</div>
+        <!-- Tipo de marca d'agua -->
+        <div class="sl" style="margin-top:0">Tipo de Marca d'Agua</div>
+        <div class="tabs" id="wmTabs">
+          <div class="tab active" data-wm="upload">&#128193; Arquivo</div>
+          <div class="tab" data-wm="url">&#128279; URL</div>
+          <div class="tab" data-wm="text">&#9998; Texto</div>
         </div>
+        <input type="hidden" name="wm_type" id="wmTypeH" value="image"/>
 
+        <!-- Tab arquivo -->
         <div class="tp active" id="tp-upload">
           <div class="dz" id="logoDrop">
             <input type="file" id="logoFileIn" accept="image/png,image/jpeg,image/webp"/>
-            <div class="dz-i">🏷️</div>
+            <div class="dz-i">&#127991;</div>
             <div class="dz-t">Arraste a logo ou clique</div>
-            <div class="dz-h">PNG com fundo transparente recomendado</div>
+            <div class="dz-h">PNG com transparencia recomendado</div>
           </div>
           <div class="lthumb" id="uploadThumb">
             <img id="uploadThumbImg" src="" alt=""/>
@@ -183,6 +186,7 @@
           <input type="hidden" name="logo_token" id="logoToken"/>
         </div>
 
+        <!-- Tab URL -->
         <div class="tp" id="tp-url">
           <div class="urow">
             <input type="url" class="field" id="urlIn" placeholder="https://exemplo.com/logo.png"/>
@@ -192,25 +196,79 @@
             <img id="urlThumbImg" src="" alt="" crossorigin="anonymous"/>
             <div class="lthumb-n" id="urlThumbName"></div>
           </div>
-          <input type="hidden" name="logo_url" id="logoUrlHidden"/>
+          <input type="hidden" name="logo_url" id="logoUrlH"/>
+        </div>
+
+        <!-- Tab texto -->
+        <div class="tp" id="tp-text">
+          <input type="text" class="field" name="wm_text" id="wmText"
+                 placeholder="Ex: (c) Guebly 2025  |  Confidencial" maxlength="80"/>
+          <div class="trow">
+            <div style="flex:1">
+              <div class="slh"><span class="sl-label">Opac. fundo</span><span class="sl-val" id="bgOpV">0%</span></div>
+              <input type="range" class="field" name="wm_bg_opacity" id="wmBgOp" min="0" max="100" step="5" value="0"/>
+            </div>
+            <div class="ccol"><span class="sl-label">Texto</span>
+              <input type="color" class="field" name="wm_color" id="wmColor" value="#ffffff" style="width:44px;height:36px;padding:2px 4px"/>
+            </div>
+            <div class="ccol"><span class="sl-label">Fundo</span>
+              <input type="color" class="field" name="wm_bg_color" id="wmBgColor" value="#000000" style="width:44px;height:36px;padding:2px 4px"/>
+            </div>
+          </div>
         </div>
 
         <div class="div"></div>
 
-        <div class="sl" style="margin-top:0">Posição da logo</div>
-        <div class="pgrid" id="posGrid">
-          <div class="chip" data-pos="top-left">↖</div>
-          <div class="chip" data-pos="top-center">↑</div>
-          <div class="chip" data-pos="top-right">↗</div>
-          <div class="chip" data-pos="center">✦</div>
-          <div class="chip" data-pos="bottom-left">↙</div>
-          <div class="chip" data-pos="bottom-center">↓</div>
-          <div class="chip" data-pos="bottom-right">↘</div>
+        <!-- Secao IMAGEM: grade de posicao -->
+        <div id="imgSection">
+          <div class="sl" style="margin-top:0">Posicao (imagem)</div>
+          <div class="pgrid" id="posGrid">
+            <div class="chip" data-pos="top-left">&#8598;</div>
+            <div class="chip" data-pos="top-center">&#8593;</div>
+            <div class="chip" data-pos="top-right">&#8599;</div>
+            <div class="chip" data-pos="center">&#10022;</div>
+            <div class="chip" data-pos="bottom-left">&#8601;</div>
+            <div class="chip" data-pos="bottom-center">&#8595;</div>
+            <div class="chip" data-pos="bottom-right">&#8600;</div>
+          </div>
+          <input type="hidden" name="position" id="posH" value="{{ cfg.default_position }}"/>
         </div>
-        <input type="hidden" name="position" id="posHidden" value="{{ cfg.default_position }}"/>
+
+        <!-- Secao VIDEO: grade de animacao -->
+        <div id="vidSection" style="display:none">
+          <div class="sl" style="margin-top:0">Animacao no video</div>
+          <div class="mgrid" id="motGrid">
+            <div class="mchip active" data-mot="none">Estatico<span class="sub">posicao fixa</span></div>
+            <div class="mchip" data-mot="left-to-right">Esq &#8594; Dir<span class="sub">ticker horizontal</span></div>
+            <div class="mchip" data-mot="right-to-left">Dir &#8594; Esq<span class="sub">ticker invertido</span></div>
+            <div class="mchip" data-mot="bottom-to-top">Baixo &#8593; Cima<span class="sub">creditos / legenda</span></div>
+            <div class="mchip" data-mot="top-to-bottom">Cima &#8595; Baixo<span class="sub">entrada por cima</span></div>
+            <div class="mchip" data-mot="pendulum-x">Pendulo H<span class="sub">vai e vem horizontal</span></div>
+            <div class="mchip" data-mot="pendulum-y">Pendulo V<span class="sub">sobe e desce</span></div>
+            <div class="mchip" data-mot="bounce-x">Bounce H<span class="sub">rebote lateral</span></div>
+            <div class="mchip" data-mot="bounce-y">Bounce V<span class="sub">rebote vertical</span></div>
+            <div class="mchip" data-mot="diagonal-bounce">Diagonal Bounce<span class="sub">rebote diagonal (DVD)</span></div>
+            <div class="mchip" data-mot="diagonal-linear">Diagonal Linear<span class="sub">atravessa a tela</span></div>
+          </div>
+          <input type="hidden" name="wm_motion" id="wmMotion" value="none"/>
+          <!-- Se estatico, ainda usa grade de posicao -->
+          <div id="vidPosWrap" style="margin-top:12px">
+            <div class="sl" style="margin-top:0">Posicao (quando estatico)</div>
+            <div class="pgrid" id="posGridV">
+              <div class="chip" data-pos="top-left">&#8598;</div>
+              <div class="chip" data-pos="top-center">&#8593;</div>
+              <div class="chip" data-pos="top-right">&#8599;</div>
+              <div class="chip" data-pos="center">&#10022;</div>
+              <div class="chip" data-pos="bottom-left">&#8601;</div>
+              <div class="chip" data-pos="bottom-center">&#8595;</div>
+              <div class="chip" data-pos="bottom-right">&#8600;</div>
+            </div>
+          </div>
+        </div>
 
         <div class="div"></div>
 
+        <!-- Sliders -->
         <div class="slrow">
           <div class="slb">
             <div class="slh"><span class="sl-label">Escala</span><span class="sl-val" id="scaleV">{{ cfg.default_scale_pct }}%</span></div>
@@ -221,260 +279,532 @@
             <input type="range" class="field" name="opacity_pct" id="opacityIn" min="20" max="100" step="1" value="{{ cfg.default_opacity_pct }}"/>
           </div>
         </div>
-        <div class="slb" style="margin-top:14px">
+        <div class="slb" style="margin-top:12px">
           <div class="slh"><span class="sl-label">Margem</span><span class="sl-val" id="marginV">{{ cfg.default_margin_pct }}%</span></div>
           <input type="range" class="field" name="margin_pct" id="marginIn" min="0" max="12" step="0.5" value="{{ cfg.default_margin_pct }}"/>
         </div>
 
-        <button class="cta" type="submit" id="submitBtn">⬇ Aplicar e baixar</button>
-        <div class="cta-m">1 imagem → PNG &nbsp;·&nbsp; Múltiplas → ZIP automático</div>
+        <button class="cta" type="submit" id="submitBtn">&#8595; Aplicar e baixar</button>
+        <div class="cta-m">1 arquivo = PNG/MP4  |  Varios = ZIP automatico</div>
       </form>
     </div>
 
+    <!-- Preview -->
     <div class="panel">
-      <div class="pt">Pré-visualização ao vivo</div>
+      <div class="pt">Pre-visualizacao ao vivo</div>
       <div class="prev-wrap">
         <div class="prev-empty" id="prevEmpty">
-          <div class="pe-i">🖼️</div>
-          <div class="pe-t">Selecione uma imagem para ver a prévia</div>
-          <div class="pe-s">Carregue também a logo para ver o resultado final</div>
+          <div class="pe-i">&#128444; &#127916;</div>
+          <div class="pe-t">Selecione uma imagem ou video</div>
+          <div class="pe-s">Carregue logo ou texto para ver o resultado</div>
         </div>
         <canvas id="canvas" style="display:none"></canvas>
+        <div class="vbadge" id="vbadge" style="display:none">&#127916; frame preview</div>
+        <div class="abadge" id="abadge"></div>
       </div>
-      <div class="prev-meta">✓ Prévia 100% local — nenhum arquivo é enviado antes de clicar em "Aplicar"</div>
+      <div class="prev-meta" id="prevMeta">Pre-visualizacao local — nada e enviado antes de clicar em Aplicar</div>
     </div>
+  </div>
+</div>
+
+<!-- Modal de progresso -->
+<div class="overlay" id="overlay">
+  <div class="pcard">
+    <div class="ptitle">Processando...</div>
+    <div class="psub" id="psub">Preparando arquivos</div>
+    <div class="ptrack"><div class="pbar" id="pbar"></div></div>
+    <div class="prow">
+      <div class="pmsg" id="pmsg">Aguardando...</div>
+      <div class="ppct" id="ppct">0%</div>
+    </div>
+    <div class="pfiles" id="pfiles"></div>
+    <button class="pcancel" id="pcancel" type="button">Cancelar</button>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-const imgInput=document.getElementById('imgInput');
-const imgDrop=document.getElementById('imgDrop');
-const flist=document.getElementById('flist');
-const logoFileIn=document.getElementById('logoFileIn');
-const logoDrop=document.getElementById('logoDrop');
-const logoToken=document.getElementById('logoToken');
-const urlIn=document.getElementById('urlIn');
-const loadUrlBtn=document.getElementById('loadUrlBtn');
-const logoUrlH=document.getElementById('logoUrlHidden');
-const uploadThumb=document.getElementById('uploadThumb');
-const uploadThumbImg=document.getElementById('uploadThumbImg');
-const uploadThumbName=document.getElementById('uploadThumbName');
-const urlThumb=document.getElementById('urlThumb');
-const urlThumbImg=document.getElementById('urlThumbImg');
-const urlThumbName=document.getElementById('urlThumbName');
-const posGrid=document.getElementById('posGrid');
-const posHidden=document.getElementById('posHidden');
-const scaleIn=document.getElementById('scaleIn');
-const opacityIn=document.getElementById('opacityIn');
-const marginIn=document.getElementById('marginIn');
-const scaleV=document.getElementById('scaleV');
-const opacityV=document.getElementById('opacityV');
-const marginV=document.getElementById('marginV');
-const canvas=document.getElementById('canvas');
-const ctx=canvas.getContext('2d');
-const prevEmpty=document.getElementById('prevEmpty');
-const submitBtn=document.getElementById('submitBtn');
-const toastEl=document.getElementById('toast');
+// ─── Elementos ───────────────────────────────────────────────────────────────
+const mediaInput  = document.getElementById('mediaInput');
+const mediaDrop   = document.getElementById('mediaDrop');
+const flist       = document.getElementById('flist');
+const logoFileIn  = document.getElementById('logoFileIn');
+const logoDrop    = document.getElementById('logoDrop');
+const logoToken   = document.getElementById('logoToken');
+const urlIn       = document.getElementById('urlIn');
+const loadUrlBtn  = document.getElementById('loadUrlBtn');
+const logoUrlH    = document.getElementById('logoUrlH');
+const uploadThumb = document.getElementById('uploadThumb');
+const uploadThumbImg  = document.getElementById('uploadThumbImg');
+const uploadThumbName = document.getElementById('uploadThumbName');
+const urlThumb    = document.getElementById('urlThumb');
+const urlThumbImg = document.getElementById('urlThumbImg');
+const urlThumbName= document.getElementById('urlThumbName');
+const wmText      = document.getElementById('wmText');
+const wmColor     = document.getElementById('wmColor');
+const wmBgColor   = document.getElementById('wmBgColor');
+const wmBgOp      = document.getElementById('wmBgOp');
+const bgOpV       = document.getElementById('bgOpV');
+const posGrid     = document.getElementById('posGrid');
+const posGridV    = document.getElementById('posGridV');
+const posH        = document.getElementById('posH');
+const motGrid     = document.getElementById('motGrid');
+const wmMotion    = document.getElementById('wmMotion');
+const scaleIn     = document.getElementById('scaleIn');
+const opacityIn   = document.getElementById('opacityIn');
+const marginIn    = document.getElementById('marginIn');
+const scaleV      = document.getElementById('scaleV');
+const opacityV    = document.getElementById('opacityV');
+const marginV     = document.getElementById('marginV');
+const canvas      = document.getElementById('canvas');
+const ctx         = canvas.getContext('2d');
+const prevEmpty   = document.getElementById('prevEmpty');
+const prevMeta    = document.getElementById('prevMeta');
+const vbadge      = document.getElementById('vbadge');
+const abadge      = document.getElementById('abadge');
+const submitBtn   = document.getElementById('submitBtn');
+const toastEl     = document.getElementById('toast');
+const wmTypeH     = document.getElementById('wmTypeH');
+const imgSection  = document.getElementById('imgSection');
+const vidSection  = document.getElementById('vidSection');
+const vidPosWrap  = document.getElementById('vidPosWrap');
+const overlay     = document.getElementById('overlay');
+const pbar        = document.getElementById('pbar');
+const pmsg        = document.getElementById('pmsg');
+const ppct        = document.getElementById('ppct');
+const psub        = document.getElementById('psub');
+const pfiles      = document.getElementById('pfiles');
+const pcancel     = document.getElementById('pcancel');
 
-let baseImg=null, logoImg=null, activeTab='upload', toastTmr=null;
+let baseImg=null, logoImg=null, activeWm='upload', toastTmr=null;
+let isVideoBase=false, videoEl=null, selectedFiles=[];
+let activeMotion='none', currentSSE=null;
 
-function toast(msg,type='ok',ms=3500){
+// Preview animation
+let animFrame=null, animStart=null;
+const PREV_PERIOD = 5; // segundos de ciclo no preview
+
+const VIDEO_EXTS = new Set(['mp4','avi','mov','mkv','webm','m4v','flv','wmv']);
+const fExt = n => (n||'').split('.').pop().toLowerCase();
+const isVid = n => VIDEO_EXTS.has(fExt(n));
+
+// ─── Toast ────────────────────────────────────────────────────────────────────
+function toast(msg, type='ok', ms=3500){
   clearTimeout(toastTmr);
   toastEl.textContent=msg;
   toastEl.className='toast '+type+' show';
   toastTmr=setTimeout(()=>toastEl.classList.remove('show'),ms);
 }
 
-// Tabs
-document.querySelectorAll('.tab').forEach(t=>{
+// ─── Tabs WM ──────────────────────────────────────────────────────────────────
+document.querySelectorAll('#wmTabs .tab').forEach(t=>{
   t.addEventListener('click',()=>{
-    activeTab=t.dataset.tab;
-    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    activeWm=t.dataset.wm;
+    document.querySelectorAll('#wmTabs .tab').forEach(x=>x.classList.remove('active'));
     document.querySelectorAll('.tp').forEach(x=>x.classList.remove('active'));
     t.classList.add('active');
-    document.getElementById('tp-'+activeTab).classList.add('active');
-    if(activeTab==='upload'){logoUrlH.value='';logoImg=null;}
-    else{logoToken.value='';logoImg=null;}
-    draw();
+    document.getElementById('tp-'+activeWm).classList.add('active');
+    wmTypeH.value = activeWm==='text'?'text':'image';
+    if(activeWm!=='upload') logoToken.value='';
+    if(activeWm!=='url'){ logoUrlH.value=''; if(activeWm!=='upload') logoImg=null; }
+    schedDraw();
   });
 });
 
-// Position
-function setPos(pos){
-  posGrid.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
-  const el=posGrid.querySelector('[data-pos="'+pos+'"]');
-  if(el)el.classList.add('active');
-  posHidden.value=pos;
+// ─── Secoes imagem / video ────────────────────────────────────────────────────
+function updateSections(){
+  if(isVideoBase){
+    imgSection.style.display='none';
+    vidSection.style.display='block';
+    vidPosWrap.style.display = activeMotion==='none' ? 'block' : 'none';
+  } else {
+    imgSection.style.display='block';
+    vidSection.style.display='none';
+  }
 }
-setPos(posHidden.value||'bottom-right');
-posGrid.querySelectorAll('.chip').forEach(c=>{
-  c.addEventListener('click',()=>{setPos(c.dataset.pos);draw();});
+
+// ─── Grade de posicao ─────────────────────────────────────────────────────────
+function setPos(pos, grid){
+  grid.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  const el=grid.querySelector('[data-pos="'+pos+'"]');
+  if(el) el.classList.add('active');
+  posH.value=pos;
+}
+setPos(posH.value||'bottom-right', posGrid);
+setPos(posH.value||'bottom-right', posGridV);
+[posGrid, posGridV].forEach(g=>{
+  g.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{
+    setPos(c.dataset.pos, posGrid);
+    setPos(c.dataset.pos, posGridV);
+    schedDraw();
+  }));
 });
 
-// Sliders
+// ─── Grade de animacao ────────────────────────────────────────────────────────
+motGrid.querySelectorAll('.mchip').forEach(c=>{
+  c.addEventListener('click',()=>{
+    motGrid.querySelectorAll('.mchip').forEach(x=>x.classList.remove('active'));
+    c.classList.add('active');
+    activeMotion=c.dataset.mot;
+    wmMotion.value=activeMotion;
+    vidPosWrap.style.display = activeMotion==='none' ? 'block' : 'none';
+    schedDraw();
+  });
+});
+
+// ─── Sliders ──────────────────────────────────────────────────────────────────
 function upLabels(){
-  scaleV.textContent=scaleIn.value+'%';
-  opacityV.textContent=opacityIn.value+'%';
-  marginV.textContent=marginIn.value+'%';
+  scaleV.textContent   = scaleIn.value+'%';
+  opacityV.textContent = opacityIn.value+'%';
+  marginV.textContent  = marginIn.value+'%';
+  bgOpV.textContent    = wmBgOp.value+'%';
 }
 upLabels();
-[scaleIn,opacityIn,marginIn].forEach(r=>r.addEventListener('input',()=>{upLabels();draw();}));
+[scaleIn,opacityIn,marginIn,wmBgOp].forEach(r=>r.addEventListener('input',()=>{upLabels();schedDraw();}));
+[wmText,wmColor,wmBgColor].forEach(el=>el.addEventListener('input',schedDraw));
 
-// Drag
-[imgDrop,logoDrop].forEach(dz=>{
+// ─── Drag ─────────────────────────────────────────────────────────────────────
+[mediaDrop,logoDrop].forEach(dz=>{
   dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');});
   dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
   dz.addEventListener('drop',()=>dz.classList.remove('over'));
 });
 
-// Base image — lê localmente com FileReader
-imgInput.addEventListener('change',e=>{
-  const files=Array.from(e.target.files);
+// ─── Arquivos de entrada ──────────────────────────────────────────────────────
+mediaInput.addEventListener('change',e=>{
+  selectedFiles=Array.from(e.target.files);
   flist.innerHTML='';
-  files.forEach(f=>{
+  selectedFiles.forEach(f=>{
     const d=document.createElement('div');
     d.className='fi';
-    d.innerHTML='<span>📄</span><span class="fi-n">'+f.name+'</span><span>'+(f.size/1024).toFixed(0)+' KB</span>';
+    d.innerHTML='<span>'+(isVid(f.name)?'&#127916;':'&#128444;')+'</span><span class="fi-n">'+f.name+'</span><span>'+(f.size/1024).toFixed(0)+' KB</span>';
     flist.appendChild(d);
   });
-  if(files[0])readBase(files[0]);
+  if(selectedFiles.length>1){
+    const info=document.createElement('div');
+    info.className='fi'; info.style.cssText='justify-content:center;color:var(--pl)';
+    info.textContent=selectedFiles.length+' arquivos  ZIP automatico';
+    flist.appendChild(info);
+  }
+  if(selectedFiles[0]) readBase(selectedFiles[0]);
 });
+
 function readBase(file){
-  const r=new FileReader();
-  r.onload=ev=>{
-    const img=new Image();
-    img.onload=()=>{baseImg=img;draw();};
-    img.src=ev.target.result;
-  };
-  r.readAsDataURL(file);
+  isVideoBase=isVid(file.name);
+  updateSections();
+  if(isVideoBase){
+    if(videoEl){URL.revokeObjectURL(videoEl.src);videoEl=null;}
+    videoEl=document.createElement('video');
+    videoEl.muted=true; videoEl.crossOrigin='anonymous';
+    const url=URL.createObjectURL(file);
+    videoEl.src=url;
+    videoEl.addEventListener('loadedmetadata',()=>{ videoEl.currentTime=Math.min(0.5,videoEl.duration*0.08); });
+    videoEl.addEventListener('seeked',()=>{ baseImg=videoEl; schedDraw(); vbadge.style.display='block'; },{once:true});
+    videoEl.load();
+    prevMeta.textContent='Videos processados com FFmpeg — rapido!';
+  } else {
+    vbadge.style.display='none';
+    if(videoEl){URL.revokeObjectURL(videoEl.src);videoEl=null;}
+    const r=new FileReader();
+    r.onload=ev=>{const img=new Image();img.onload=()=>{baseImg=img;schedDraw();};img.src=ev.target.result;};
+    r.readAsDataURL(file);
+    prevMeta.textContent='Pre-visualizacao 100% local';
+  }
 }
 
-// Logo upload — FileReader para preview IMEDIATO, depois upload para servidor
+// ─── Logo upload ──────────────────────────────────────────────────────────────
 logoFileIn.addEventListener('change',e=>{
-  const f=e.target.files[0];
-  if(!f)return;
-  // Preview local imediato (sem depender do servidor)
+  const f=e.target.files[0]; if(!f) return;
   const r=new FileReader();
   r.onload=ev=>{
     const img=new Image();
-    img.onload=()=>{logoImg=img;draw();};
+    img.onload=()=>{logoImg=img;schedDraw();};
     img.src=ev.target.result;
     uploadThumbImg.src=ev.target.result;
     uploadThumbName.textContent=f.name;
     uploadThumb.classList.add('vis');
   };
   r.readAsDataURL(f);
-  // Upload paralelo para o servidor (token usado no processamento)
-  const fd=new FormData();
-  fd.append('logo_file',f);
+  const fd=new FormData(); fd.append('logo_file',f);
   fetch('/upload-logo',{method:'POST',body:fd})
-    .then(res=>res.json())
-    .then(data=>{
-      if(data.error){toast('Erro no upload: '+data.error,'err');return;}
-      logoToken.value=data.token;
-      logoUrlH.value='';
-      toast('Logo carregada ✓');
-    })
-    .catch(()=>toast('Falha no envio da logo — tente novamente','err'));
+    .then(r=>r.json()).then(d=>{
+      if(d.error){toast('Erro: '+d.error,'err');return;}
+      logoToken.value=d.token; logoUrlH.value=''; toast('Logo carregada');
+    }).catch(()=>toast('Falha no upload da logo','err'));
 });
 
-// Logo por URL — tenta preview local (pode ser bloqueado por CORS)
+// ─── Logo por URL ─────────────────────────────────────────────────────────────
 loadUrlBtn.addEventListener('click',loadFromUrl);
 urlIn.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();loadFromUrl();}});
 function loadFromUrl(){
-  const url=urlIn.value.trim();
-  if(!url){toast('Digite uma URL válida','err');return;}
-  loadUrlBtn.textContent='…';
-  loadUrlBtn.disabled=true;
-  const img=new Image();
-  img.crossOrigin='anonymous';
+  const url=urlIn.value.trim(); if(!url){toast('URL invalida','err');return;}
+  loadUrlBtn.textContent='...'; loadUrlBtn.disabled=true;
+  const img=new Image(); img.crossOrigin='anonymous';
   img.onload=()=>{
-    logoImg=img;
-    logoUrlH.value=url;
-    logoToken.value='';
+    logoImg=img; logoUrlH.value=url; logoToken.value='';
     urlThumbImg.src=url;
     urlThumbName.textContent=url.split('/').pop().split('?')[0]||'logo';
-    urlThumb.classList.add('vis');
-    draw();
-    toast('Logo carregada ✓');
-    loadUrlBtn.textContent='Carregar';
-    loadUrlBtn.disabled=false;
+    urlThumb.classList.add('vis'); schedDraw(); toast('Logo carregada');
+    loadUrlBtn.textContent='Carregar'; loadUrlBtn.disabled=false;
   };
   img.onerror=()=>{
-    // CORS bloqueou o preview — mas o servidor vai conseguir baixar normalmente
-    logoUrlH.value=url;
-    logoToken.value='';
-    logoImg=null;
-    urlThumbName.textContent='Preview indisponível (CORS) — processamento funcionará ✓';
-    urlThumb.classList.add('vis');
-    toast('Preview bloqueado por CORS, mas o download vai funcionar normalmente.','ok',5000);
-    loadUrlBtn.textContent='Carregar';
-    loadUrlBtn.disabled=false;
+    logoUrlH.value=url; logoToken.value=''; logoImg=null;
+    urlThumbName.textContent='Preview bloqueado (CORS) — download funcionara';
+    urlThumb.classList.add('vis'); toast('CORS bloqueou preview, download funciona.','ok',5000);
+    loadUrlBtn.textContent='Carregar'; loadUrlBtn.disabled=false;
   };
   img.src=url;
 }
 
-// Canvas
-function draw(){
-  if(!baseImg)return;
+// ─── Canvas helpers ───────────────────────────────────────────────────────────
+function calcStaticPos(cw,ch,lw,lh,mp,pos){
+  const cx=(cw-lw)/2|0, cy=(ch-lh)/2|0;
+  const r=cw-lw-mp, b=ch-lh-mp;
+  const m={'top-left':[mp,mp],'top-center':[cx,mp],'top-right':[r,mp],
+           'center':[cx,cy],'bottom-left':[mp,b],
+           'bottom-center':[cx,b],'bottom-right':[r,b]};
+  return m[pos]||[r,b];
+}
+
+function getMotionPos(cw,ch,lw,lh,mp,t,motion){
+  const P=PREV_PERIOD;
+  const tm=((t%P)+P)%P; // t mod P, positivo
+  const cx=(cw-lw)/2|0, cy=(ch-lh)/2|0;
+  const tri=(phase)=>1-Math.abs(2*((phase%1+1)%1)-1); // 0->1->0
+
+  switch(motion){
+    case 'none': return calcStaticPos(cw,ch,lw,lh,mp,posH.value);
+    case 'left-to-right': return [(-lw+(cw+lw)*tm/P)|0, cy];
+    case 'right-to-left': return [(cw-(cw+lw)*tm/P)|0, cy];
+    case 'bottom-to-top': return [cx, (ch-(ch+lh)*tm/P)|0];
+    case 'top-to-bottom': return [cx, (-lh+(ch+lh)*tm/P)|0];
+    case 'pendulum-x': return [(cx+(cx)*Math.sin(tm/P*2*Math.PI))|0, cy];
+    case 'pendulum-y': return [cx, (cy+(cy/1.5)*Math.sin(tm/P*2*Math.PI))|0];
+    case 'bounce-x':   return [(-lw+(cw+lw)*tri(tm/P))|0, cy];
+    case 'bounce-y':   return [cx, (-lh+(ch+lh)*tri(tm/P))|0];
+    case 'diagonal-bounce': return [
+      (-lw+(cw+lw)*tri(tm/P))|0,
+      (-lh+(ch+lh)*tri((tm*0.7/P+0.3)))|0
+    ];
+    case 'diagonal-linear': return [(-lw+(cw+lw)*tm/P)|0, (-lh+(ch+lh)*tm/P)|0];
+  }
+  return [0,0];
+}
+
+function makeTextCanvas(){
+  const text=wmText.value.trim(); if(!text) return null;
+  const srcW=baseImg?(baseImg.videoWidth||baseImg.naturalWidth||baseImg.width):500;
+  const srcH=baseImg?(baseImg.videoHeight||baseImg.naturalHeight||baseImg.height):500;
+  const ref=Math.min(srcW,srcH);
+  const fs=Math.max(14,Math.round(ref*parseFloat(scaleIn.value)/100*0.55));
+  const tmp=document.createElement('canvas');
+  const tc=tmp.getContext('2d');
+  tc.font='bold '+fs+'px Arial,sans-serif';
+  const met=tc.measureText(text);
+  const px=Math.round(fs*0.3),py=Math.round(fs*0.2);
+  tmp.width=Math.ceil(met.width)+px*2;
+  tmp.height=Math.ceil(fs*1.4)+py*2;
+  const bgA=parseInt(wmBgOp.value)/100;
+  if(bgA>0){
+    const h=wmBgColor.value.slice(1);
+    tc.fillStyle='rgba('+parseInt(h.slice(0,2),16)+','+parseInt(h.slice(2,4),16)+','+parseInt(h.slice(4,6),16)+','+bgA+')';
+    tc.fillRect(0,0,tmp.width,tmp.height);
+  }
+  tc.font='bold '+fs+'px Arial,sans-serif';
+  tc.fillStyle=wmColor.value;
+  tc.fillText(text,px,py+fs);
+  return tmp;
+}
+
+// ─── Draw frame ───────────────────────────────────────────────────────────────
+function drawFrame(t=0){
+  if(!baseImg) return;
   prevEmpty.style.display='none';
   canvas.style.display='block';
-  const maxW=1080,maxH=720;
-  const ratio=Math.min(1,maxW/baseImg.width,maxH/baseImg.height);
-  canvas.width=Math.round(baseImg.width*ratio);
-  canvas.height=Math.round(baseImg.height*ratio);
+
+  const srcW=baseImg.videoWidth||baseImg.naturalWidth||baseImg.width;
+  const srcH=baseImg.videoHeight||baseImg.naturalHeight||baseImg.height;
+  if(!srcW||!srcH) return;
+
+  const ratio=Math.min(1,1080/srcW,720/srcH);
+  canvas.width=Math.round(srcW*ratio);
+  canvas.height=Math.round(srcH*ratio);
   ctx.clearRect(0,0,canvas.width,canvas.height);
   ctx.drawImage(baseImg,0,0,canvas.width,canvas.height);
-  if(!logoImg||!logoImg.naturalWidth)return;
+
   const ref=Math.min(canvas.width,canvas.height);
-  const lw=Math.max(1,Math.round(ref*parseFloat(scaleIn.value)/100));
-  const lh=Math.max(1,Math.round(lw/(logoImg.naturalWidth/logoImg.naturalHeight)));
   const mp=Math.round(ref*parseFloat(marginIn.value)/100);
   const op=parseFloat(opacityIn.value)/100;
-  const pos=posHidden.value;
-  const cw=canvas.width,ch=canvas.height;
-  const cx=Math.round((cw-lw)/2),cy=Math.round((ch-lh)/2);
-  let x=cw-lw-mp,y=ch-lh-mp;
-  if(pos==='top-left'){x=mp;y=mp;}
-  if(pos==='top-center'){x=cx;y=mp;}
-  if(pos==='top-right'){x=cw-lw-mp;y=mp;}
-  if(pos==='center'){x=cx;y=cy;}
-  if(pos==='bottom-left'){x=mp;y=ch-lh-mp;}
-  if(pos==='bottom-center'){x=cx;y=ch-lh-mp;}
+
+  // Watermark source
+  let wm=null;
+  if(activeWm==='text') wm=makeTextCanvas();
+  else if(logoImg&&logoImg.naturalWidth) wm=logoImg;
+  if(!wm) return;
+
+  const wmW=wm.width||wm.naturalWidth||wm.videoWidth;
+  const wmH=wm.height||wm.naturalHeight||wm.videoHeight;
+  if(!wmW||!wmH) return;
+
+  // Dimensoes finais do watermark
+  let lw,lh;
+  if(activeWm==='text'){
+    // texto: ja tem tamanho proporcional do makeTextCanvas
+    lw=wmW; lh=wmH;
+  } else {
+    lw=Math.max(1,Math.round(ref*parseFloat(scaleIn.value)/100));
+    lh=Math.max(1,Math.round(lw/(wmW/wmH)));
+  }
+
+  const motion = isVideoBase ? activeMotion : 'none';
+  const [x,y] = getMotionPos(canvas.width,canvas.height,lw,lh,mp,t,motion);
+
   ctx.save();
   ctx.globalAlpha=op;
-  ctx.drawImage(logoImg,x,y,lw,lh);
+  ctx.drawImage(wm,x,y,lw,lh);
   ctx.restore();
 }
 
-// Submit
+// ─── Animacao do preview ──────────────────────────────────────────────────────
+function stopAnim(){
+  if(animFrame){ cancelAnimationFrame(animFrame); animFrame=null; }
+}
+
+function schedDraw(){
+  stopAnim();
+  updateSections();
+  const motion = isVideoBase ? activeMotion : 'none';
+
+  if(motion==='none'){
+    abadge.classList.remove('vis');
+    drawFrame(0);
+  } else {
+    abadge.textContent='Preview animado: '+motion.replace(/-/g,' ');
+    abadge.classList.add('vis');
+    animStart=null;
+    function loop(ts){
+      if(!animStart) animStart=ts;
+      const t=(ts-animStart)/1000;
+      drawFrame(t);
+      animFrame=requestAnimationFrame(loop);
+    }
+    animFrame=requestAnimationFrame(loop);
+  }
+}
+
+// ─── Modal de progresso ───────────────────────────────────────────────────────
+function showProg(files){
+  pbar.style.width='0%';
+  pmsg.textContent='Preparando...';
+  ppct.textContent='0%';
+  psub.textContent=files.length+' arquivo'+(files.length>1?'s':'')+' para processar';
+  pfiles.innerHTML='';
+  files.forEach((f,i)=>{
+    const d=document.createElement('div');
+    d.className='pfile'; d.id='pf'+i;
+    d.innerHTML='<span>'+(isVid(f.name)?'&#127916;':'&#128444;')+'</span><span>'+f.name+'</span>';
+    pfiles.appendChild(d);
+  });
+  overlay.classList.add('vis');
+}
+function hideProg(){ overlay.classList.remove('vis'); }
+function upProg(pct,msg){
+  pbar.style.width=pct+'%';
+  pmsg.textContent=msg||'';
+  ppct.textContent=Math.round(pct)+'%';
+}
+
+pcancel.addEventListener('click',()=>{
+  if(currentSSE){currentSSE.close();currentSSE=null;}
+  hideProg();
+  submitBtn.disabled=false;
+  submitBtn.textContent='&#8595; Aplicar e baixar';
+  toast('Cancelado');
+});
+
+// ─── Submit ───────────────────────────────────────────────────────────────────
 document.getElementById('mainForm').addEventListener('submit',async e=>{
   e.preventDefault();
-  const hasLogo=(activeTab==='upload'&&logoToken.value)||(activeTab==='url'&&logoUrlH.value);
-  if(!hasLogo){toast('Carregue uma logo antes de continuar','err');return;}
-  if(activeTab==='upload')logoUrlH.value='';
-  else logoToken.value='';
-  submitBtn.disabled=true;
-  submitBtn.innerHTML='<span class="spin"></span>Processando…';
-  try{
-    const res=await fetch('/process',{method:'POST',body:new FormData(e.target)});
-    if(!res.ok){toast('Erro: '+(await res.text()),'err');return;}
-    const blob=await res.blob();
-    const cd=res.headers.get('Content-Disposition')||'';
-    const m=cd.match(/filename="?([^";]+)"?/);
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url;a.download=m?m[1]:'watermarked.png';a.click();
-    URL.revokeObjectURL(url);
-    toast('Download iniciado ✓');
-  }catch(err){
-    toast('Falha: '+err.message,'err');
-  }finally{
-    submitBtn.disabled=false;
-    submitBtn.textContent='⬇ Aplicar e baixar';
+
+  const hasLogo=(activeWm==='upload'&&logoToken.value)||
+                (activeWm==='url'&&logoUrlH.value)||
+                (activeWm==='text'&&wmText.value.trim());
+  if(!hasLogo){
+    toast(activeWm==='text'?'Digite o texto da marca d\'agua':'Carregue uma logo primeiro','err');
+    return;
   }
+  if(!selectedFiles.length){ toast('Selecione ao menos um arquivo','err'); return; }
+
+  if(activeWm==='upload') logoUrlH.value='';
+  if(activeWm==='url')    logoToken.value='';
+
+  submitBtn.disabled=true;
+  submitBtn.innerHTML='<span class="spin"></span>Enviando...';
+
+  const fd=new FormData();
+  fd.append('wm_type',  activeWm==='text'?'text':'image');
+  fd.append('logo_token',  logoToken.value||'');
+  fd.append('logo_url',    logoUrlH.value||'');
+  fd.append('wm_text',     wmText.value||'');
+  fd.append('wm_color',    wmColor.value);
+  fd.append('wm_bg_color', wmBgColor.value);
+  fd.append('wm_bg_opacity', wmBgOp.value);
+  fd.append('wm_motion',   isVideoBase ? wmMotion.value : 'none');
+  fd.append('position',    posH.value);
+  fd.append('scale_pct',   scaleIn.value);
+  fd.append('opacity_pct', opacityIn.value);
+  fd.append('margin_pct',  marginIn.value);
+  selectedFiles.forEach(f=>fd.append('images',f));
+
+  let jobId;
+  try{
+    const res=await fetch('/api/process',{method:'POST',body:fd});
+    const data=await res.json();
+    if(!res.ok||data.error){ toast('Erro: '+(data.error||'falha'),'err'); submitBtn.disabled=false; submitBtn.textContent='&#8595; Aplicar e baixar'; return; }
+    jobId=data.job_id;
+  } catch(err){
+    toast('Falha ao enviar: '+err.message,'err');
+    submitBtn.disabled=false; submitBtn.textContent='&#8595; Aplicar e baixar';
+    return;
+  }
+
+  showProg(selectedFiles);
+  submitBtn.innerHTML='<span class="spin"></span>Processando...';
+
+  currentSSE=new EventSource('/api/progress/'+jobId);
+  currentSSE.onmessage=async function(ev){
+    const d=JSON.parse(ev.data);
+    upProg(d.progress||0, d.message||'');
+    if(d.status==='done'){
+      currentSSE.close(); currentSSE=null;
+      upProg(100,'Iniciando download...');
+      const a=document.createElement('a');
+      a.href='/api/download/'+jobId;
+      a.download='';
+      a.click();
+      setTimeout(()=>{
+        hideProg();
+        submitBtn.disabled=false;
+        submitBtn.textContent='&#8595; Aplicar e baixar';
+        toast('Download iniciado!');
+      },500);
+    } else if(d.status==='error'){
+      currentSSE.close(); currentSSE=null;
+      hideProg();
+      submitBtn.disabled=false;
+      submitBtn.textContent='&#8595; Aplicar e baixar';
+      toast('Erro: '+(d.error||d.message),'err',7000);
+    }
+  };
+  currentSSE.onerror=function(){
+    if(!overlay.classList.contains('vis')) return;
+    currentSSE.close(); currentSSE=null;
+    hideProg();
+    submitBtn.disabled=false;
+    submitBtn.textContent='&#8595; Aplicar e baixar';
+    toast('Conexao perdida com o servidor','err');
+  };
 });
 </script>
 </body>

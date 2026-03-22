@@ -1,87 +1,78 @@
-# 🏷️ WatermarkTool
+# WatermarkTool v3.0
 
-**Aplicador de marca d'água para imagens — leve, open source, sem dependências de nuvem.**
-
-Faça upload de uma ou várias imagens, carregue sua logo (por arquivo ou URL), ajuste posição, escala e opacidade — e baixe em PNG (1 imagem) ou ZIP (várias). Tudo processado localmente no seu servidor, sem envio de dados para terceiros.
+**Aplicador de marca d'água para imagens e vídeos — open source, sem dependências de nuvem.**
 
 ---
 
-## ✨ Funcionalidades
+## Funcionalidades
 
 | Recurso | Detalhe |
 |---|---|
-| **Upload de logo** | Arraste ou clique — PNG, JPG, WEBP |
-| **Logo por URL** | Cole a URL de qualquer logo hospedada |
-| **Pré-visualização local** | Canvas ao vivo — sem enviar nada ao servidor |
-| **7 posições** | 4 cantos, 3 centros (horizontal e absoluto) |
-| **Escala** | 3% a 40% relativo à menor dimensão |
-| **Opacidade** | 20% a 100% |
-| **Margem** | 0% a 12% |
-| **Lote** | Múltiplas imagens → ZIP automático |
-| **Sem banco de dados** | Logos temporárias ficam em memória do OS |
-| **Open source** | MIT License |
+| **Imagens** | PNG, JPG, WEBP, BMP, TIFF — saída em PNG |
+| **Vídeos** | MP4, MOV, AVI, MKV, WEBM, FLV, WMV — saída em MP4 |
+| **Logo por arquivo** | Upload de PNG, JPG ou WEBP |
+| **Logo por URL** | Cole qualquer URL pública |
+| **Texto como marca d'água** | Cor, fundo e opacidade configuráveis |
+| **Pré-visualização local** | Canvas ao vivo para imagens, frame para vídeos |
+| **7 posições** | 4 cantos + 3 centros |
+| **Escala / Opacidade / Margem** | Sliders em tempo real |
+| **Lote** | Múltiplas mídias → ZIP automático |
 
 ---
 
-## 🚀 Instalação e uso
+## Instalação rápida no Windows
 
-### Pré-requisitos
+1. Instale o **FFmpeg** (necessário para vídeos): https://ffmpeg.org/download.html
+2. Clique duas vezes em **`iniciar.bat`**
+3. Na primeira execução as dependências Python são instaladas automaticamente
+4. Acesse **http://localhost:5000**
 
-- Python 3.9 ou superior
-- pip
+> O `iniciar.bat` unifica instalação + inicialização em um arquivo só.
 
-### Instalação
+---
+
+## Instalação manual (Linux/macOS)
 
 ```bash
-# 1. Clone o repositório
-git clone https://github.com/seu-usuario/watermark-tool.git
-cd watermark-tool
+# FFmpeg
+sudo apt install ffmpeg          # Debian/Ubuntu
+brew install ffmpeg              # macOS
 
-# 2. (Opcional) Crie um ambiente virtual
-python -m venv venv
-source venv/bin/activate        # Linux/macOS
-venv\Scripts\activate           # Windows
-
-# 3. Instale as dependências
+# Dependências Python
 pip install -r requirements.txt
 
-# 4. Inicie o servidor
+# Iniciar
 python app.py
 ```
 
-Acesse em: **http://localhost:5000**
+---
 
-### Windows (sem terminal)
+## Marca d'água em texto
 
-Use os atalhos incluídos:
+Na aba **Texto** da ferramenta:
 
-- `instalar.bat` → instala as dependências (rode uma vez)
-- `iniciar.bat` → inicia o servidor (use sempre que quiser abrir a ferramenta)
+- Digite qualquer texto (ex: `© Guebly 2025`, `Confidencial`)
+- Escolha a cor do texto e a cor/opacidade do fundo
+- O tamanho é controlado pelo slider **Escala**
+
+Funciona em imagens e vídeos.
 
 ---
 
-## 📁 Estrutura do projeto
+## Marca d'água em vídeos
 
-```
-watermark-tool/
-├── app.py                  # Backend Flask — rotas e processamento
-├── config.json             # Configurações padrão e empresas (se aplicável)
-├── requirements.txt        # Dependências Python
-├── instalar.bat            # Instalador Windows
-├── iniciar.bat             # Iniciador Windows
-│
-├── static/
-│   └── img/
-│       └── guebly.png      # Logo exibida no header (substitua pela sua)
-│
-└── templates/
-    ├── index.html          # Interface pública
-    └── guebly.html         # Painel interno (rota /g) — opcional
+O processamento usa **MoviePy + FFmpeg**. O tempo varia conforme duração e resolução.
+Vídeos curtos (< 30s em 1080p) levam cerca de 30–60 segundos.
+
+Para vídeos longos em produção, use Gunicorn com timeout estendido:
+
+```bash
+gunicorn app:app --bind 0.0.0.0:5000 --workers 2 --timeout 300
 ```
 
 ---
 
-## ⚙️ Configuração (`config.json`)
+## Configuração (`config.json`)
 
 ```json
 {
@@ -92,24 +83,11 @@ watermark-tool/
 }
 ```
 
-| Campo | Descrição | Valores |
-|---|---|---|
-| `default_position` | Posição padrão da logo | `top-left`, `top-center`, `top-right`, `center`, `bottom-left`, `bottom-center`, `bottom-right` |
-| `default_scale_pct` | Escala padrão (% da menor dimensão) | `3` a `40` |
-| `default_margin_pct` | Margem padrão | `0` a `12` |
-| `default_opacity_pct` | Opacidade padrão | `20` a `100` |
-
 ---
 
-## 🔒 Painel interno de empresas (`/g`)
+## Painel interno (`/guebly`)
 
-> Esta seção é opcional e destina-se ao uso com empresas pré-configuradas.
-
-O WatermarkTool inclui uma rota interna em `/g` que permite selecionar uma empresa e usar a logo pré-configurada, sem precisar fazer upload toda vez.
-
-### Como configurar
-
-Adicione as empresas no `config.json`:
+Rota não divulgada com logos pré-configuradas por empresa. Configure em `config.json`:
 
 ```json
 {
@@ -124,76 +102,34 @@ Adicione as empresas no `config.json`:
 }
 ```
 
-| Campo | Descrição |
-|---|---|
-| `id` | Identificador único (slug, sem espaços) |
-| `name` | Nome exibido na interface |
-| `logo_url` | URL pública da logo (PNG com transparência recomendado) |
-| `color` | Cor de destaque no painel (hex) |
-
-### Usando o painel interno
-
-1. Acesse `http://localhost:5000/g`
-2. Selecione a empresa
-3. (Opcional) Sobrescreva a logo com upload ou outra URL
-4. Selecione as imagens, ajuste posição/escala e baixe
-
 ---
 
-## 🌐 Deploy em produção
+## Estrutura do projeto
 
-### Com Gunicorn (Linux)
-
-```bash
-pip install gunicorn
-gunicorn app:app --bind 0.0.0.0:5000 --workers 4
+```
+watermark-tool/
+├── app.py              # Backend Flask
+├── config.json         # Configurações e empresas
+├── requirements.txt    # Dependências Python
+├── iniciar.bat         # Instala + inicia (Windows)
+├── static/img/         # Logo do header
+└── templates/
+    ├── index.html      # Interface pública
+    └── guebly.html     # Painel interno
 ```
 
-### Com variável de ambiente para porta
-
-```bash
-PORT=8080 python app.py
-```
-
-### Configurações recomendadas
-
-- Coloque um **proxy reverso** (Nginx, Caddy) na frente
-- Se usar a rota `/g`, proteja-a com autenticação HTTP básica no proxy
-- Defina `debug=False` em produção (o `app.py` já lida com isso via `PORT`)
-
 ---
 
-## 🖼️ Formatos suportados
-
-**Entrada (imagens):** PNG, JPG, JPEG, WEBP, BMP, TIFF  
-**Logo:** PNG (recomendado — suporte a transparência), JPG, WEBP  
-**Saída:** PNG (sempre, com melhor qualidade)
-
----
-
-## 📦 Dependências
+## Dependências
 
 ```
 flask>=3.0
 pillow>=10.0
+moviepy>=1.0.3
+imageio-ffmpeg>=0.4.9
+numpy>=1.24
 ```
 
 ---
 
-## 🤝 Contribuindo
-
-1. Fork o repositório
-2. Crie uma branch: `git checkout -b feature/minha-feature`
-3. Commit: `git commit -m 'feat: minha feature'`
-4. Push: `git push origin feature/minha-feature`
-5. Abra um Pull Request
-
----
-
-## 📄 Licença
-
-MIT License — use livremente, inclusive comercialmente.
-
----
-
-*Desenvolvido por Guebly Holding LTDA · [guebly.com.br](https://guebly.com.br)*
+MIT License — *Guebly Holding LTDA · guebly.com.br*
