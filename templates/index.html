@@ -266,6 +266,28 @@
           </div>
         </div>
 
+        <!-- Secao TELA FINAL (so video) -->
+        <div id="endscreenSection" style="display:none">
+          <div class="div"></div>
+          <div class="sl" style="margin-top:0">&#127916; Tela Final (imagem no fim do video)</div>
+          <div class="dz" id="esDrop" style="padding:12px 10px">
+            <input type="file" id="esFileIn" accept="image/png,image/jpeg,image/webp"/>
+            <div class="dz-i">&#128247;</div>
+            <div class="dz-t">Arraste a imagem da tela final</div>
+            <div class="dz-h">PNG JPG WEBP — aparece no final do video</div>
+          </div>
+          <div class="lthumb" id="esThumb">
+            <img id="esThumbImg" src="" alt=""/>
+            <div class="lthumb-n" id="esThumbName"></div>
+          </div>
+          <input type="hidden" name="endscreen_token" id="esToken"/>
+          <div class="slb" style="margin-top:10px">
+            <div class="slh"><span class="sl-label">Duracao da tela final</span><span class="sl-val" id="esDurV">5s</span></div>
+            <input type="range" class="field" name="endscreen_duration" id="esDurIn" min="0" max="15" step="1" value="5"/>
+          </div>
+          <div class="info-box" id="esInfo">&#9432; A imagem sera exibida por <strong>5 segundos</strong> no final do video. Coloque 0 para desativar.</div>
+        </div>
+
         <div class="div"></div>
 
         <!-- Sliders -->
@@ -376,6 +398,15 @@ const ppct        = document.getElementById('ppct');
 const psub        = document.getElementById('psub');
 const pfiles      = document.getElementById('pfiles');
 const pcancel     = document.getElementById('pcancel');
+const esFileIn    = document.getElementById('esFileIn');
+const esToken     = document.getElementById('esToken');
+const esDurIn     = document.getElementById('esDurIn');
+const esDurV      = document.getElementById('esDurV');
+const esThumb     = document.getElementById('esThumb');
+const esThumbImg  = document.getElementById('esThumbImg');
+const esThumbName = document.getElementById('esThumbName');
+const esInfo      = document.getElementById('esInfo');
+const endscreenSection = document.getElementById('endscreenSection');
 
 let baseImg=null, logoImg=null, activeWm='upload', toastTmr=null;
 let isVideoBase=false, videoEl=null, selectedFiles=[];
@@ -418,9 +449,11 @@ function updateSections(){
     imgSection.style.display='none';
     vidSection.style.display='block';
     vidPosWrap.style.display = activeMotion==='none' ? 'block' : 'none';
+    endscreenSection.style.display='block';
   } else {
     imgSection.style.display='block';
     vidSection.style.display='none';
+    endscreenSection.style.display='none';
   }
 }
 
@@ -464,8 +497,30 @@ upLabels();
 [scaleIn,opacityIn,marginIn,wmBgOp].forEach(r=>r.addEventListener('input',()=>{upLabels();schedDraw();}));
 [wmText,wmColor,wmBgColor].forEach(el=>el.addEventListener('input',schedDraw));
 
+// ─── Tela Final ───────────────────────────────────────────────────────────────
+esDurIn.addEventListener('input',()=>{
+  esDurV.textContent=esDurIn.value+'s';
+  esInfo.innerHTML='&#9432; A imagem sera exibida por <strong>'+esDurIn.value+' segundos</strong> no final do video.'+(esDurIn.value==='0'?' (desativado)':'');
+});
+esFileIn.addEventListener('change',e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    esThumbImg.src=ev.target.result;
+    esThumbName.textContent=f.name;
+    esThumb.classList.add('vis');
+  };
+  r.readAsDataURL(f);
+  const fd=new FormData(); fd.append('logo_file',f);
+  fetch('/upload-logo',{method:'POST',body:fd})
+    .then(r=>r.json()).then(d=>{
+      if(d.error){toast('Erro: '+d.error,'err');return;}
+      esToken.value=d.token; toast('Tela final carregada');
+    }).catch(()=>toast('Falha no upload da tela final','err'));
+});
+
 // ─── Drag ─────────────────────────────────────────────────────────────────────
-[mediaDrop,logoDrop].forEach(dz=>{
+[mediaDrop,logoDrop,document.getElementById('esDrop')].forEach(dz=>{
   dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');});
   dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
   dz.addEventListener('drop',()=>dz.classList.remove('over'));
@@ -730,8 +785,9 @@ document.getElementById('mainForm').addEventListener('submit',async e=>{
   const hasLogo=(activeWm==='upload'&&logoToken.value)||
                 (activeWm==='url'&&logoUrlH.value)||
                 (activeWm==='text'&&wmText.value.trim());
-  if(!hasLogo){
-    toast(activeWm==='text'?'Digite o texto da marca d\'agua':'Carregue uma logo primeiro','err');
+  const hasEndscreen=isVideoBase && esToken.value && parseInt(esDurIn.value)>0;
+  if(!hasLogo && !hasEndscreen){
+    toast(activeWm==='text'?'Digite o texto da marca d\'agua':'Carregue uma logo ou tela final','err');
     return;
   }
   if(!selectedFiles.length){ toast('Selecione ao menos um arquivo','err'); return; }
@@ -755,6 +811,11 @@ document.getElementById('mainForm').addEventListener('submit',async e=>{
   fd.append('scale_pct',   scaleIn.value);
   fd.append('opacity_pct', opacityIn.value);
   fd.append('margin_pct',  marginIn.value);
+  fd.append('endscreen_token', esToken.value||'');
+  fd.append('endscreen_duration', isVideoBase ? esDurIn.value : '0');
+  if(isVideoBase && esFileIn.files[0] && parseInt(esDurIn.value)>0){
+    fd.append('endscreen_file', esFileIn.files[0]);
+  }
   selectedFiles.forEach(f=>fd.append('images',f));
 
   let jobId;

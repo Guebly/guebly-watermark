@@ -266,7 +266,8 @@ def _build_overlay_expr(vw, vh, lw, lh, margin, position, motion, period=ANIM_PE
 
 def process_video_ffmpeg(video_path, wm: Image.Image,
                          position, scale_pct, margin_pct, opacity_pct,
-                         motion, progress_cb=None):
+                         motion, progress_cb=None,
+                         endscreen_path=None, endscreen_duration=5):
     """
     Aplica marca d'agua no video usando FFmpeg diretamente.
     Retorna caminho do arquivo de saida (mp4).
@@ -280,50 +281,66 @@ def process_video_ffmpeg(video_path, wm: Image.Image,
     vw, vh, dur = info["width"], info["height"], info["duration"]
 
     if progress_cb:
-        progress_cb(8, "Preparando marca d'agua...")
-
-    # Redimensiona e aplica opacidade na marca d'agua
-    ref = min(vw, vh)
-    is_text = getattr(wm, "_is_text_wm", False)
-    if is_text:
-        # Texto: tamanho ja calculado relativo ao ref do video, nao redimensiona
-        lw, lh = wm.width, wm.height
-        wm_r = apply_opacity(wm.copy(), opacity_pct / 100)
-    else:
-        lw = max(1, int(ref * scale_pct / 100))
-        lh = max(1, int(lw / (wm.width / wm.height)))
-        wm_r = apply_opacity(wm.resize((lw, lh), Image.LANCZOS), opacity_pct / 100)
-    mg = int(ref * margin_pct / 100)
-
-    # Salva watermark em PNG temporario
-    fd_wm, wm_path = tempfile.mkstemp(suffix=".png")
-    os.close(fd_wm)
-    wm_r.save(wm_path, "PNG")
-
-    # Monta filtro de sobreposicao
-    overlay = _build_overlay_expr(vw, vh, lw, lh, mg, position, motion)
+        progress_cb(8, "Preparando...")
 
     # Arquivo de saida
     fd_out, out_path = tempfile.mkstemp(suffix=".mp4")
     os.close(fd_out)
+    wm_path = None
 
-    cmd = [
-        ffmpeg, "-y", "-hide_banner",
-        "-i", video_path,
-        "-i", wm_path,
-        "-filter_complex", f"[0:v][1:v]{overlay},format=yuv420p",
-        "-c:v", "libx264",
-        "-preset", "ultrafast",   # RAPIDO
-        "-profile:v", "high",     # Compativel com Windows/iPhone/Android
-        "-level", "4.0",
-        "-pix_fmt", "yuv420p",    # OBRIGATORIO para Windows Media Player
-        "-movflags", "+faststart", # Streaming / abertura rapida
-        "-crf", "23",
-        "-c:a", "aac",            # AAC e mais compativel que copy em alguns casos
-        "-b:a", "128k",
-        "-threads", "0",
-        out_path,
-    ]
+    if wm is not None:
+        # Redimensiona e aplica opacidade na marca d'agua
+        ref = min(vw, vh)
+        is_text = getattr(wm, "_is_text_wm", False)
+        if is_text:
+            lw, lh = wm.width, wm.height
+            wm_r = apply_opacity(wm.copy(), opacity_pct / 100)
+        else:
+            lw = max(1, int(ref * scale_pct / 100))
+            lh = max(1, int(lw / (wm.width / wm.height)))
+            wm_r = apply_opacity(wm.resize((lw, lh), Image.LANCZOS), opacity_pct / 100)
+        mg = int(ref * margin_pct / 100)
+
+        fd_wm, wm_path = tempfile.mkstemp(suffix=".png")
+        os.close(fd_wm)
+        wm_r.save(wm_path, "PNG")
+
+        overlay = _build_overlay_expr(vw, vh, lw, lh, mg, position, motion)
+
+        cmd = [
+            ffmpeg, "-y", "-hide_banner",
+            "-i", video_path,
+            "-i", wm_path,
+            "-filter_complex", f"[0:v][1:v]{overlay},format=yuv420p",
+            "-c:v", "libx264",
+            "-preset", "ultrafast",
+            "-profile:v", "high",
+            "-level", "4.0",
+            "-pix_fmt", "yuv420p",
+            "-movflags", "+faststart",
+            "-crf", "23",
+            "-c:a", "aac",
+            "-b:a", "128k",
+            "-threads", "0",
+            out_path,
+        ]
+    else:
+        # Sem watermark: re-encode para formato padrao (necessario para concat)
+        cmd = [
+            ffmpeg, "-y", "-hide_banner",
+            "-i", video_path,
+            "-c:v", "libx264",
+            "-preset", "ultrafast",
+            "-profile:v", "high",
+            "-level", "4.0",
+            "-pix_fmt", "yuv420p",
+            "-movflags", "+faststart",
+            "-crf", "23",
+            "-c:a", "aac",
+            "-b:a", "128k",
+            "-threads", "0",
+            out_path,
+        ]
 
     if progress_cb:
         progress_cb(12, f"Codificando {dur:.0f}s de video (ultrafast)...")
@@ -365,10 +382,11 @@ def process_video_ffmpeg(video_path, wm: Image.Image,
     t_err.join(timeout=2)
 
     # Limpa watermark temp
-    try:
-        os.unlink(wm_path)
-    except Exception:
-        pass
+    if wm_path:
+        try:
+            os.unlink(wm_path)
+        except Exception:
+            pass
 
     if proc.returncode != 0:
         try:
@@ -379,6 +397,58 @@ def process_video_ffmpeg(video_path, wm: Image.Image,
 
     if progress_cb:
         progress_cb(94, "Finalizando...")
+
+    # ── Tela final: concatena imagem como segmento no final do video ──
+    if endscreen_path and os.path.exists(endscreen_path):
+        if progress_cb:
+            progress_cb(95, "Adicionando tela final...")
+
+        # Gera segmento de video a partir da imagem, com mesma resolucao e audio silencioso
+        fd_es, es_vid = tempfile.mkstemp(suffix=".mp4")
+        os.close(fd_es)
+        es_cmd = [
+            ffmpeg, "-y", "-hide_banner",
+            "-loop", "1", "-i", endscreen_path,
+            "-f", "lavfi", "-i", "anullsrc=r=44100:cl=stereo",
+            "-t", str(endscreen_duration),
+            "-vf", f"scale={vw}:{vh}:force_original_aspect_ratio=decrease,"
+                   f"pad={vw}:{vh}:(ow-iw)/2:(oh-ih)/2:color=black,format=yuv420p",
+            "-c:v", "libx264", "-preset", "ultrafast", "-crf", "23",
+            "-c:a", "aac", "-b:a", "128k",
+            "-pix_fmt", "yuv420p", "-shortest",
+            es_vid,
+        ]
+        r = subprocess.run(es_cmd, capture_output=True, text=True, errors="replace")
+        if r.returncode != 0:
+            try: os.unlink(es_vid)
+            except: pass
+        else:
+            # Concatena via concat demuxer
+            fd_lst, lst_path = tempfile.mkstemp(suffix=".txt")
+            os.close(fd_lst)
+            with open(lst_path, "w") as lf:
+                lf.write(f"file '{out_path}'\nfile '{es_vid}'\n")
+            fd_final, final_path = tempfile.mkstemp(suffix=".mp4")
+            os.close(fd_final)
+            cat_cmd = [
+                ffmpeg, "-y", "-hide_banner",
+                "-f", "concat", "-safe", "0", "-i", lst_path,
+                "-c", "copy",
+                "-movflags", "+faststart",
+                final_path,
+            ]
+            rc = subprocess.run(cat_cmd, capture_output=True, text=True, errors="replace")
+            # Limpa temporarios
+            for p in [lst_path, es_vid]:
+                try: os.unlink(p)
+                except: pass
+            if rc.returncode == 0:
+                try: os.unlink(out_path)
+                except: pass
+                out_path = final_path
+            else:
+                try: os.unlink(final_path)
+                except: pass
 
     return out_path
 
@@ -435,7 +505,8 @@ def file_ext(name):
 
 # ─── Job runner ───────────────────────────────────────────────────────────────
 def run_job(jid, tmp_files, watermark, position, scale_pct,
-            margin_pct, opacity_pct, motion):
+            margin_pct, opacity_pct, motion,
+            endscreen_path=None, endscreen_duration=5):
     """Processa todos os arquivos em background."""
     try:
         job_update(jid, status="running", progress=2, message="Iniciando...")
@@ -458,10 +529,16 @@ def run_job(jid, tmp_files, watermark, position, scale_pct,
             if ext in VIDEO_EXTS:
                 out = process_video_ffmpeg(
                     tmp_path, watermark, position,
-                    scale_pct, margin_pct, opacity_pct, motion, cb
+                    scale_pct, margin_pct, opacity_pct, motion, cb,
+                    endscreen_path=endscreen_path,
+                    endscreen_duration=endscreen_duration
                 )
                 results.append((f"{base}_watermark.mp4", out))
             else:
+                if watermark is None:
+                    # Sem watermark em imagem — pula
+                    results.append((f"{base}.png", tmp_path))
+                    continue
                 buf = process_image_pil(tmp_path, watermark, position,
                                         scale_pct, margin_pct, opacity_pct,
                                         is_text=getattr(watermark, "_is_text_wm", False))
@@ -547,23 +624,37 @@ def api_process():
         except Exception:
             pass
 
+    # ── Tela final (endscreen) ──
+    endscreen_path = None
+    endscreen_duration = int(request.form.get("endscreen_duration", 0) or 0)
+    es_file = request.files.get("endscreen_file")
+    es_token = (request.form.get("endscreen_token") or "").strip()
+    if es_file and es_file.filename and endscreen_duration > 0:
+        fd_es, endscreen_path = tempfile.mkstemp(suffix=os.path.splitext(es_file.filename)[1].lower() or ".png")
+        os.close(fd_es)
+        es_file.save(endscreen_path)
+    elif es_token and endscreen_duration > 0:
+        matches = [f for f in os.listdir(TEMP_LOGO_DIR) if f.startswith(es_token)]
+        if matches:
+            endscreen_path = os.path.join(TEMP_LOGO_DIR, matches[0])
+
+    wm = None
     try:
         wm = resolve_watermark(request.form, request.files, ref_size, scale_pct)
-    except (FileNotFoundError, ValueError) as e:
+    except Exception:
+        pass  # watermark e opcional se tiver endscreen
+
+    if wm is None and not endscreen_path:
         for _, tp in tmp_files:
             try: os.unlink(tp)
             except Exception: pass
-        return jsonify(error=str(e)), 400
-    except Exception as e:
-        for _, tp in tmp_files:
-            try: os.unlink(tp)
-            except Exception: pass
-        return jsonify(error=f"Erro ao carregar marca d'agua: {e}"), 400
+        return jsonify(error="Envie uma marca d'agua ou uma tela final."), 400
 
     jid = job_create()
     threading.Thread(
         target=run_job,
         args=(jid, tmp_files, wm, position, scale_pct, margin_pct, opacity_pct, motion),
+        kwargs={"endscreen_path": endscreen_path, "endscreen_duration": endscreen_duration},
         daemon=True,
     ).start()
 
