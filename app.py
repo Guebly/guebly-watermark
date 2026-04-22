@@ -1,5 +1,5 @@
 """
-WatermarkTool v3.1 - Flask + Pillow + FFmpeg direto (sem MoviePy)
+WatermarkTool v3.2 - Flask + Pillow + FFmpeg direto (sem MoviePy)
 =================================================================
 FFmpeg e chamado via subprocess - 10-50x mais rapido que MoviePy.
 Progresso em tempo real via SSE (Server-Sent Events).
@@ -27,37 +27,81 @@ os.makedirs(TEMP_LOGO_DIR, exist_ok=True)
 VIDEO_EXTS = {".mp4", ".avi", ".mov", ".mkv", ".webm", ".m4v", ".flv", ".wmv"}
 IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".webp", ".bmp", ".tiff", ".tif", ".gif"}
 
-# ─── FFmpeg ───────────────────────────────────────────────────────────────────
-def get_ffmpeg():
-    """Localiza o binario ffmpeg: imageio_ffmpeg primeiro, depois PATH."""
-    try:
-        import imageio_ffmpeg
-        return imageio_ffmpeg.get_ffmpeg_exe()
-    except Exception:
-        pass
-    p = shutil.which("ffmpeg")
-    if p:
-        return p
+UPLOAD_MAX_BYTES = 10 * 1024 * 1024  # 10 MB por logo/endscreen
+
+# ─── FFmpeg — cache do binario na inicializacao ────────────────────────────────
+_FFMPEG_BIN: str | None = None
+_FFMPEG_LOCK = threading.Lock()
+
+def get_ffmpeg() -> str:
+    """Localiza o binario ffmpeg uma unica vez e cacheia."""
+    global _FFMPEG_BIN
+    if _FFMPEG_BIN:
+        return _FFMPEG_BIN
+    with _FFMPEG_LOCK:
+        if _FFMPEG_BIN:
+            return _FFMPEG_BIN
+        try:
+            import imageio_ffmpeg
+            _FFMPEG_BIN = imageio_ffmpeg.get_ffmpeg_exe()
+            return _FFMPEG_BIN
+        except Exception:
+            pass
+        p = shutil.which("ffmpeg")
+        if p:
+            _FFMPEG_BIN = p
+            return _FFMPEG_BIN
     raise RuntimeError(
         "FFmpeg nao encontrado. Instale via: pip install imageio-ffmpeg  "
         "ou baixe em ffmpeg.org"
     )
 
-def probe_video(path, ffmpeg_bin):
-    """Retorna dict com duration, width, height do video."""
+def _get_ffprobe(ffmpeg_bin: str) -> str | None:
+    """Retorna caminho do ffprobe se disponivel junto ao ffmpeg."""
+    candidate = ffmpeg_bin.replace("ffmpeg", "ffprobe")
+    if candidate != ffmpeg_bin and os.path.isfile(candidate):
+        return candidate
+    p = shutil.which("ffprobe")
+    return p or None
+
+def probe_video(path: str, ffmpeg_bin: str) -> dict:
+    """Retorna dict com duration, width, height do video.
+    Usa ffprobe JSON quando disponivel; fallback para regex no stderr do ffmpeg."""
+    ffprobe = _get_ffprobe(ffmpeg_bin)
+    if ffprobe:
+        try:
+            r = subprocess.run(
+                [ffprobe, "-v", "quiet", "-print_format", "json",
+                 "-show_streams", "-show_format", path],
+                capture_output=True, text=True, errors="replace", timeout=30
+            )
+            if r.returncode == 0:
+                data = json.loads(r.stdout)
+                duration = float(data.get("format", {}).get("duration", 10) or 10)
+                for s in data.get("streams", []):
+                    if s.get("codec_type") == "video":
+                        w, h = s.get("width"), s.get("height")
+                        if w and h:
+                            return {"duration": max(duration, 0.1),
+                                    "width": int(w), "height": int(h)}
+        except Exception:
+            pass
+
+    # Fallback: regex no stderr do ffmpeg
     result = subprocess.run(
         [ffmpeg_bin, "-i", path, "-hide_banner"],
-        capture_output=True, text=True, errors="replace"
+        capture_output=True, text=True, errors="replace", timeout=30
     )
     out = result.stderr + result.stdout
     duration, width, height = 10.0, 1280, 720
 
     m = re.search(r"Duration:\s*(\d+):(\d+):(\d+)\.(\d+)", out)
     if m:
-        h, mn, s, cs = int(m[1]), int(m[2]), int(m[3]), int(m[4])
-        duration = h * 3600 + mn * 60 + s + cs / 100
+        h2, mn, s, cs = int(m[1]), int(m[2]), int(m[3]), int(m[4])
+        duration = h2 * 3600 + mn * 60 + s + cs / 100
 
-    m = re.search(r"(\d{2,5})x(\d{2,5})(?:[,\s])", out)
+    # Mais robusto: evita capturar "1280x720,SAR" ou "1920x1080 [SAR"
+    m = re.search(r"(\d{2,5})x(\d{2,5})(?:\s|,|\[)", out)
     if m:
         width, height = int(m[1]), int(m[2])
 
@@ -91,20 +135,79 @@ def job_get(jid):
         return dict(JOBS.get(jid, {}))
 
 def job_cleanup():
-    cutoff = time.time() - 3600
+    """Remove jobs expirados e limpa seus arquivos temporarios.
+    - done/error: expiram em 30 min
+    - running/pending: expiram em 2h (job travado)
+    """
+    now = time.time()
     with JOBS_LOCK:
-        stale = [jid for jid, j in JOBS.items() if j["created"] < cutoff]
-        for jid in stale:
+        to_remove = []
+        for jid, j in JOBS.items():
+            age = now - j["created"]
+            if j["status"] in ("done", "error") and age > 1800:
+                to_remove.append(jid)
+            elif age > 7200:  # travado ha mais de 2h
+                to_remove.append(jid)
+        for jid in to_remove:
             j = JOBS.pop(jid, {})
             res = j.get("result")
             if res:
                 try:
                     r = json.loads(res)
-                    os.unlink(r["path"])
+                    if os.path.exists(r["path"]):
+                        os.unlink(r["path"])
                 except Exception:
                     pass
 
+def _cleanup_daemon():
+    """Thread de limpeza em background — roda a cada 5 minutos."""
+    while True:
+        time.sleep(300)
+        try:
+            job_cleanup()
+        except Exception:
+            pass
+
+threading.Thread(target=_cleanup_daemon, daemon=True, name="job-cleaner").start()
+
 # ─── Helpers imagem ───────────────────────────────────────────────────────────
+# ─── Cache de paths de fontes ─────────────────────────────────────────────────
+_FONT_PATH_CACHE: dict = {}
+_FONT_PATH_LOCK = threading.Lock()
+
+def _resolve_font_path(font_name=None) -> str | None:
+    """Resolve o caminho do arquivo de fonte, cacheando o resultado (evita os.path.exists repetido)."""
+    key = font_name or "__default__"
+    with _FONT_PATH_LOCK:
+        if key in _FONT_PATH_CACHE:
+            return _FONT_PATH_CACHE[key]
+
+    candidates = []
+    if font_name and font_name in FONT_MAP:
+        candidates = FONT_MAP[font_name]
+
+    if not candidates:
+        if sys.platform == "win32":
+            candidates = ["C:/Windows/Fonts/arialbd.ttf",
+                          "C:/Windows/Fonts/arial.ttf",
+                          "C:/Windows/Fonts/verdanab.ttf"]
+        elif sys.platform == "darwin":
+            candidates = ["/System/Library/Fonts/Supplemental/Arial Bold.ttf",
+                          "/System/Library/Fonts/Helvetica.ttc"]
+        else:
+            candidates = ["/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+                          "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"]
+
+    found = None
+    for p in candidates:
+        if os.path.exists(p):
+            found = p
+            break
+
+    with _FONT_PATH_LOCK:
+        _FONT_PATH_CACHE[key] = found
+    return found
+
 FONT_MAP = {
     "arial-bold":   ["C:/Windows/Fonts/arialbd.ttf",
                      "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
@@ -128,41 +231,29 @@ FONT_MAP = {
 }
 
 def _get_font(size, font_name=None):
-    if font_name and font_name in FONT_MAP:
-        for p in FONT_MAP[font_name]:
-            if os.path.exists(p):
-                try:
-                    return ImageFont.truetype(p, size)
-                except Exception:
-                    pass
-    # fallback padrão por plataforma
-    if sys.platform == "win32":
-        candidates = ["C:/Windows/Fonts/arialbd.ttf",
-                      "C:/Windows/Fonts/arial.ttf",
-                      "C:/Windows/Fonts/verdanab.ttf"]
-    elif sys.platform == "darwin":
-        candidates = ["/System/Library/Fonts/Supplemental/Arial Bold.ttf",
-                      "/System/Library/Fonts/Helvetica.ttc"]
-    else:
-        candidates = ["/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
-                      "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"]
-    for p in candidates:
-        if os.path.exists(p):
-            try:
-                return ImageFont.truetype(p, size)
-            except Exception:
-                pass
+    """Carrega fonte por nome, usando cache de path para evitar I/O repetido."""
+    path = _resolve_font_path(font_name)
+    if path:
+        try:
+            return ImageFont.truetype(path, size)
+        except Exception:
+            pass
     try:
         return ImageFont.load_default(size=size)
     except TypeError:
         return ImageFont.load_default()
 
 def hex_to_rgba(h, alpha=255):
-    h = (h or "#ffffff").lstrip("#")
-    if len(h) == 3:
-        h = "".join(c * 2 for c in h)
-    r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
-    return (r, g, b, alpha)
+    try:
+        h = (h or "#ffffff").lstrip("#").strip()
+        if len(h) == 3:
+            h = "".join(c * 2 for c in h)
+        if len(h) != 6:
+            raise ValueError("hex invalido")
+        r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+        return (r, g, b, int(max(0, min(255, alpha))))
+    except Exception:
+        return (255, 255, 255, int(max(0, min(255, alpha))))
 
 def apply_opacity(im, opacity):
     if im.mode != "RGBA":
@@ -484,16 +575,28 @@ def process_video_ffmpeg(video_path, wm: Image.Image,
 
 # ─── Resolucao de marca d'agua ────────────────────────────────────────────────
 def logo_from_token(token):
+    # Sanitiza token: apenas hex lowercase (uuid4.hex = 32 chars [0-9a-f])
+    if not re.fullmatch(r"[0-9a-f]{32}", token or ""):
+        raise FileNotFoundError("Token de logo invalido.")
     matches = [f for f in os.listdir(TEMP_LOGO_DIR) if f.startswith(token)]
     if not matches:
-        raise FileNotFoundError("Token de logo invalido ou expirado.")
-    return Image.open(os.path.join(TEMP_LOGO_DIR, matches[0])).convert("RGBA")
+        raise FileNotFoundError("Token de logo expirado ou nao encontrado.")
+    safe_path = os.path.join(TEMP_LOGO_DIR, matches[0])
+    # Garante que o path resolvido esta dentro do diretorio esperado
+    if not os.path.abspath(safe_path).startswith(os.path.abspath(TEMP_LOGO_DIR)):
+        raise FileNotFoundError("Token de logo invalido.")
+    return Image.open(safe_path).convert("RGBA")
 
 def logo_from_url(url):
-    req = urllib.request.Request(url, headers={"User-Agent": "WatermarkTool/3.1"})
-    with urllib.request.urlopen(req, timeout=12) as r:
-        data = r.read()
-    return Image.open(BytesIO(data)).convert("RGBA")
+    req = urllib.request.Request(url, headers={"User-Agent": "WatermarkTool/3.2"})
+    with urllib.request.urlopen(req, timeout=15) as r:
+        data = r.read(UPLOAD_MAX_BYTES + 1)
+    if len(data) > UPLOAD_MAX_BYTES:
+        raise ValueError(f"Imagem da URL muito grande (max {UPLOAD_MAX_BYTES//1024//1024} MB).")
+    try:
+        return Image.open(BytesIO(data)).convert("RGBA")
+    except Exception:
+        raise ValueError("URL nao retornou uma imagem valida.")
 
 def resolve_watermark(form, files_dict, ref_size=500, scale_pct=15):
     wm_type = (form.get("wm_type") or "image").strip()
@@ -521,12 +624,28 @@ def resolve_watermark(form, files_dict, ref_size=500, scale_pct=15):
         return logo_from_url(url)
     raise ValueError("Nenhuma logo fornecida.")
 
+_VALID_POSITIONS = frozenset({
+    "top-left", "top-center", "top-right",
+    "center",
+    "bottom-left", "bottom-center", "bottom-right",
+})
+
 def get_params(form):
+    def _clamp(key, default, lo, hi):
+        try:
+            return max(lo, min(hi, float(form.get(key) or default)))
+        except (ValueError, TypeError):
+            return float(default)
+
+    pos = (form.get("position") or CFG["default_position"]).strip()
+    if pos not in _VALID_POSITIONS:
+        pos = CFG["default_position"]
+
     return (
-        form.get("position") or CFG["default_position"],
-        float(form.get("scale_pct")   or CFG["default_scale_pct"]),
-        float(form.get("margin_pct")  or CFG["default_margin_pct"]),
-        float(form.get("opacity_pct") or CFG["default_opacity_pct"]),
+        pos,
+        _clamp("scale_pct",   CFG["default_scale_pct"],   1,   200),
+        _clamp("margin_pct",  CFG["default_margin_pct"],   0,    50),
+        _clamp("opacity_pct", CFG["default_opacity_pct"],  1,   100),
     )
 
 def file_ext(name):
@@ -534,10 +653,20 @@ def file_ext(name):
 
 
 # ─── Job runner ───────────────────────────────────────────────────────────────
+def _try_unlink(path):
+    try:
+        if path and os.path.exists(path):
+            os.unlink(path)
+    except Exception:
+        pass
+
 def run_job(jid, tmp_files, watermark, position, scale_pct,
             margin_pct, opacity_pct, motion,
-            endscreen_path=None, endscreen_duration=5):
-    """Processa todos os arquivos em background."""
+            endscreen_path=None, endscreen_duration=5,
+            endscreen_owned=False):
+    """Processa todos os arquivos em background.
+    endscreen_owned=True indica que este job criou o arquivo e deve deletá-lo ao terminar.
+    """
     try:
         job_update(jid, status="running", progress=2, message="Iniciando...")
         total = len(tmp_files)
@@ -609,16 +738,15 @@ def run_job(jid, tmp_files, watermark, position, scale_pct,
     except Exception as e:
         job_update(jid, status="error", message=f"Erro: {e}", error=str(e))
         for _, tp in (tmp_files or []):
-            try:
-                os.unlink(tp)
-            except Exception:
-                pass
+            _try_unlink(tp)
+    finally:
+        if endscreen_owned:
+            _try_unlink(endscreen_path)
 
 
 # ─── Rotas API ────────────────────────────────────────────────────────────────
 @app.post("/api/process")
 def api_process():
-    job_cleanup()
     position, scale_pct, margin_pct, opacity_pct = get_params(request.form)
     motion = request.form.get("wm_motion", "none")
 
@@ -656,17 +784,23 @@ def api_process():
 
     # ── Tela final (endscreen) ──
     endscreen_path = None
-    endscreen_duration = int(request.form.get("endscreen_duration", 0) or 0)
+    endscreen_owned = False  # indica se run_job deve deletar o arquivo ao terminar
+    endscreen_duration = max(0, min(60, int(request.form.get("endscreen_duration", 0) or 0)))
     es_file = request.files.get("endscreen_file")
     es_token = (request.form.get("endscreen_token") or "").strip()
     if es_file and es_file.filename and endscreen_duration > 0:
         fd_es, endscreen_path = tempfile.mkstemp(suffix=os.path.splitext(es_file.filename)[1].lower() or ".png")
         os.close(fd_es)
         es_file.save(endscreen_path)
+        endscreen_owned = True
     elif es_token and endscreen_duration > 0:
-        matches = [f for f in os.listdir(TEMP_LOGO_DIR) if f.startswith(es_token)]
-        if matches:
-            endscreen_path = os.path.join(TEMP_LOGO_DIR, matches[0])
+        try:
+            if re.fullmatch(r"[0-9a-f]{32}", es_token):
+                matches = [f for f in os.listdir(TEMP_LOGO_DIR) if f.startswith(es_token)]
+                if matches:
+                    endscreen_path = os.path.join(TEMP_LOGO_DIR, matches[0])
+        except Exception:
+            pass
 
     wm = None
     try:
@@ -684,7 +818,11 @@ def api_process():
     threading.Thread(
         target=run_job,
         args=(jid, tmp_files, wm, position, scale_pct, margin_pct, opacity_pct, motion),
-        kwargs={"endscreen_path": endscreen_path, "endscreen_duration": endscreen_duration},
+        kwargs={
+            "endscreen_path":     endscreen_path,
+            "endscreen_duration": endscreen_duration,
+            "endscreen_owned":    endscreen_owned,
+        },
         daemon=True,
     ).start()
 
@@ -693,9 +831,13 @@ def api_process():
 
 @app.get("/api/progress/<jid>")
 def api_progress(jid):
+    # Valida formato do job ID antes de abrir a stream SSE
+    if not re.fullmatch(r"[0-9a-f]{32}", jid or ""):
+        abort(400)
+
     def stream():
         last = -1
-        deadline = time.time() + 600
+        deadline = time.time() + 3600  # max 1h (videos longos)
         while time.time() < deadline:
             j = job_get(jid)
             if not j:
@@ -828,18 +970,30 @@ def guebly_process():
 @app.post("/upload-logo")
 def upload_logo():
     f = request.files.get("logo_file")
-    if not f:
+    if not f or not f.filename:
         return jsonify(error="Nenhum arquivo enviado"), 400
     ext = os.path.splitext(f.filename)[1].lower()
     if ext not in (".png", ".jpg", ".jpeg", ".webp"):
         return jsonify(error="Use PNG, JPG ou WEBP."), 400
+    data = f.read(UPLOAD_MAX_BYTES + 1)
+    if len(data) > UPLOAD_MAX_BYTES:
+        return jsonify(error=f"Arquivo muito grande (max {UPLOAD_MAX_BYTES//1024//1024} MB)."), 400
+    # Valida que e realmente uma imagem
+    try:
+        img = Image.open(BytesIO(data))
+        img.verify()
+    except Exception:
+        return jsonify(error="Arquivo invalido ou corrompido — use PNG, JPG ou WEBP."), 400
     token = uuid.uuid4().hex
-    f.save(os.path.join(TEMP_LOGO_DIR, f"{token}{ext}"))
+    dest = os.path.join(TEMP_LOGO_DIR, f"{token}{ext}")
+    with open(dest, "wb") as fh:
+        fh.write(data)
     return jsonify(token=token, ext=ext, preview_url=f"/temp-logo/{token}{ext}")
 
 @app.get("/temp-logo/<filename>")
 def temp_logo(filename):
-    if ".." in filename or "/" in filename:
+    # send_from_directory ja previne path traversal; validamos apenas o padrao esperado
+    if not re.fullmatch(r"[0-9a-f]{32}\.(png|jpg|jpeg|webp)", filename or ""):
         abort(404)
     return send_from_directory(TEMP_LOGO_DIR, filename)
 
@@ -847,6 +1001,12 @@ def temp_logo(filename):
 # ─── Start ────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    print(f"\n  WatermarkTool v3.1 - http://localhost:{port}")
-    print(f"  Painel interno  - http://localhost:{port}/guebly\n")
+    # Pre-aquece o cache do FFmpeg na inicializacao
+    try:
+        ffb = get_ffmpeg()
+        print(f"\n  WatermarkTool v3.2 — http://localhost:{port}")
+        print(f"  Painel interno  — http://localhost:{port}/guebly")
+        print(f"  FFmpeg          — {ffb}\n")
+    except RuntimeError as e:
+        print(f"\n  [AVISO] {e}\n")
     app.run(host="0.0.0.0", port=port, debug=True)
