@@ -105,8 +105,37 @@ def job_cleanup():
                     pass
 
 # ─── Helpers imagem ───────────────────────────────────────────────────────────
-def _get_font(size):
-    candidates = []
+FONT_MAP = {
+    "arial-bold":   ["C:/Windows/Fonts/arialbd.ttf",
+                     "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+                     "/System/Library/Fonts/Supplemental/Arial Bold.ttf"],
+    "impact":       ["C:/Windows/Fonts/impact.ttf",
+                     "/usr/share/fonts/truetype/msttcorefonts/Impact.ttf"],
+    "georgia-bold": ["C:/Windows/Fonts/georgiab.ttf",
+                     "/usr/share/fonts/truetype/msttcorefonts/Georgia_Bold.ttf",
+                     "/System/Library/Fonts/Supplemental/Georgia Bold.ttf"],
+    "verdana-bold": ["C:/Windows/Fonts/verdanab.ttf",
+                     "/usr/share/fonts/truetype/msttcorefonts/Verdana_Bold.ttf"],
+    "trebuchet":    ["C:/Windows/Fonts/trebucbd.ttf",
+                     "/usr/share/fonts/truetype/msttcorefonts/Trebuchet_MS_Bold.ttf"],
+    "calibri-bold": ["C:/Windows/Fonts/calibrib.ttf"],
+    "segoe-bold":   ["C:/Windows/Fonts/segoeuib.ttf"],
+    "times-bold":   ["C:/Windows/Fonts/timesbd.ttf",
+                     "/usr/share/fonts/truetype/msttcorefonts/Times_New_Roman_Bold.ttf",
+                     "/System/Library/Fonts/Supplemental/Times New Roman Bold.ttf"],
+    "courier-bold": ["C:/Windows/Fonts/courbd.ttf",
+                     "/usr/share/fonts/truetype/msttcorefonts/Courier_New_Bold.ttf"],
+}
+
+def _get_font(size, font_name=None):
+    if font_name and font_name in FONT_MAP:
+        for p in FONT_MAP[font_name]:
+            if os.path.exists(p):
+                try:
+                    return ImageFont.truetype(p, size)
+                except Exception:
+                    pass
+    # fallback padrão por plataforma
     if sys.platform == "win32":
         candidates = ["C:/Windows/Fonts/arialbd.ttf",
                       "C:/Windows/Fonts/arial.ttf",
@@ -149,7 +178,7 @@ def place_logo(bw, bh, lw, lh, margin, position):
             "center": (cx, cy), "bottom-left": (m, b),
             "bottom-center": (cx, b), "bottom-right": (r, b)}.get(position, (r, b))
 
-def text_to_wm_image(text, color, bg_color, bg_opacity, ref_size, scale_pct=15):
+def text_to_wm_image(text, color, bg_color, bg_opacity, ref_size, scale_pct=15, wm_font=None):
     """
     Gera imagem RGBA com o texto.
     O tamanho final da imagem ja corresponde ao tamanho real no output:
@@ -158,7 +187,7 @@ def text_to_wm_image(text, color, bg_color, bg_opacity, ref_size, scale_pct=15):
     """
     # Mesmo calculo que o canvas JS: ref * scale/100 * 0.55
     fs = max(12, int(ref_size * scale_pct / 100 * 0.55))
-    font = _get_font(fs)
+    font = _get_font(fs, font_name=wm_font)
     dummy = Image.new("RGBA", (1, 1))
     bbox = ImageDraw.Draw(dummy).textbbox((0, 0), text, font=font)
     px, py = max(4, fs // 4), max(2, fs // 6)
@@ -479,6 +508,7 @@ def resolve_watermark(form, files_dict, ref_size=500, scale_pct=15):
             int(form.get("wm_bg_opacity", 0) or 0),
             ref_size,
             scale_pct,
+            wm_font=(form.get("wm_font") or "arial-bold").strip(),
         )
     f = files_dict.get("logo_file_inline")
     if f and f.filename:
