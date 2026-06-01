@@ -214,6 +214,23 @@
       margin-top:8px;line-height:1.55;
     }
 
+    /* ─── Action Cards ────────────────────────────────────────────────────── */
+    .acards{display:flex;flex-direction:column;gap:8px}
+    .acard{border:1.5px solid var(--b);border-radius:14px;overflow:hidden;transition:border-color .25s,box-shadow .25s}
+    .acard.open{border-color:rgba(152,84,241,.35);box-shadow:0 0 0 3px rgba(152,84,241,.06)}
+    .acard-h{display:flex;align-items:center;gap:10px;padding:14px 16px;cursor:pointer;transition:background .15s;user-select:none}
+    .acard-h:hover{background:rgba(255,255,255,.03)}
+    .acard-ico{font-size:20px;flex-shrink:0}
+    .acard-mid{flex:1;min-width:0}
+    .acard-t{font-size:13px;font-weight:600;color:var(--t);line-height:1.2}
+    .acard-d{font-size:10px;color:var(--md);margin-top:2px}
+    .acard-badge{width:7px;height:7px;border-radius:50%;background:var(--g);display:none;flex-shrink:0;box-shadow:0 0 6px rgba(74,222,128,.5)}
+    .acard-badge.vis{display:block}
+    .acard-arr{font-size:11px;color:var(--m);transition:transform .25s;flex-shrink:0}
+    .acard.open .acard-arr{transform:rotate(90deg)}
+    .acard-b{display:none;padding:0 16px 16px}
+    .acard.open .acard-b{display:block}
+
     /* ─── CTA ─────────────────────────────────────────────────────────────── */
     .cta{
       width:100%;padding:15px;
@@ -335,7 +352,7 @@
       <span class="logo-sub">Imagens &amp; Videos</span>
     </div>
     <div class="pills">
-      <span class="pill">v3.2</span>
+      <span class="pill">v3.3</span>
       <span class="pill p">Open Source</span>
     </div>
   </div>
@@ -369,196 +386,224 @@
 
         <div class="div"></div>
 
-        <!-- Tipo de WM -->
-        <div class="sl" style="margin-top:0">Tipo de Marca d'Agua</div>
-        <div class="tabs" id="wmTabs">
-          <div class="tab active" data-wm="upload">&#128193; Arquivo</div>
-          <div class="tab" data-wm="url">&#128279; URL</div>
-          <div class="tab" data-wm="text">&#9998; Texto</div>
-        </div>
-        <input type="hidden" name="wm_type" id="wmTypeH" value="image"/>
+        <!-- ── Action Cards ── -->
+        <div class="acards">
 
-        <!-- Tab arquivo -->
-        <div class="tp active" id="tp-upload">
-          <div class="dz" id="logoDrop">
-            <input type="file" id="logoFileIn" accept="image/png,image/jpeg,image/webp"/>
-            <div class="dz-i">&#127991;</div>
-            <div class="dz-t">Arraste a logo ou clique</div>
-            <div class="dz-h">PNG com transparencia recomendado</div>
-          </div>
-          <div class="lthumb" id="uploadThumb">
-            <img id="uploadThumbImg" src="" alt=""/>
-            <div class="lthumb-n" id="uploadThumbName"></div>
-          </div>
-          <input type="hidden" name="logo_token" id="logoToken"/>
-        </div>
-
-        <!-- Tab URL -->
-        <div class="tp" id="tp-url">
-          <div class="urow">
-            <input type="url" class="field" id="urlIn" placeholder="https://exemplo.com/logo.png"/>
-            <button type="button" class="bsm" id="loadUrlBtn">Carregar</button>
-          </div>
-          <div class="lthumb" id="urlThumb">
-            <img id="urlThumbImg" src="" alt="" crossorigin="anonymous"/>
-            <div class="lthumb-n" id="urlThumbName"></div>
-          </div>
-          <input type="hidden" name="logo_url" id="logoUrlH"/>
-        </div>
-
-        <!-- Tab texto -->
-        <div class="tp" id="tp-text">
-          <input type="text" class="field" name="wm_text" id="wmText"
-                 placeholder="Ex: (c) Guebly 2025  |  Confidencial" maxlength="80"/>
-
-          <!-- Seletor de fonte -->
-          <div class="sl" style="margin-top:12px">Fonte</div>
-          <div class="fontgrid" id="fontGrid">
-            <div class="fchip active" data-font="arial-bold"   style="font-family:Arial,sans-serif;font-weight:bold">Arial</div>
-            <div class="fchip"        data-font="impact"       style="font-family:Impact,sans-serif;font-weight:normal;letter-spacing:.02em">Impact</div>
-            <div class="fchip"        data-font="georgia-bold" style="font-family:Georgia,serif;font-weight:bold">Georgia</div>
-            <div class="fchip"        data-font="verdana-bold" style="font-family:Verdana,sans-serif;font-weight:bold;font-size:11px">Verdana</div>
-            <div class="fchip"        data-font="trebuchet"    style="font-family:'Trebuchet MS',sans-serif;font-weight:bold">Trebuchet</div>
-            <div class="fchip"        data-font="calibri-bold" style="font-family:Calibri,sans-serif;font-weight:bold">Calibri</div>
-            <div class="fchip"        data-font="segoe-bold"   style="font-family:'Segoe UI',sans-serif;font-weight:bold;font-size:11px">Segoe UI</div>
-            <div class="fchip"        data-font="times-bold"   style="font-family:'Times New Roman',serif;font-weight:bold">Times</div>
-            <div class="fchip"        data-font="courier-bold" style="font-family:'Courier New',monospace;font-weight:bold;font-size:11px">Courier</div>
-          </div>
-          <input type="hidden" name="wm_font" id="wmFontH" value="arial-bold"/>
-
-          <div class="trow">
-            <div style="flex:1">
-              <div class="slh"><span class="sl-label">Opac. fundo</span><span class="sl-val" id="bgOpV">0%</span></div>
-              <input type="range" class="field" name="wm_bg_opacity" id="wmBgOp" min="0" max="100" step="5" value="0"/>
+          <!-- ══ Card: Marca d'Agua ══ -->
+          <div class="acard open" id="acWm">
+            <div class="acard-h" data-card="acWm">
+              <span class="acard-ico">&#127991;</span>
+              <div class="acard-mid">
+                <div class="acard-t">Marca d'Agua</div>
+                <div class="acard-d">Logo, texto ou imagem sobre a midia</div>
+              </div>
+              <span class="acard-badge" id="badgeWm"></span>
+              <span class="acard-arr">&#9654;</span>
             </div>
-            <div class="ccol"><span class="sl-label">Texto</span>
-              <input type="color" class="field" name="wm_color" id="wmColor" value="#ffffff" style="width:44px;height:36px;padding:2px 4px"/>
+            <div class="acard-b">
+              <div class="tabs" id="wmTabs">
+                <div class="tab active" data-wm="upload">&#128193; Arquivo</div>
+                <div class="tab" data-wm="url">&#128279; URL</div>
+                <div class="tab" data-wm="text">&#9998; Texto</div>
+              </div>
+              <input type="hidden" name="wm_type" id="wmTypeH" value="image"/>
+
+              <div class="tp active" id="tp-upload">
+                <div class="dz" id="logoDrop">
+                  <input type="file" id="logoFileIn" accept="image/png,image/jpeg,image/webp"/>
+                  <div class="dz-i">&#127991;</div>
+                  <div class="dz-t">Arraste a logo ou clique</div>
+                  <div class="dz-h">PNG com transparencia recomendado</div>
+                </div>
+                <div class="lthumb" id="uploadThumb">
+                  <img id="uploadThumbImg" src="" alt=""/>
+                  <div class="lthumb-n" id="uploadThumbName"></div>
+                </div>
+                <input type="hidden" name="logo_token" id="logoToken"/>
+              </div>
+
+              <div class="tp" id="tp-url">
+                <div class="urow">
+                  <input type="url" class="field" id="urlIn" placeholder="https://exemplo.com/logo.png"/>
+                  <button type="button" class="bsm" id="loadUrlBtn">Carregar</button>
+                </div>
+                <div class="lthumb" id="urlThumb">
+                  <img id="urlThumbImg" src="" alt="" crossorigin="anonymous"/>
+                  <div class="lthumb-n" id="urlThumbName"></div>
+                </div>
+                <input type="hidden" name="logo_url" id="logoUrlH"/>
+              </div>
+
+              <div class="tp" id="tp-text">
+                <input type="text" class="field" name="wm_text" id="wmText"
+                       placeholder="Ex: (c) Guebly 2025  |  Confidencial" maxlength="80"/>
+                <div class="sl" style="margin-top:12px">Fonte</div>
+                <div class="fontgrid" id="fontGrid">
+                  <div class="fchip active" data-font="arial-bold"   style="font-family:Arial,sans-serif;font-weight:bold">Arial</div>
+                  <div class="fchip"        data-font="impact"       style="font-family:Impact,sans-serif;font-weight:normal;letter-spacing:.02em">Impact</div>
+                  <div class="fchip"        data-font="georgia-bold" style="font-family:Georgia,serif;font-weight:bold">Georgia</div>
+                  <div class="fchip"        data-font="verdana-bold" style="font-family:Verdana,sans-serif;font-weight:bold;font-size:11px">Verdana</div>
+                  <div class="fchip"        data-font="trebuchet"    style="font-family:'Trebuchet MS',sans-serif;font-weight:bold">Trebuchet</div>
+                  <div class="fchip"        data-font="calibri-bold" style="font-family:Calibri,sans-serif;font-weight:bold">Calibri</div>
+                  <div class="fchip"        data-font="segoe-bold"   style="font-family:'Segoe UI',sans-serif;font-weight:bold;font-size:11px">Segoe UI</div>
+                  <div class="fchip"        data-font="times-bold"   style="font-family:'Times New Roman',serif;font-weight:bold">Times</div>
+                  <div class="fchip"        data-font="courier-bold" style="font-family:'Courier New',monospace;font-weight:bold;font-size:11px">Courier</div>
+                </div>
+                <input type="hidden" name="wm_font" id="wmFontH" value="arial-bold"/>
+                <div class="trow">
+                  <div style="flex:1">
+                    <div class="slh"><span class="sl-label">Opac. fundo</span><span class="sl-val" id="bgOpV">0%</span></div>
+                    <input type="range" class="field" name="wm_bg_opacity" id="wmBgOp" min="0" max="100" step="5" value="0"/>
+                  </div>
+                  <div class="ccol"><span class="sl-label">Texto</span>
+                    <input type="color" class="field" name="wm_color" id="wmColor" value="#ffffff" style="width:44px;height:36px;padding:2px 4px"/>
+                  </div>
+                  <div class="ccol"><span class="sl-label">Fundo</span>
+                    <input type="color" class="field" name="wm_bg_color" id="wmBgColor" value="#000000" style="width:44px;height:36px;padding:2px 4px"/>
+                  </div>
+                </div>
+              </div>
+
+              <div class="div" style="margin:14px 0"></div>
+
+              <!-- Posicao (imagem) -->
+              <div id="imgSection">
+                <div class="sl" style="margin-top:0">Posicao</div>
+                <div class="pgrid" id="posGrid">
+                  <div class="chip" data-pos="top-left">&#8598;</div>
+                  <div class="chip" data-pos="top-center">&#8593;</div>
+                  <div class="chip" data-pos="top-right">&#8599;</div>
+                  <div class="chip" data-pos="center">&#10022;</div>
+                  <div class="chip" data-pos="bottom-left">&#8601;</div>
+                  <div class="chip" data-pos="bottom-center">&#8595;</div>
+                  <div class="chip" data-pos="bottom-right">&#8600;</div>
+                </div>
+                <input type="hidden" name="position" id="posH" value="{{ cfg.default_position }}"/>
+              </div>
+
+              <!-- Animacao (video) -->
+              <div id="vidSection" style="display:none">
+                <div class="sl" style="margin-top:0">Animacao no video</div>
+                <div class="mgrid" id="motGrid">
+                  <div class="mchip active" data-mot="none">Estatico<span class="sub">posicao fixa</span></div>
+                  <div class="mchip" data-mot="left-to-right">Esq &#8594; Dir<span class="sub">ticker horizontal</span></div>
+                  <div class="mchip" data-mot="right-to-left">Dir &#8594; Esq<span class="sub">ticker invertido</span></div>
+                  <div class="mchip" data-mot="bottom-to-top">Baixo &#8593; Cima<span class="sub">creditos / legenda</span></div>
+                  <div class="mchip" data-mot="top-to-bottom">Cima &#8595; Baixo<span class="sub">entrada por cima</span></div>
+                  <div class="mchip" data-mot="pendulum-x">Pendulo H<span class="sub">vai e vem horizontal</span></div>
+                  <div class="mchip" data-mot="pendulum-y">Pendulo V<span class="sub">sobe e desce</span></div>
+                  <div class="mchip" data-mot="bounce-x">Bounce H<span class="sub">rebote lateral</span></div>
+                  <div class="mchip" data-mot="bounce-y">Bounce V<span class="sub">rebote vertical</span></div>
+                  <div class="mchip" data-mot="diagonal-bounce">Diagonal Bounce<span class="sub">rebote diagonal (DVD)</span></div>
+                  <div class="mchip" data-mot="diagonal-linear">Diagonal Linear<span class="sub">atravessa a tela</span></div>
+                </div>
+                <input type="hidden" name="wm_motion" id="wmMotion" value="none"/>
+                <div id="vidPosWrap" style="margin-top:12px">
+                  <div class="sl" style="margin-top:0">Posicao (quando estatico)</div>
+                  <div class="pgrid" id="posGridV">
+                    <div class="chip" data-pos="top-left">&#8598;</div>
+                    <div class="chip" data-pos="top-center">&#8593;</div>
+                    <div class="chip" data-pos="top-right">&#8599;</div>
+                    <div class="chip" data-pos="center">&#10022;</div>
+                    <div class="chip" data-pos="bottom-left">&#8601;</div>
+                    <div class="chip" data-pos="bottom-center">&#8595;</div>
+                    <div class="chip" data-pos="bottom-right">&#8600;</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="div" style="margin:14px 0"></div>
+
+              <div class="slrow">
+                <div class="slb">
+                  <div class="slh"><span class="sl-label">Escala</span><span class="sl-val" id="scaleV">{{ cfg.default_scale_pct }}%</span></div>
+                  <input type="range" class="field" name="scale_pct" id="scaleIn" min="1" max="100" step="1" value="{{ cfg.default_scale_pct }}"/>
+                </div>
+                <div class="slb">
+                  <div class="slh"><span class="sl-label">Opacidade</span><span class="sl-val" id="opacityV">{{ cfg.default_opacity_pct }}%</span></div>
+                  <input type="range" class="field" name="opacity_pct" id="opacityIn" min="20" max="100" step="1" value="{{ cfg.default_opacity_pct }}"/>
+                </div>
+              </div>
+              <div class="slb" style="margin-top:14px">
+                <div class="slh"><span class="sl-label">Margem</span><span class="sl-val" id="marginV">{{ cfg.default_margin_pct }}%</span></div>
+                <input type="range" class="field" name="margin_pct" id="marginIn" min="0" max="12" step="0.5" value="{{ cfg.default_margin_pct }}"/>
+              </div>
             </div>
-            <div class="ccol"><span class="sl-label">Fundo</span>
-              <input type="color" class="field" name="wm_bg_color" id="wmBgColor" value="#000000" style="width:44px;height:36px;padding:2px 4px"/>
+          </div>
+
+          <!-- ══ Card: Inserir Video ══ -->
+          <div class="acard" id="acInsert" style="display:none">
+            <div class="acard-h" data-card="acInsert">
+              <span class="acard-ico">&#127902;</span>
+              <div class="acard-mid">
+                <div class="acard-t">Inserir Video</div>
+                <div class="acard-d">Adiciona outro video no inicio, meio ou final</div>
+              </div>
+              <span class="acard-badge" id="badgeInsert"></span>
+              <span class="acard-arr">&#9654;</span>
+            </div>
+            <div class="acard-b">
+              <div class="dz" id="ivDrop" style="padding:12px 10px">
+                <input type="file" id="ivFileIn" accept="video/mp4,video/quicktime,video/x-matroska,video/webm,.mp4,.mov,.mkv,.avi,.webm,.flv,.wmv"/>
+                <div class="dz-i">&#127902;</div>
+                <div class="dz-t">Arraste o video para inserir</div>
+                <div class="dz-h">MP4 MOV MKV AVI WEBM &mdash; ate 200 MB</div>
+              </div>
+              <div class="lthumb" id="ivThumb">
+                <div class="lthumb-n" id="ivThumbName"></div>
+              </div>
+              <input type="hidden" name="insert_video_token" id="ivToken"/>
+
+              <div class="sl" style="margin-top:12px">Posicao da insercao</div>
+              <div class="mgrid" id="ivPosGrid" style="grid-template-columns:1fr 1fr 1fr">
+                <div class="mchip" data-ivpos="inicio">Inicio<span class="sub">antes do video</span></div>
+                <div class="mchip" data-ivpos="meio">Meio<span class="sub">no tempo escolhido</span></div>
+                <div class="mchip active" data-ivpos="final">Final<span class="sub">apos o video</span></div>
+              </div>
+              <input type="hidden" name="insert_position" id="ivPosH" value="final"/>
+
+              <div id="ivTimeWrap" style="display:none;margin-top:10px">
+                <div class="slh"><span class="sl-label">Inserir em</span><span class="sl-val" id="ivTimeV">50%</span></div>
+                <input type="range" class="field" name="insert_at_pct" id="ivTimeIn" min="1" max="99" step="1" value="50"/>
+                <div style="font-size:10px;color:var(--md);margin-top:4px" id="ivTimeSec"></div>
+              </div>
+
+              <div class="info-box" id="ivInfo" style="margin-top:8px">&#9432; O video sera inserido no <strong>final</strong> do video principal.</div>
             </div>
           </div>
-        </div>
 
-        <div class="div"></div>
-
-        <!-- Posicao (imagem) -->
-        <div id="imgSection">
-          <div class="sl" style="margin-top:0">Posicao (imagem)</div>
-          <div class="pgrid" id="posGrid">
-            <div class="chip" data-pos="top-left">&#8598;</div>
-            <div class="chip" data-pos="top-center">&#8593;</div>
-            <div class="chip" data-pos="top-right">&#8599;</div>
-            <div class="chip" data-pos="center">&#10022;</div>
-            <div class="chip" data-pos="bottom-left">&#8601;</div>
-            <div class="chip" data-pos="bottom-center">&#8595;</div>
-            <div class="chip" data-pos="bottom-right">&#8600;</div>
-          </div>
-          <input type="hidden" name="position" id="posH" value="{{ cfg.default_position }}"/>
-        </div>
-
-        <!-- Animacao (video) -->
-        <div id="vidSection" style="display:none">
-          <div class="sl" style="margin-top:0">Animacao no video</div>
-          <div class="mgrid" id="motGrid">
-            <div class="mchip active" data-mot="none">Estatico<span class="sub">posicao fixa</span></div>
-            <div class="mchip" data-mot="left-to-right">Esq &#8594; Dir<span class="sub">ticker horizontal</span></div>
-            <div class="mchip" data-mot="right-to-left">Dir &#8594; Esq<span class="sub">ticker invertido</span></div>
-            <div class="mchip" data-mot="bottom-to-top">Baixo &#8593; Cima<span class="sub">creditos / legenda</span></div>
-            <div class="mchip" data-mot="top-to-bottom">Cima &#8595; Baixo<span class="sub">entrada por cima</span></div>
-            <div class="mchip" data-mot="pendulum-x">Pendulo H<span class="sub">vai e vem horizontal</span></div>
-            <div class="mchip" data-mot="pendulum-y">Pendulo V<span class="sub">sobe e desce</span></div>
-            <div class="mchip" data-mot="bounce-x">Bounce H<span class="sub">rebote lateral</span></div>
-            <div class="mchip" data-mot="bounce-y">Bounce V<span class="sub">rebote vertical</span></div>
-            <div class="mchip" data-mot="diagonal-bounce">Diagonal Bounce<span class="sub">rebote diagonal (DVD)</span></div>
-            <div class="mchip" data-mot="diagonal-linear">Diagonal Linear<span class="sub">atravessa a tela</span></div>
-          </div>
-          <input type="hidden" name="wm_motion" id="wmMotion" value="none"/>
-          <div id="vidPosWrap" style="margin-top:12px">
-            <div class="sl" style="margin-top:0">Posicao (quando estatico)</div>
-            <div class="pgrid" id="posGridV">
-              <div class="chip" data-pos="top-left">&#8598;</div>
-              <div class="chip" data-pos="top-center">&#8593;</div>
-              <div class="chip" data-pos="top-right">&#8599;</div>
-              <div class="chip" data-pos="center">&#10022;</div>
-              <div class="chip" data-pos="bottom-left">&#8601;</div>
-              <div class="chip" data-pos="bottom-center">&#8595;</div>
-              <div class="chip" data-pos="bottom-right">&#8600;</div>
+          <!-- ══ Card: Tela Final ══ -->
+          <div class="acard" id="acEnd" style="display:none">
+            <div class="acard-h" data-card="acEnd">
+              <span class="acard-ico">&#128247;</span>
+              <div class="acard-mid">
+                <div class="acard-t">Tela Final</div>
+                <div class="acard-d">Imagem estatica exibida no final do video</div>
+              </div>
+              <span class="acard-badge" id="badgeEnd"></span>
+              <span class="acard-arr">&#9654;</span>
+            </div>
+            <div class="acard-b">
+              <div class="dz" id="esDrop" style="padding:12px 10px">
+                <input type="file" id="esFileIn" accept="image/png,image/jpeg,image/webp"/>
+                <div class="dz-i">&#128247;</div>
+                <div class="dz-t">Arraste a imagem da tela final</div>
+                <div class="dz-h">PNG JPG WEBP &mdash; aparece no final do video</div>
+              </div>
+              <div class="lthumb" id="esThumb">
+                <img id="esThumbImg" src="" alt=""/>
+                <div class="lthumb-n" id="esThumbName"></div>
+              </div>
+              <input type="hidden" name="endscreen_token" id="esToken"/>
+              <div class="slb" style="margin-top:10px">
+                <div class="slh"><span class="sl-label">Duracao da tela final</span><span class="sl-val" id="esDurV">5s</span></div>
+                <input type="range" class="field" name="endscreen_duration" id="esDurIn" min="0" max="15" step="1" value="5"/>
+              </div>
+              <div class="info-box" id="esInfo">&#9432; A imagem sera exibida por <strong>5 segundos</strong> no final do video. Coloque 0 para desativar.</div>
             </div>
           </div>
-        </div>
 
-        <!-- Tela final (video) -->
-        <div id="endscreenSection" style="display:none">
-          <div class="div"></div>
-          <div class="sl" style="margin-top:0">&#127916; Tela Final (imagem no fim do video)</div>
-          <div class="dz" id="esDrop" style="padding:12px 10px">
-            <input type="file" id="esFileIn" accept="image/png,image/jpeg,image/webp"/>
-            <div class="dz-i">&#128247;</div>
-            <div class="dz-t">Arraste a imagem da tela final</div>
-            <div class="dz-h">PNG JPG WEBP &mdash; aparece no final do video</div>
-          </div>
-          <div class="lthumb" id="esThumb">
-            <img id="esThumbImg" src="" alt=""/>
-            <div class="lthumb-n" id="esThumbName"></div>
-          </div>
-          <input type="hidden" name="endscreen_token" id="esToken"/>
-          <div class="slb" style="margin-top:10px">
-            <div class="slh"><span class="sl-label">Duracao da tela final</span><span class="sl-val" id="esDurV">5s</span></div>
-            <input type="range" class="field" name="endscreen_duration" id="esDurIn" min="0" max="15" step="1" value="5"/>
-          </div>
-          <div class="info-box" id="esInfo">&#9432; A imagem sera exibida por <strong>5 segundos</strong> no final do video. Coloque 0 para desativar.</div>
-        </div>
-
-        <!-- Inserir Video -->
-        <div id="insertVideoSection" style="display:none">
-          <div class="div"></div>
-          <div class="sl" style="margin-top:0">&#127916; Inserir Video</div>
-          <div class="dz" id="ivDrop" style="padding:12px 10px">
-            <input type="file" id="ivFileIn" accept="video/mp4,video/quicktime,video/x-matroska,video/webm,.mp4,.mov,.mkv,.avi,.webm,.flv,.wmv"/>
-            <div class="dz-i">&#127902;</div>
-            <div class="dz-t">Arraste o video para inserir</div>
-            <div class="dz-h">MP4 MOV MKV AVI WEBM &mdash; inserido no video principal</div>
-          </div>
-          <div class="lthumb" id="ivThumb">
-            <div class="lthumb-n" id="ivThumbName"></div>
-          </div>
-          <input type="hidden" name="insert_video_token" id="ivToken"/>
-
-          <div class="sl" style="margin-top:12px">Posicao da insercao</div>
-          <div class="mgrid" id="ivPosGrid" style="grid-template-columns:1fr 1fr 1fr">
-            <div class="mchip" data-ivpos="inicio">Inicio<span class="sub">antes do video</span></div>
-            <div class="mchip" data-ivpos="meio">Meio<span class="sub">no tempo escolhido</span></div>
-            <div class="mchip active" data-ivpos="final">Final<span class="sub">apos o video</span></div>
-          </div>
-          <input type="hidden" name="insert_position" id="ivPosH" value="final"/>
-
-          <div id="ivTimeWrap" style="display:none;margin-top:10px">
-            <div class="slh"><span class="sl-label">Inserir em</span><span class="sl-val" id="ivTimeV">50%</span></div>
-            <input type="range" class="field" name="insert_at_pct" id="ivTimeIn" min="1" max="99" step="1" value="50"/>
-            <div style="font-size:10px;color:var(--md);margin-top:4px" id="ivTimeSec"></div>
-          </div>
-
-          <div class="info-box" id="ivInfo" style="margin-top:8px">&#9432; O video sera inserido no <strong>final</strong> do video principal.</div>
-        </div>
-
-        <div class="div"></div>
-
-        <!-- Sliders gerais -->
-        <div class="slrow">
-          <div class="slb">
-            <div class="slh"><span class="sl-label">Escala</span><span class="sl-val" id="scaleV">{{ cfg.default_scale_pct }}%</span></div>
-            <input type="range" class="field" name="scale_pct" id="scaleIn" min="1" max="100" step="1" value="{{ cfg.default_scale_pct }}"/>
-          </div>
-          <div class="slb">
-            <div class="slh"><span class="sl-label">Opacidade</span><span class="sl-val" id="opacityV">{{ cfg.default_opacity_pct }}%</span></div>
-            <input type="range" class="field" name="opacity_pct" id="opacityIn" min="20" max="100" step="1" value="{{ cfg.default_opacity_pct }}"/>
-          </div>
-        </div>
-        <div class="slb" style="margin-top:14px">
-          <div class="slh"><span class="sl-label">Margem</span><span class="sl-val" id="marginV">{{ cfg.default_margin_pct }}%</span></div>
-          <input type="range" class="field" name="margin_pct" id="marginIn" min="0" max="12" step="0.5" value="{{ cfg.default_margin_pct }}"/>
-        </div>
+        </div><!-- .acards -->
 
         <button class="cta" type="submit" id="submitBtn">&#8595; Aplicar e baixar</button>
         <div class="cta-m">1 arquivo = PNG/MP4 &nbsp;&middot;&nbsp; Varios = ZIP automatico</div>
@@ -680,7 +725,6 @@ const esThumb     = document.getElementById('esThumb');
 const esThumbImg  = document.getElementById('esThumbImg');
 const esThumbName = document.getElementById('esThumbName');
 const esInfo      = document.getElementById('esInfo');
-const endscreenSection = document.getElementById('endscreenSection');
 const ivFileIn    = document.getElementById('ivFileIn');
 const ivToken     = document.getElementById('ivToken');
 const ivThumb     = document.getElementById('ivThumb');
@@ -692,7 +736,12 @@ const ivTimeIn    = document.getElementById('ivTimeIn');
 const ivTimeV     = document.getElementById('ivTimeV');
 const ivTimeSec   = document.getElementById('ivTimeSec');
 const ivInfo      = document.getElementById('ivInfo');
-const insertVideoSection = document.getElementById('insertVideoSection');
+const acWm        = document.getElementById('acWm');
+const acInsert    = document.getElementById('acInsert');
+const acEnd       = document.getElementById('acEnd');
+const badgeWm     = document.getElementById('badgeWm');
+const badgeInsert = document.getElementById('badgeInsert');
+const badgeEnd    = document.getElementById('badgeEnd');
 
 let baseImg=null, logoImg=null, activeWm='upload', toastTmr=null;
 let isVideoBase=false, videoEl=null, selectedFiles=[];
@@ -734,9 +783,25 @@ document.querySelectorAll('#wmTabs .tab').forEach(t=>{
     wmTypeH.value=activeWm==='text'?'text':'image';
     if(activeWm!=='upload') logoToken.value='';
     if(activeWm!=='url'){ logoUrlH.value=''; if(activeWm!=='upload') logoImg=null; }
-    schedDraw();
+    schedDraw();updateBadges();
   });
 });
+
+// ─── Card toggle ─────────────────────────────────────────────────────────────
+document.querySelectorAll('.acard-h').forEach(h=>{
+  h.addEventListener('click',()=>{
+    const card=document.getElementById(h.dataset.card);
+    if(card) card.classList.toggle('open');
+  });
+});
+
+// ─── Badges (indicadores verdes) ─────────────────────────────────────────────
+function updateBadges(){
+  const hasLogo=(activeWm==='upload'&&logoToken.value)||(activeWm==='url'&&logoUrlH.value)||(activeWm==='text'&&wmText.value.trim());
+  badgeWm.classList.toggle('vis',!!hasLogo);
+  badgeInsert.classList.toggle('vis',!!ivToken.value);
+  badgeEnd.classList.toggle('vis',!!(esToken.value&&parseInt(esDurIn.value)>0));
+}
 
 // ─── Secoes imagem/video ──────────────────────────────────────────────────────
 function updateSections(){
@@ -744,14 +809,15 @@ function updateSections(){
     imgSection.style.display='none';
     vidSection.style.display='block';
     vidPosWrap.style.display=activeMotion==='none'?'block':'none';
-    endscreenSection.style.display='block';
-    insertVideoSection.style.display='block';
+    acInsert.style.display='';
+    acEnd.style.display='';
   } else {
     imgSection.style.display='block';
     vidSection.style.display='none';
-    endscreenSection.style.display='none';
-    insertVideoSection.style.display='none';
+    acInsert.style.display='none';
+    acEnd.style.display='none';
   }
+  updateBadges();
 }
 
 // ─── Grade posicao ────────────────────────────────────────────────────────────
@@ -792,12 +858,13 @@ function upLabels(){
 }
 upLabels();
 [scaleIn,opacityIn,marginIn,wmBgOp].forEach(r=>r.addEventListener('input',()=>{upLabels();schedDraw();}));
-[wmText,wmColor,wmBgColor].forEach(el=>el.addEventListener('input',schedDraw));
+[wmText,wmColor,wmBgColor].forEach(el=>el.addEventListener('input',()=>{schedDraw();updateBadges();}));
 
 // ─── Tela final ───────────────────────────────────────────────────────────────
 esDurIn.addEventListener('input',()=>{
   esDurV.textContent=esDurIn.value+'s';
   esInfo.innerHTML='&#9432; A imagem sera exibida por <strong>'+esDurIn.value+' segundos</strong> no final do video.'+(esDurIn.value==='0'?' (desativado)':'');
+  updateBadges();
 });
 esFileIn.addEventListener('change',e=>{
   const f=e.target.files[0]; if(!f) return;
@@ -808,7 +875,7 @@ esFileIn.addEventListener('change',e=>{
   fetch('/upload-logo',{method:'POST',body:fd})
     .then(r=>r.json()).then(d=>{
       if(d.error){toast('Erro: '+d.error,'err');return;}
-      esToken.value=d.token; toast('Tela final carregada');
+      esToken.value=d.token; toast('Tela final carregada');updateBadges();
     }).catch(()=>toast('Falha no upload da tela final','err'));
 });
 
@@ -824,7 +891,7 @@ ivFileIn.addEventListener('change',e=>{
       ivDuration=d.duration||0;
       ivThumbName.textContent=d.filename+' ('+ivDuration+'s)';
       updateIvTimeSec();
-      toast('Video para insercao carregado');
+      toast('Video para insercao carregado');updateBadges();
     }).catch(()=>{toast('Falha no upload do video','err');ivThumb.classList.remove('vis');});
 });
 ivPosGrid.querySelectorAll('.mchip').forEach(c=>{
@@ -917,7 +984,7 @@ logoFileIn.addEventListener('change',e=>{
   fetch('/upload-logo',{method:'POST',body:fd})
     .then(r=>r.json()).then(d=>{
       if(d.error){toast('Erro: '+d.error,'err');return;}
-      logoToken.value=d.token;logoUrlH.value='';toast('Logo carregada');
+      logoToken.value=d.token;logoUrlH.value='';toast('Logo carregada');updateBadges();
     }).catch(()=>toast('Falha no upload da logo','err'));
 });
 
@@ -932,7 +999,7 @@ function loadFromUrl(){
     logoImg=img;logoUrlH.value=url;logoToken.value='';
     urlThumbImg.src=url;
     urlThumbName.textContent=url.split('/').pop().split('?')[0]||'logo';
-    urlThumb.classList.add('vis');schedDraw();toast('Logo carregada');
+    urlThumb.classList.add('vis');schedDraw();toast('Logo carregada');updateBadges();
     loadUrlBtn.textContent='Carregar';loadUrlBtn.disabled=false;
   };
   img.onerror=()=>{
