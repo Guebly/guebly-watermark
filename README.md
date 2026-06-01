@@ -1,4 +1,4 @@
-# WatermarkTool v3.0
+# WatermarkTool v3.3
 
 **Aplicador de marca d'água para imagens e vídeos — open source, sem dependências de nuvem.**
 
@@ -13,7 +13,10 @@
 | **Logo por arquivo** | Upload de PNG, JPG ou WEBP |
 | **Logo por URL** | Cole qualquer URL pública |
 | **Texto como marca d'água** | Cor, fundo e opacidade configuráveis |
+| **Inserir vídeo** | Insere um vídeo no início, meio ou final de outro vídeo |
+| **Tela final** | Imagem estática exibida ao final do vídeo (0-15s) |
 | **Pré-visualização local** | Canvas ao vivo para imagens, frame para vídeos |
+| **11 animações** | Estático, ticker, pêndulo, bounce, diagonal |
 | **7 posições** | 4 cantos + 3 centros |
 | **Escala / Opacidade / Margem** | Sliders em tempo real |
 | **Lote** | Múltiplas mídias → ZIP automático |
@@ -59,10 +62,23 @@ Funciona em imagens e vídeos.
 
 ---
 
+## Inserir vídeo dentro de outro
+
+Na seção **Inserir Vídeo** (aparece quando o arquivo base é vídeo):
+
+1. Arraste ou selecione o vídeo que deseja inserir (até 200 MB)
+2. Escolha a posição: **Início**, **Meio** ou **Final**
+3. Se escolher **Meio**, use o slider para definir o ponto exato (% da duração)
+4. O vídeo inserido é re-encodado para a mesma resolução do vídeo principal
+
+Funciona combinado com watermark e tela final — ou sozinho.
+
+---
+
 ## Marca d'água em vídeos
 
-O processamento usa **MoviePy + FFmpeg**. O tempo varia conforme duração e resolução.
-Vídeos curtos (< 30s em 1080p) levam cerca de 30–60 segundos.
+O processamento usa **FFmpeg direto** (sem MoviePy). O tempo varia conforme duração e resolução.
+Vídeos curtos (< 30s em 1080p) levam cerca de 10–30 segundos.
 
 Para vídeos longos em produção, use Gunicorn com timeout estendido:
 

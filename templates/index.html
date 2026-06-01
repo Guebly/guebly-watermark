@@ -510,6 +510,38 @@
           <div class="info-box" id="esInfo">&#9432; A imagem sera exibida por <strong>5 segundos</strong> no final do video. Coloque 0 para desativar.</div>
         </div>
 
+        <!-- Inserir Video -->
+        <div id="insertVideoSection" style="display:none">
+          <div class="div"></div>
+          <div class="sl" style="margin-top:0">&#127916; Inserir Video</div>
+          <div class="dz" id="ivDrop" style="padding:12px 10px">
+            <input type="file" id="ivFileIn" accept="video/mp4,video/quicktime,video/x-matroska,video/webm,.mp4,.mov,.mkv,.avi,.webm,.flv,.wmv"/>
+            <div class="dz-i">&#127902;</div>
+            <div class="dz-t">Arraste o video para inserir</div>
+            <div class="dz-h">MP4 MOV MKV AVI WEBM &mdash; inserido no video principal</div>
+          </div>
+          <div class="lthumb" id="ivThumb">
+            <div class="lthumb-n" id="ivThumbName"></div>
+          </div>
+          <input type="hidden" name="insert_video_token" id="ivToken"/>
+
+          <div class="sl" style="margin-top:12px">Posicao da insercao</div>
+          <div class="mgrid" id="ivPosGrid" style="grid-template-columns:1fr 1fr 1fr">
+            <div class="mchip" data-ivpos="inicio">Inicio<span class="sub">antes do video</span></div>
+            <div class="mchip" data-ivpos="meio">Meio<span class="sub">no tempo escolhido</span></div>
+            <div class="mchip active" data-ivpos="final">Final<span class="sub">apos o video</span></div>
+          </div>
+          <input type="hidden" name="insert_position" id="ivPosH" value="final"/>
+
+          <div id="ivTimeWrap" style="display:none;margin-top:10px">
+            <div class="slh"><span class="sl-label">Inserir em</span><span class="sl-val" id="ivTimeV">50%</span></div>
+            <input type="range" class="field" name="insert_at_pct" id="ivTimeIn" min="1" max="99" step="1" value="50"/>
+            <div style="font-size:10px;color:var(--md);margin-top:4px" id="ivTimeSec"></div>
+          </div>
+
+          <div class="info-box" id="ivInfo" style="margin-top:8px">&#9432; O video sera inserido no <strong>final</strong> do video principal.</div>
+        </div>
+
         <div class="div"></div>
 
         <!-- Sliders gerais -->
@@ -649,9 +681,22 @@ const esThumbImg  = document.getElementById('esThumbImg');
 const esThumbName = document.getElementById('esThumbName');
 const esInfo      = document.getElementById('esInfo');
 const endscreenSection = document.getElementById('endscreenSection');
+const ivFileIn    = document.getElementById('ivFileIn');
+const ivToken     = document.getElementById('ivToken');
+const ivThumb     = document.getElementById('ivThumb');
+const ivThumbName = document.getElementById('ivThumbName');
+const ivPosH      = document.getElementById('ivPosH');
+const ivPosGrid   = document.getElementById('ivPosGrid');
+const ivTimeWrap  = document.getElementById('ivTimeWrap');
+const ivTimeIn    = document.getElementById('ivTimeIn');
+const ivTimeV     = document.getElementById('ivTimeV');
+const ivTimeSec   = document.getElementById('ivTimeSec');
+const ivInfo      = document.getElementById('ivInfo');
+const insertVideoSection = document.getElementById('insertVideoSection');
 
 let baseImg=null, logoImg=null, activeWm='upload', toastTmr=null;
 let isVideoBase=false, videoEl=null, selectedFiles=[];
+let ivDuration=0;
 let activeMotion='none', currentSSE=null;
 let animFrame=null, animStart=null;
 const PREV_PERIOD = 5;
@@ -700,10 +745,12 @@ function updateSections(){
     vidSection.style.display='block';
     vidPosWrap.style.display=activeMotion==='none'?'block':'none';
     endscreenSection.style.display='block';
+    insertVideoSection.style.display='block';
   } else {
     imgSection.style.display='block';
     vidSection.style.display='none';
     endscreenSection.style.display='none';
+    insertVideoSection.style.display='none';
   }
 }
 
@@ -765,8 +812,51 @@ esFileIn.addEventListener('change',e=>{
     }).catch(()=>toast('Falha no upload da tela final','err'));
 });
 
+// ─── Inserir Video ────────────────────────────────────────────────────────────
+ivFileIn.addEventListener('change',e=>{
+  const f=e.target.files[0]; if(!f) return;
+  ivThumbName.textContent='Enviando '+f.name+'...';ivThumb.classList.add('vis');
+  const fd=new FormData(); fd.append('video_file',f);
+  fetch('/upload-insert-video',{method:'POST',body:fd})
+    .then(r=>r.json()).then(d=>{
+      if(d.error){toast('Erro: '+d.error,'err');ivThumb.classList.remove('vis');return;}
+      ivToken.value=d.token;
+      ivDuration=d.duration||0;
+      ivThumbName.textContent=d.filename+' ('+ivDuration+'s)';
+      updateIvTimeSec();
+      toast('Video para insercao carregado');
+    }).catch(()=>{toast('Falha no upload do video','err');ivThumb.classList.remove('vis');});
+});
+ivPosGrid.querySelectorAll('.mchip').forEach(c=>{
+  c.addEventListener('click',()=>{
+    ivPosGrid.querySelectorAll('.mchip').forEach(x=>x.classList.remove('active'));
+    c.classList.add('active');
+    ivPosH.value=c.dataset.ivpos;
+    ivTimeWrap.style.display=c.dataset.ivpos==='meio'?'block':'none';
+    const labels={'inicio':'inicio','meio':'meio ('+ivTimeIn.value+'%)','final':'final'};
+    ivInfo.innerHTML='&#9432; O video sera inserido no <strong>'+labels[c.dataset.ivpos]+'</strong> do video principal.';
+  });
+});
+ivTimeIn.addEventListener('input',()=>{
+  ivTimeV.textContent=ivTimeIn.value+'%';
+  updateIvTimeSec();
+  ivInfo.innerHTML='&#9432; O video sera inserido no <strong>meio ('+ivTimeIn.value+'%)</strong> do video principal.';
+});
+function updateIvTimeSec(){
+  if(ivDuration>0){
+    const sec=(ivDuration*parseInt(ivTimeIn.value)/100).toFixed(1);
+    ivTimeSec.textContent='~'+sec+'s de '+ivDuration+'s do video principal';
+  } else {
+    const vd=videoEl&&videoEl.duration&&isFinite(videoEl.duration)?videoEl.duration:0;
+    if(vd>0){
+      const sec=(vd*parseInt(ivTimeIn.value)/100).toFixed(1);
+      ivTimeSec.textContent='~'+sec+'s de '+vd.toFixed(1)+'s do video principal';
+    } else ivTimeSec.textContent='';
+  }
+}
+
 // ─── Drag ─────────────────────────────────────────────────────────────────────
-[mediaDrop,logoDrop,document.getElementById('esDrop')].forEach(dz=>{
+[mediaDrop,logoDrop,document.getElementById('esDrop'),document.getElementById('ivDrop')].forEach(dz=>{
   dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');});
   dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
   dz.addEventListener('drop',()=>dz.classList.remove('over'));
@@ -975,7 +1065,8 @@ document.getElementById('mainForm').addEventListener('submit',async e=>{
   e.preventDefault();
   const hasLogo=(activeWm==='upload'&&logoToken.value)||(activeWm==='url'&&logoUrlH.value)||(activeWm==='text'&&wmText.value.trim());
   const hasEndscreen=isVideoBase&&esToken.value&&parseInt(esDurIn.value)>0;
-  if(!hasLogo&&!hasEndscreen){toast(activeWm==='text'?"Digite o texto da marca d'agua":"Carregue uma logo ou tela final",'err');return;}
+  const hasInsertVideo=isVideoBase&&ivToken.value;
+  if(!hasLogo&&!hasEndscreen&&!hasInsertVideo){toast(activeWm==='text'?"Digite o texto da marca d'agua":"Carregue uma logo, tela final ou video para inserir",'err');return;}
   if(!selectedFiles.length){toast('Selecione ao menos um arquivo','err');return;}
   if(activeWm==='upload') logoUrlH.value='';
   if(activeWm==='url')    logoToken.value='';
@@ -998,6 +1089,9 @@ document.getElementById('mainForm').addEventListener('submit',async e=>{
   fd.append('endscreen_token',esToken.value||'');
   fd.append('endscreen_duration',isVideoBase?esDurIn.value:'0');
   if(isVideoBase&&esFileIn.files[0]&&parseInt(esDurIn.value)>0) fd.append('endscreen_file',esFileIn.files[0]);
+  fd.append('insert_video_token',isVideoBase?ivToken.value||'':'');
+  fd.append('insert_position',isVideoBase?ivPosH.value:'final');
+  fd.append('insert_at_pct',ivTimeIn.value||'50');
   selectedFiles.forEach(f=>fd.append('images',f));
   let jobId;
   try{

@@ -24,10 +24,14 @@ with open("config.json", "r", encoding="utf-8") as f:
 TEMP_LOGO_DIR = os.path.join(tempfile.gettempdir(), "wm_logos")
 os.makedirs(TEMP_LOGO_DIR, exist_ok=True)
 
+TEMP_VIDEO_DIR = os.path.join(tempfile.gettempdir(), "wm_insert_videos")
+os.makedirs(TEMP_VIDEO_DIR, exist_ok=True)
+
 VIDEO_EXTS = {".mp4", ".avi", ".mov", ".mkv", ".webm", ".m4v", ".flv", ".wmv"}
 IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".webp", ".bmp", ".tiff", ".tif", ".gif"}
 
 UPLOAD_MAX_BYTES = 10 * 1024 * 1024  # 10 MB por logo/endscreen
+INSERT_VIDEO_MAX_BYTES = 200 * 1024 * 1024  # 200 MB por video de insercao
 
 # ─── FFmpeg — cache do binario na inicializacao ────────────────────────────────
 _FFMPEG_BIN: str | None = None
@@ -387,7 +391,9 @@ def _build_overlay_expr(vw, vh, lw, lh, margin, position, motion, period=ANIM_PE
 def process_video_ffmpeg(video_path, wm: Image.Image,
                          position, scale_pct, margin_pct, opacity_pct,
                          motion, progress_cb=None,
-                         endscreen_path=None, endscreen_duration=5):
+                         endscreen_path=None, endscreen_duration=5,
+                         insert_video_path=None, insert_position="final",
+                         insert_at_pct=50):
     """
     Aplica marca d'agua no video usando FFmpeg diretamente.
     Retorna caminho do arquivo de saida (mp4).
@@ -570,6 +576,81 @@ def process_video_ffmpeg(video_path, wm: Image.Image,
                 try: os.unlink(final_path)
                 except: pass
 
+    # ── Inserir video: concatena outro video em inicio/meio/final ──
+    if insert_video_path and os.path.exists(insert_video_path):
+        if progress_cb:
+            progress_cb(96, "Inserindo video...")
+
+        # Re-encoda o video de insercao para mesma resolucao/codec do principal
+        fd_iv, iv_reenc = tempfile.mkstemp(suffix=".mp4")
+        os.close(fd_iv)
+        iv_cmd = [
+            ffmpeg, "-y", "-hide_banner",
+            "-i", insert_video_path,
+            "-vf", f"scale={vw}:{vh}:force_original_aspect_ratio=decrease,"
+                   f"pad={vw}:{vh}:(ow-iw)/2:(oh-ih)/2:color=black,format=yuv420p",
+            "-c:v", "libx264", "-preset", "ultrafast", "-crf", "23",
+            "-c:a", "aac", "-b:a", "128k", "-ar", "44100", "-ac", "2",
+            "-pix_fmt", "yuv420p",
+            "-movflags", "+faststart",
+            iv_reenc,
+        ]
+        r = subprocess.run(iv_cmd, capture_output=True, text=True, errors="replace")
+        if r.returncode != 0:
+            _try_unlink(iv_reenc)
+        else:
+            segments = []
+            extra_temps = []
+
+            if insert_position == "inicio":
+                segments = [iv_reenc, out_path]
+            elif insert_position == "meio":
+                cut_sec = max(0.1, dur * insert_at_pct / 100)
+                fd_p1, part1 = tempfile.mkstemp(suffix=".mp4")
+                os.close(fd_p1)
+                fd_p2, part2 = tempfile.mkstemp(suffix=".mp4")
+                os.close(fd_p2)
+                subprocess.run(
+                    [ffmpeg, "-y", "-hide_banner", "-i", out_path,
+                     "-t", str(cut_sec), "-c", "copy",
+                     "-movflags", "+faststart", part1],
+                    capture_output=True, text=True, errors="replace"
+                )
+                subprocess.run(
+                    [ffmpeg, "-y", "-hide_banner",
+                     "-ss", str(cut_sec), "-i", out_path,
+                     "-c", "copy", "-avoid_negative_ts", "make_zero",
+                     "-movflags", "+faststart", part2],
+                    capture_output=True, text=True, errors="replace"
+                )
+                segments = [part1, iv_reenc, part2]
+                extra_temps = [part1, part2]
+            else:
+                segments = [out_path, iv_reenc]
+
+            fd_lst, lst_path = tempfile.mkstemp(suffix=".txt")
+            os.close(fd_lst)
+            with open(lst_path, "w") as lf:
+                for seg in segments:
+                    lf.write(f"file '{seg}'\n")
+            fd_final, final_path = tempfile.mkstemp(suffix=".mp4")
+            os.close(fd_final)
+            cat_cmd = [
+                ffmpeg, "-y", "-hide_banner",
+                "-f", "concat", "-safe", "0", "-i", lst_path,
+                "-c", "copy",
+                "-movflags", "+faststart",
+                final_path,
+            ]
+            rc = subprocess.run(cat_cmd, capture_output=True, text=True, errors="replace")
+            for p in [lst_path, iv_reenc] + extra_temps:
+                _try_unlink(p)
+            if rc.returncode == 0:
+                _try_unlink(out_path)
+                out_path = final_path
+            else:
+                _try_unlink(final_path)
+
     return out_path
 
 
@@ -663,7 +744,9 @@ def _try_unlink(path):
 def run_job(jid, tmp_files, watermark, position, scale_pct,
             margin_pct, opacity_pct, motion,
             endscreen_path=None, endscreen_duration=5,
-            endscreen_owned=False):
+            endscreen_owned=False,
+            insert_video_path=None, insert_position="final",
+            insert_at_pct=50, insert_video_owned=False):
     """Processa todos os arquivos em background.
     endscreen_owned=True indica que este job criou o arquivo e deve deletá-lo ao terminar.
     """
@@ -690,7 +773,10 @@ def run_job(jid, tmp_files, watermark, position, scale_pct,
                     tmp_path, watermark, position,
                     scale_pct, margin_pct, opacity_pct, motion, cb,
                     endscreen_path=endscreen_path,
-                    endscreen_duration=endscreen_duration
+                    endscreen_duration=endscreen_duration,
+                    insert_video_path=insert_video_path,
+                    insert_position=insert_position,
+                    insert_at_pct=insert_at_pct,
                 )
                 results.append((f"{base}_watermark.mp4", out))
             else:
@@ -742,6 +828,8 @@ def run_job(jid, tmp_files, watermark, position, scale_pct,
     finally:
         if endscreen_owned:
             _try_unlink(endscreen_path)
+        if insert_video_owned:
+            _try_unlink(insert_video_path)
 
 
 # ─── Rotas API ────────────────────────────────────────────────────────────────
@@ -802,17 +890,34 @@ def api_process():
         except Exception:
             pass
 
+    # ── Inserir video ──
+    insert_video_path = None
+    insert_video_owned = False
+    insert_position = (request.form.get("insert_position") or "final").strip()
+    if insert_position not in ("inicio", "meio", "final"):
+        insert_position = "final"
+    insert_at_pct = max(1, min(99, int(request.form.get("insert_at_pct", 50) or 50)))
+    iv_token = (request.form.get("insert_video_token") or "").strip()
+    if iv_token:
+        try:
+            if re.fullmatch(r"[0-9a-f]{32}", iv_token):
+                matches = [f for f in os.listdir(TEMP_VIDEO_DIR) if f.startswith(iv_token)]
+                if matches:
+                    insert_video_path = os.path.join(TEMP_VIDEO_DIR, matches[0])
+        except Exception:
+            pass
+
     wm = None
     try:
         wm = resolve_watermark(request.form, request.files, ref_size, scale_pct)
     except Exception:
-        pass  # watermark e opcional se tiver endscreen
+        pass  # watermark e opcional se tiver endscreen ou insert video
 
-    if wm is None and not endscreen_path:
+    if wm is None and not endscreen_path and not insert_video_path:
         for _, tp in tmp_files:
             try: os.unlink(tp)
             except Exception: pass
-        return jsonify(error="Envie uma marca d'agua ou uma tela final."), 400
+        return jsonify(error="Envie uma marca d'agua, tela final ou video para inserir."), 400
 
     jid = job_create()
     threading.Thread(
@@ -822,6 +927,10 @@ def api_process():
             "endscreen_path":     endscreen_path,
             "endscreen_duration": endscreen_duration,
             "endscreen_owned":    endscreen_owned,
+            "insert_video_path":  insert_video_path,
+            "insert_position":    insert_position,
+            "insert_at_pct":      insert_at_pct,
+            "insert_video_owned": insert_video_owned,
         },
         daemon=True,
     ).start()
@@ -996,6 +1105,35 @@ def temp_logo(filename):
     if not re.fullmatch(r"[0-9a-f]{32}\.(png|jpg|jpeg|webp)", filename or ""):
         abort(404)
     return send_from_directory(TEMP_LOGO_DIR, filename)
+
+
+# ─── Upload video de insercao ─────────────────────────────────────────────────
+@app.post("/upload-insert-video")
+def upload_insert_video():
+    """Recebe video temporario para insercao. Retorna token."""
+    f = request.files.get("video_file")
+    if not f or not f.filename:
+        return jsonify(error="Nenhum arquivo enviado"), 400
+    ext = os.path.splitext(f.filename)[1].lower()
+    if ext not in VIDEO_EXTS:
+        return jsonify(error="Use MP4, MOV, MKV, AVI ou WEBM."), 400
+    token = uuid.uuid4().hex
+    dest = os.path.join(TEMP_VIDEO_DIR, f"{token}{ext}")
+    f.save(dest)
+    fsize = os.path.getsize(dest)
+    if fsize > INSERT_VIDEO_MAX_BYTES:
+        _try_unlink(dest)
+        return jsonify(error=f"Video muito grande (max {INSERT_VIDEO_MAX_BYTES//1024//1024} MB)."), 400
+    # Valida que e realmente um video abrindo com ffprobe/ffmpeg
+    try:
+        ffb = get_ffmpeg()
+        info = probe_video(dest, ffb)
+        dur = info.get("duration", 0)
+    except Exception:
+        _try_unlink(dest)
+        return jsonify(error="Arquivo de video invalido ou corrompido."), 400
+    return jsonify(token=token, ext=ext, duration=round(dur, 1),
+                   filename=f.filename)
 
 
 # ─── Start ────────────────────────────────────────────────────────────────────
