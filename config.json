@@ -14,20 +14,21 @@
     {
       "id": "guebly-ltda",
       "name": "Guebly LTDA",
+      "logo_file": "guebly.png",
       "logo_url": "https://www.guebly.com.br/guebly.png",
       "color": "#7c3aed"
     },
     {
       "id": "guebly-studio",
       "name": "Guebly Studio",
-      "logo_url": "https://www.guebly.com.br/studio.png",
-      "color": "#6d28d9"
+      "logo_file": "guebly-studio.png",
+      "color": "#1d7cf2"
     },
     {
-      "id": "trocai",
-      "name": "Trocaí",
-      "logo_url": "",
-      "color": "#4f46e5"
+      "id": "guebly-studio-simbolo",
+      "name": "Guebly Studio (símbolo)",
+      "logo_file": "guebly-studio-simbolo.png",
+      "color": "#1d7cf2"
     },
     {
       "id": "guebly-games",
@@ -36,46 +37,34 @@
       "color": "#0ea5e9"
     },
     {
-      "id": "vendai",
-      "name": "Vendaí",
-      "logo_url": "",
-      "color": "#10b981"
-    },
-    {
       "id": "guebly-pay",
       "name": "Guebly Pay",
       "logo_url": "https://www.guebly.com.br/gueblypay.png",
       "color": "#f59e0b"
     },
     {
-      "id": "ayon-ltda",
-      "name": "Ayon LTDA",
-      "logo_url": "",
-      "color": "#ec4899"
-    },
-    {
-      "id": "ayon-studios",
-      "name": "Ayon Studios",
-      "logo_url": "https://www.guebly.com.br/ayonstudios.png",
-      "color": "#db2777"
-    },
-    {
-      "id": "ayon-plus",
-      "name": "Ayon+",
-      "logo_url": "",
-      "color": "#be185d"
-    },
-    {
-      "id": "ayon-academy",
-      "name": "Ayon Academy",
-      "logo_url": "",
-      "color": "#9d174d"
-    },
-    {
       "id": "guebly-contabil",
       "name": "Guebly Contábil",
       "logo_url": "https://www.guebly.com.br/contabil.png",
       "color": "#0891b2"
+    },
+    {
+      "id": "lirya-ltda",
+      "name": "Lirya LTDA",
+      "logo_url": "",
+      "color": "#ec4899"
+    },
+    {
+      "id": "lirya-plus",
+      "name": "Lirya+",
+      "logo_url": "",
+      "color": "#be185d"
+    },
+    {
+      "id": "lirya-academy",
+      "name": "Lirya Academy",
+      "logo_url": "",
+      "color": "#9d174d"
     },
     {
       "id": "sentrion",

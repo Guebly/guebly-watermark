@@ -668,6 +668,22 @@ def logo_from_token(token):
         raise FileNotFoundError("Token de logo invalido.")
     return Image.open(safe_path).convert("RGBA")
 
+def logo_from_file(filename):
+    """Carrega uma logo empacotada em static/img/ (funciona 100% offline).
+
+    Preferivel ao logo_url: sem esta opcao o app depende do site estar no ar,
+    o que contradiz a proposta de rodar tudo local.
+    """
+    if not re.fullmatch(r"[A-Za-z0-9._-]+", filename or ""):
+        raise FileNotFoundError("Nome de arquivo de logo invalido.")
+    base = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "img")
+    caminho = os.path.join(base, filename)
+    if not os.path.abspath(caminho).startswith(os.path.abspath(base)):
+        raise FileNotFoundError("Caminho de logo invalido.")
+    if not os.path.isfile(caminho):
+        raise FileNotFoundError(f"Logo '{filename}' nao encontrada em static/img/.")
+    return Image.open(caminho).convert("RGBA")
+
 def logo_from_url(url):
     req = urllib.request.Request(url, headers={"User-Agent": "WatermarkTool/3.2"})
     with urllib.request.urlopen(req, timeout=15) as r:
@@ -1008,8 +1024,14 @@ def guebly_process():
         wm = resolve_watermark(request.form, request.files)
     except ValueError:
         src   = company.get("logo_url", "")
+        arq   = company.get("logo_file", "")
         token = company.get("logo_token", "")
-        if token:
+        if arq:
+            try:
+                wm = logo_from_file(arq)
+            except FileNotFoundError as e:
+                abort(400, str(e))
+        elif token:
             try:
                 wm = logo_from_token(token)
             except FileNotFoundError:
