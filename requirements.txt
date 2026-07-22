@@ -2,3 +2,6 @@ flask>=3.0
 pillow>=10.0
 imageio-ffmpeg>=0.4.9
 numpy>=1.24
+
+# aplicativo de desktop (janela nativa) e empacotamento do .exe
+pywebview>=5.0

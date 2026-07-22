@@ -7,7 +7,9 @@ Animacoes de texto e logo em video via filtros FFmpeg.
 """
 
 from io import BytesIO
-import os, sys, re, json, math, time, uuid, shutil, zipfile
+import os
+import sys
+import json, sys, re, json, math, time, uuid, shutil, zipfile
 import tempfile, threading, datetime, subprocess, urllib.request
 from flask import (Flask, render_template, request, send_file,
                    jsonify, send_from_directory, abort, Response,
@@ -1003,6 +1005,63 @@ def api_download(jid):
 
 
 # ─── Rotas principais ─────────────────────────────────────────────────────────
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Versao e atualizacao automatica (consulta os Releases do GitHub)
+# ─────────────────────────────────────────────────────────────────────────────
+REPO_GITHUB = "Guebly/guebly-watermark"
+
+def _base_dir():
+    return getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
+
+def versao_atual() -> str:
+    try:
+        with open(os.path.join(_base_dir(), "VERSION"), encoding="utf-8") as f:
+            return f.read().strip()
+    except Exception:
+        return "0.0.0"
+
+APP_VERSION = versao_atual()
+
+def _num(v: str):
+    """'3.3.0' -> (3,3,0). Ignora um 'v' na frente e partes nao numericas."""
+    return tuple(int(x) for x in re.findall(r"\d+", (v or "").lstrip("vV"))[:3] or [0])
+
+@app.get("/api/version")
+def api_version():
+    return jsonify({"version": APP_VERSION})
+
+@app.get("/api/update-check")
+def api_update_check():
+    """Compara a versao local com o ultimo Release do GitHub.
+
+    Falha em silencio (tem_update=False): ficar sem internet nao pode
+    atrapalhar quem so quer aplicar uma marca d'agua.
+    """
+    try:
+        req = urllib.request.Request(
+            f"https://api.github.com/repos/{REPO_GITHUB}/releases/latest",
+            headers={"User-Agent": "GueblyWatermark", "Accept": "application/vnd.github+json"},
+        )
+        with urllib.request.urlopen(req, timeout=6) as r:
+            data = json.loads(r.read().decode("utf-8"))
+        ultima = data.get("tag_name") or data.get("name") or ""
+        exe = ""
+        for a in data.get("assets", []):
+            if str(a.get("name", "")).lower().endswith(".exe"):
+                exe = a.get("browser_download_url", "")
+                break
+        return jsonify({
+            "version": APP_VERSION,
+            "latest": ultima,
+            "tem_update": _num(ultima) > _num(APP_VERSION),
+            "download": exe or data.get("html_url", ""),
+            "notas": (data.get("body") or "")[:600],
+        })
+    except Exception:
+        return jsonify({"version": APP_VERSION, "latest": APP_VERSION,
+                        "tem_update": False, "download": "", "notas": ""})
+
 @app.get("/")
 def index():
     return render_template("index.html", cfg=CFG)

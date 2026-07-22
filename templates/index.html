@@ -338,9 +338,66 @@
       .mgrid,.slrow{grid-template-columns:1fr}
       .fontgrid{grid-template-columns:repeat(2,1fr)}
     }
+  
+    /* ── seletor de ferramenta + aviso de atualizacao ───────────────── */
+    .modes{display:flex;gap:4px;background:var(--b);border:1px solid var(--b2);border-radius:10px;padding:3px}
+    .modes a{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:7px;font-size:13px;
+      font-weight:600;color:var(--m);text-decoration:none;transition:.15s;white-space:nowrap}
+    .modes a:hover{color:var(--t)}
+    .modes a.on{background:var(--c);color:#fff;box-shadow:0 2px 8px rgba(152,84,241,.35)}
+    .updbar{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;
+      padding:11px 18px;background:linear-gradient(90deg,#9854F1,#7c3aed);color:#fff;font-size:13.5px;font-weight:500}
+    .updbar a{color:#fff;background:rgba(255,255,255,.2);padding:5px 13px;border-radius:7px;
+      text-decoration:none;font-weight:700}
+    .updbar a:hover{background:rgba(255,255,255,.32)}
+    .updbar button{background:none;border:none;color:#fff;opacity:.7;cursor:pointer;font-size:15px}
+  
+    /* ── TEMA CLARO ─────────────────────────────────────────────────────
+       O app nasceu só escuro. Aqui as mesmas variáveis ganham valores
+       claros; nada mais no CSS precisou mudar porque tudo já usa var(). */
+    :root[data-theme="light"]{
+      --bg:#faf9ff;--bg2:#f1eefb;
+      --s:rgba(24,12,56,.035);--s2:rgba(24,12,56,.055);
+      --b:rgba(24,12,56,.10);--b2:rgba(24,12,56,.17);
+      --bh:rgba(124,58,237,.5);
+      --p:#7c3aed;--pl:#9854F1;--pd:#5b21b6;--pll:#6d28d9;
+      --t:#171227;--t2:#3d3357;--m:#6b6488;--md:#8f89ab;
+      --g:#16a34a;--r:#dc2626;--y:#d97706;
+    }
+    :root[data-theme="light"] body{background:var(--bg)}
+    .tema-btn{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;
+      border:1px solid var(--b2);background:var(--s);color:var(--t2);cursor:pointer;
+      font-size:15px;transition:.15s;flex:none}
+    .tema-btn:hover{border-color:var(--bh);color:var(--t)}
   </style>
+
+<script>
+// Tema claro/escuro — segue o sistema na primeira visita e lembra a escolha.
+(function(){
+  var salvo = localStorage.getItem('gw_tema');
+  var claro = salvo ? salvo === 'light'
+            : window.matchMedia('(prefers-color-scheme: light)').matches;
+  if(claro) document.documentElement.setAttribute('data-theme','light');
+  window.alternarTema = function(){
+    var atual = document.documentElement.getAttribute('data-theme') === 'light';
+    if(atual){ document.documentElement.removeAttribute('data-theme'); localStorage.setItem('gw_tema','dark'); }
+    else { document.documentElement.setAttribute('data-theme','light'); localStorage.setItem('gw_tema','light'); }
+    var b = document.getElementById('temaBtn'); if(b) b.textContent = atual ? '☾' : '☀';
+  };
+  document.addEventListener('DOMContentLoaded', function(){
+    var b = document.getElementById('temaBtn');
+    if(b) b.textContent = document.documentElement.getAttribute('data-theme')==='light' ? '☀' : '☾';
+  });
+})();
+</script>
 </head>
 <body>
+<div class="updbar" id="updateBar" style="display:none">
+  <span>🚀 Nova versão <b id="updVer"></b> disponível — a sua é a <span id="updCur"></span></span>
+  <a id="updLink" href="#" target="_blank" rel="noopener">Baixar atualização</a>
+  <button onclick="document.getElementById('updateBar').style.display='none'" title="Fechar">✕</button>
+</div>
+
 <div class="blob ba"></div><div class="blob bb"></div><div class="blob bc"></div>
 
 <header>
@@ -351,6 +408,11 @@
       <span class="logo-sep"></span>
       <span class="logo-sub">Imagens &amp; Videos</span>
     </div>
+    <nav class="modes">
+      <a href="/" class="on">🎨 Ferramenta livre</a>
+      <a href="/guebly">🏢 Marcas Guebly</a>
+    </nav>
+    <button class="tema-btn" id="temaBtn" onclick="alternarTema()" title="Alternar tema claro/escuro">☾</button>
     <div class="pills">
       <span class="pill">v3.3</span>
       <span class="pill p">Open Source</span>
@@ -1191,6 +1253,18 @@ document.getElementById('mainForm').addEventListener('submit',async e=>{
     toast('Conexao perdida com o servidor','err');
   };
 });
+</script>
+
+<script>
+// Avisa quando sai versao nova no GitHub. Falha calada: sem internet nao atrapalha.
+fetch('/api/update-check').then(r=>r.json()).then(d=>{
+  if(d && d.tem_update){
+    document.getElementById('updVer').textContent = d.latest;
+    document.getElementById('updCur').textContent = d.version;
+    document.getElementById('updLink').href = d.download || '#';
+    document.getElementById('updateBar').style.display = 'flex';
+  }
+}).catch(()=>{});
 </script>
 </body>
 </html>

@@ -1,262 +1,253 @@
 <div align="center">
 
-<img src="https://www.guebly.com.br/guebly.png" alt="Guebly" width="48" height="48" style="border-radius: 12px" />
+<img src="static/img/guebly.png" alt="Guebly LTDA" width="72" height="72" />
 
 # Guebly Watermark
 
-**Ferramenta visual para aplicar marcas d'agua em imagens e videos — open-source, sem nuvem, 100% local**
+**Marca d'água em imagens e vídeos — aplicativo de desktop, 100% local, sem nuvem**
 
+[![Windows](https://img.shields.io/badge/Windows-.exe-0078D4?style=flat-square&logo=windows&logoColor=white)](../../releases/latest)
 [![Python](https://img.shields.io/badge/Python-3.9+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
-[![Flask](https://img.shields.io/badge/Flask-3.0-000000?style=flat-square&logo=flask&logoColor=white)](https://flask.palletsprojects.com)
-[![FFmpeg](https://img.shields.io/badge/FFmpeg-direto-007808?style=flat-square&logo=ffmpeg&logoColor=white)](https://ffmpeg.org)
+[![FFmpeg](https://img.shields.io/badge/FFmpeg-embutido-007808?style=flat-square&logo=ffmpeg&logoColor=white)](https://ffmpeg.org)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](./LICENSE)
-[![Feito pela Guebly](https://img.shields.io/badge/feito%20por-Guebly-9854F1?style=flat-square)](https://www.guebly.com.br)
 
-[Como instalar](#-instalacao) · [Como usar](#-como-usar) · [Configuracao](#-configuracao) · [Contribuir](#-contribuindo)
+**[⬇️ Baixar a última versão (.exe)](../../releases/latest)**
 
 </div>
 
 ---
 
-## Sobre
+## O que é
 
-O **Guebly Watermark** e uma ferramenta web local desenvolvida pela [Guebly](https://www.guebly.com.br) para aplicar marcas d'agua em imagens e videos de forma rapida e profissional. Todo o processamento acontece na sua maquina — nenhum arquivo e enviado para servidores externos.
+Ferramenta da **Guebly LTDA** para aplicar marcas d'água em imagens e vídeos.
+Roda como **aplicativo de desktop** (janela própria, não é aba de navegador) e
+processa **tudo na sua máquina** — nenhum arquivo sai do computador.
 
-A interface roda no navegador via Flask, com preview ao vivo, animacoes de marca d'agua e processamento em lote com download automatico em ZIP.
+O app tem **duas ferramentas separadas**, escolhidas no seletor do topo:
 
-> **Fluxo:** arraste suas midias, escolha o logo/texto, ajuste posicao e escala, processe tudo de uma vez.
-
----
-
-## Funcionalidades
-
-| Recurso | Descricao |
-|---------|-----------|
-| **Imagens** | Suporte a PNG, JPG, WEBP, BMP, TIFF — saida em PNG |
-| **Videos** | Suporte a MP4, MOV, AVI, MKV, WEBM, FLV, WMV — saida em MP4 |
-| **Logo por arquivo** | Upload de PNG, JPG ou WEBP como marca d'agua |
-| **Logo por URL** | Cole qualquer URL publica de imagem |
-| **Texto como marca d'agua** | Cor, fundo e opacidade configuraveis |
-| **Inserir video** | Insere um video no inicio, meio ou final de outro video |
-| **Tela final (endscreen)** | Imagem estatica exibida ao final do video (0-15s) |
-| **Pre-visualizacao local** | Canvas ao vivo para imagens, frame para videos |
-| **11 animacoes** | Estatico, ticker, pendulo, bounce, diagonal e mais |
-| **7 posicoes** | 4 cantos + 3 centros |
-| **Escala / Opacidade / Margem** | Sliders em tempo real |
-| **Processamento em lote** | Multiplas midias processadas de uma vez com ZIP automatico |
-| **Painel interno** | Rota `/guebly` com logos pre-configuradas por empresa |
-| **Progresso em tempo real** | SSE (Server-Sent Events) durante processamento de videos |
-| **100% local** | Nenhum dado sai da sua maquina |
+| Ferramenta | Para quê |
+|---|---|
+| 🎨 **Ferramenta livre** | Marca d'água com **a sua logo** (upload) ou **texto**. Uso geral. |
+| 🏢 **Marcas Guebly** | Escolhe a **empresa do grupo** e aplica a logo dela, já configurada. Uso interno. |
 
 ---
 
-## Stack tecnica
+## Instalação
 
-| Tecnologia | Funcao |
-|------------|--------|
-| [Python 3.9+](https://python.org) | Linguagem principal do backend |
-| [Flask 3.0](https://flask.palletsprojects.com) | Servidor web e rotas da API |
-| [Pillow 10+](https://python-pillow.org) | Processamento de imagens e geracoes de texto |
-| [FFmpeg](https://ffmpeg.org) | Processamento de videos (via subprocess direto, sem MoviePy) |
-| [imageio-ffmpeg](https://github.com/imageio/imageio-ffmpeg) | Binario FFmpeg embutido como fallback |
-| [NumPy](https://numpy.org) | Manipulacao de arrays de pixels |
-| HTML5 Canvas | Preview ao vivo no navegador |
-| SSE (Server-Sent Events) | Progresso em tempo real do processamento |
+### Opção 1 — Aplicativo (recomendado)
 
-> O FFmpeg e chamado via `subprocess` diretamente — isso e **10-50x mais rapido** que abordagens com MoviePy.
+1. Baixe o **`GueblyWatermark.exe`** na [página de releases](../../releases/latest).
+2. Dê dois cliques. Pronto.
 
----
+Não precisa instalar Python nem FFmpeg: **já vem tudo dentro do .exe** (~66 MB).
+O app avisa sozinho quando sai uma versão nova.
 
-## Instalacao
+> **Windows SmartScreen:** como o executável não é assinado digitalmente, o Windows
+> pode mostrar "Windows protegeu o computador". Clique em **Mais informações →
+> Executar assim mesmo**. É esperado para apps sem certificado de assinatura (que é pago).
 
-### Requisitos
-
-- **Python 3.9** ou superior
-- **FFmpeg** (necessario para processar videos)
-
-### Windows (rapido)
-
-1. Instale o [Python 3.9+](https://python.org/downloads/) (marque "Add to PATH")
-2. Instale o [FFmpeg](https://ffmpeg.org/download.html) ou deixe o `imageio-ffmpeg` resolver automaticamente
-3. Clique duas vezes em **`iniciar.bat`**
-4. Na primeira execucao, as dependencias sao instaladas automaticamente
-5. Acesse **http://localhost:5000** no navegador
-
-> O `iniciar.bat` unifica instalacao + inicializacao em um unico arquivo.
-
-### Linux / macOS (manual)
+### Opção 2 — Rodando pelo código (dev)
 
 ```bash
-# 1. Instale o FFmpeg
-sudo apt install ffmpeg          # Debian / Ubuntu
-brew install ffmpeg              # macOS
-
-# 2. Clone o repositorio
-git clone https://github.com/Guebly/watermark.git
-cd watermark
-
-# 3. Instale as dependencias Python
+git clone https://github.com/Guebly/guebly-watermark.git
+cd guebly-watermark
 pip install -r requirements.txt
 
-# 4. Inicie o servidor
-python app.py
+python desktop.py     # abre em janela própria (como o app)
+# ou
+python app.py         # abre em http://127.0.0.1:5000 no navegador
 ```
-
-Acesse [http://localhost:5000](http://localhost:5000) no navegador.
 
 ---
 
 ## Como usar
 
-### Marca d'agua com logo
+### 🎨 Ferramenta livre
 
-1. Acesse `http://localhost:5000`
-2. Arraste ou selecione as imagens/videos que deseja marcar
-3. Na aba **Logo**, faca upload de um arquivo PNG/JPG/WEBP ou cole uma URL
-4. Ajuste **posicao**, **escala**, **opacidade** e **margem** com os sliders
-5. Para videos, escolha uma das **11 animacoes** disponiveis
-6. Clique em **Processar** — o download e automatico (ZIP para lotes)
+1. **Escolha os arquivos** — imagens e/ou vídeos (pode soltar vários de uma vez).
+2. **Defina a marca d'água** — envie uma logo (PNG com transparência fica melhor)
+   ou escreva um texto (com fonte, cor e fundo configuráveis).
+3. **Ajuste** posição, tamanho, margem e opacidade — o preview atualiza na hora.
+4. **Processe.** Vários arquivos saem num `.zip`.
 
-### Marca d'agua com texto
+### 🏢 Marcas Guebly
 
-1. Na aba **Texto**, digite o conteudo (ex: `Confidencial`, `© Guebly 2026`)
-2. Escolha a cor do texto e a cor/opacidade do fundo
-3. O tamanho e controlado pelo slider de **Escala**
-4. Funciona em imagens e videos
+1. **Selecione a empresa** (Guebly LTDA, Studio, Games, Pay, Contábil, Lirya…).
+2. **Solte as imagens.**
+3. **Processe** — a logo daquela empresa é aplicada com os padrões configurados.
 
-### Inserir video dentro de outro
+### Tema claro e escuro
 
-1. Selecione um video como arquivo base
-2. Na secao **Inserir Video**, arraste o video que deseja inserir (ate 200 MB)
-3. Escolha a posicao: **Inicio**, **Meio** ou **Final**
-4. Se escolher **Meio**, use o slider para definir o ponto exato (% da duracao)
-5. O video inserido e re-encodado para a mesma resolucao do video principal
-6. Funciona combinado com watermark e tela final, ou sozinho
-
-### Tela final (endscreen)
-
-1. Faca upload de uma imagem na secao **Tela Final**
-2. Defina a duracao (0 a 15 segundos)
-3. A imagem e exibida como frame estatico ao final do video
+Botão **☾ / ☀** no topo. Na primeira vez segue o tema do Windows; depois lembra
+a sua escolha.
 
 ---
 
-## Configuracao
+## Formatos suportados
 
-O arquivo `config.json` na raiz do projeto controla os valores padrao e o painel interno.
+| Tipo | Entrada | Saída |
+|---|---|---|
+| **Imagens** | PNG, JPG, WEBP, BMP, TIFF | PNG |
+| **Vídeos** | MP4, MOV, AVI, MKV, WEBM, FLV, WMV | MP4 |
+| **Marca d'água** | PNG, JPG, WEBP (ou texto) | — |
 
-### Valores padrao
+Outros recursos: marca d'água **animada** (movimento no vídeo), **lote** com
+download em ZIP, **progresso em tempo real** e preview ao vivo.
+
+---
+
+## Empresas configuradas
+
+Editáveis em [`config.json`](./config.json):
+
+| Empresa | Logo |
+|---|---|
+| Guebly Holding | remota |
+| **Guebly LTDA** | local (`guebly.png`) |
+| **Guebly Studio** | local (`guebly-studio.png`) — logo completa |
+| **Guebly Studio (símbolo)** | local (`guebly-studio-simbolo.png`) — só o símbolo, ideal para marca pequena |
+| Guebly Games · Pay · Contábil | remotas |
+| **Lirya LTDA · Lirya+ · Lirya Academy** | ⏳ aguardando as artes |
+| Sentrion | remota |
+
+### Adicionar ou trocar uma logo
+
+**Logo local (recomendado — funciona sem internet):**
+
+1. Coloque o arquivo em `static/img/` (PNG com fundo transparente).
+2. Em `config.json`, aponte `logo_file` para o nome do arquivo:
 
 ```json
 {
-  "default_position":    "bottom-right",
-  "default_scale_pct":   15,
-  "default_margin_pct":  3,
-  "default_opacity_pct": 90
+  "id": "lirya-ltda",
+  "name": "Lirya LTDA",
+  "logo_file": "lirya.png",
+  "color": "#ec4899"
 }
 ```
 
-| Parametro | Descricao | Valores |
-|-----------|-----------|---------|
-| `default_position` | Posicao inicial da marca d'agua | `top-left`, `top-center`, `top-right`, `center-left`, `center`, `center-right`, `bottom-left`, `bottom-center`, `bottom-right` |
-| `default_scale_pct` | Escala padrao (% da largura) | `1` a `100` |
-| `default_margin_pct` | Margem padrao (% da dimensao) | `0` a `50` |
-| `default_opacity_pct` | Opacidade padrao | `0` a `100` |
+**Logo remota:** use `logo_url` com o endereço da imagem. O app tenta o
+`logo_file` primeiro e só cai para a URL se não houver arquivo local.
 
-### Painel interno (`/guebly`)
+> **Por que preferir local:** o app se propõe a rodar 100% offline. Com `logo_url`
+> ele baixa a imagem do site toda vez — sem internet, ou com o site fora do ar,
+> a marca d'água não sai.
 
-O painel interno permite selecionar logos pre-configuradas por empresa. Adicione empresas no array `guebly_companies`:
+### As logos da Lirya
 
-```json
-{
-  "guebly_companies": [
-    {
-      "id":       "minha-empresa",
-      "name":     "Minha Empresa",
-      "logo_url": "https://meusite.com/logo.png",
-      "color":    "#9854F1"
-    }
-  ]
-}
-```
-
-| Campo | Descricao |
-|-------|-----------|
-| `id` | Identificador unico (slug) |
-| `name` | Nome exibido no painel |
-| `logo_url` | URL publica do logo PNG |
-| `color` | Cor do card no painel (hex) |
+As três entradas da Lirya já existem em `config.json` com o `logo_url` vazio.
+Quando as artes ficarem prontas, salve em `static/img/` como `lirya.png`,
+`lirya-plus.png` e `lirya-academy.png` e troque `logo_url` por `logo_file` em
+cada uma. **Nenhuma mudança de código é necessária.**
 
 ---
 
-## Estrutura do projeto
+## Configuração
 
-```
-watermark/
-├── app.py                 # Backend Flask — rotas, processamento de imagens e videos
-├── config.json            # Configuracoes padrao e empresas do painel interno
-├── requirements.txt       # Dependencias Python
-├── iniciar.bat            # Script Windows: instala dependencias + inicia servidor
-├── CHANGELOG.md           # Historico de versoes
-├── static/
-│   └── img/
-│       └── guebly.png     # Logo do header da interface
-└── templates/
-    ├── index.html         # Interface publica principal
-    └── guebly.html        # Painel interno com logos pre-configuradas
-```
+Padrões em [`config.json`](./config.json):
+
+| Campo | O que faz | Padrão |
+|---|---|---|
+| `default_position` | Canto da marca d'água | `bottom-right` |
+| `default_scale_pct` | Tamanho, em % da imagem | `15` |
+| `default_margin_pct` | Distância da borda, em % | `3` |
+| `default_opacity_pct` | Opacidade | `90` |
+
+Posições: `top-left`, `top-right`, `bottom-left`, `bottom-right`, `center`.
 
 ---
 
-## Deploy em producao
+## Atualizações
 
-Para servir em producao com videos longos, use **Gunicorn** com timeout estendido:
+O app consulta os **Releases do GitHub** ao abrir. Havendo versão nova, aparece
+uma faixa no topo com o link do download. Sem internet, ele ignora em silêncio —
+nunca trava o uso.
+
+### Publicando uma versão nova (mantenedor)
 
 ```bash
-pip install gunicorn
-
-gunicorn app:app --bind 0.0.0.0:5000 --workers 2 --timeout 300
+echo "3.4.0" > VERSION
+git commit -am "release 3.4.0" && git push
+git tag v3.4.0 && git push --tags
 ```
 
-| Parametro | Recomendacao |
-|-----------|--------------|
-| `--workers` | 2-4 (cada worker processa um video por vez) |
-| `--timeout` | 300+ segundos para videos longos em alta resolucao |
-| `--bind` | `0.0.0.0:5000` para acesso na rede local |
-
-> Videos curtos (< 30s em 1080p) levam cerca de 10-30 segundos. Videos mais longos ou em 4K podem levar varios minutos.
+A [GitHub Action](.github/workflows/release.yml) compila o `.exe` no Windows e
+publica o Release sozinha. Quem abrir o app recebe o aviso.
 
 ---
 
-## Contribuindo
+## Compilando o .exe manualmente
 
-1. Faca um fork do repositorio
-2. Crie uma branch para sua feature (`git checkout -b feature/minha-feature`)
-3. Commit suas alteracoes (`git commit -m "Adicionada minha feature"`)
-4. Push para a branch (`git push origin feature/minha-feature`)
-5. Abra um Pull Request
-
-### Diretrizes
-
-- Commits em portugues, descritivos e concisos
-- Teste com imagens e videos antes de submeter
-- Mantenha compatibilidade com Python 3.9+
+```bash
+pip install -r requirements.txt pywebview pyinstaller
+pyinstaller GueblyWatermark.spec --noconfirm --clean
+# resultado: dist/GueblyWatermark.exe
+```
 
 ---
 
-## Changelog
+## Como funciona por dentro
 
-Veja o arquivo [CHANGELOG.md](./CHANGELOG.md) para o historico completo de versoes.
+```
+desktop.py     → sobe o Flask numa porta livre e abre a janela nativa (pywebview)
+app.py         → servidor: rotas, imagem (Pillow) e vídeo (FFmpeg)
+templates/
+  index.html   → tela da Ferramenta livre
+  guebly.html  → tela das Marcas Guebly
+static/img/    → logos empacotadas + ícone do app
+config.json    → empresas e padrões
+VERSION        → versão exibida e usada na checagem de atualização
+```
 
-### Ultima versao: v3.3 (2026-05-31)
+**Imagens** são compostas com Pillow (respeitando transparência).
+**Vídeos** vão direto para o FFmpeg com filtro de overlay — sem recodificar o
+áudio, e com suporte a marca d'água animada.
 
-- Insercao de video dentro de outro video (inicio, meio ou final)
-- Upload de video de insercao ate 200 MB
-- Slider de posicao para insercao no meio
-- Validacao atualizada para combinacoes de watermark + tela final + video inserido
+### Endpoints
+
+| Rota | Método | Para quê |
+|---|---|---|
+| `/` | GET | Ferramenta livre |
+| `/guebly` | GET | Marcas Guebly |
+| `/api/process` | POST | Processa os arquivos (assíncrono, devolve um job) |
+| `/api/progress/<id>` | GET | Progresso do job |
+| `/api/download/<id>` | GET | Baixa o resultado |
+| `/api/version` | GET | Versão instalada |
+| `/api/update-check` | GET | Compara com o último Release do GitHub |
+
+### Por que aplicativo em vez de site
+
+Os arquivos nunca saem da máquina. Não há upload, servidor, fila nem custo por
+uso — e funciona offline.
+
+### Por que pywebview e não Electron
+
+O app é Python. Com Electron seria preciso empacotar **três runtimes** (Node +
+Python + FFmpeg), passando de 300 MB. O pywebview usa o **WebView2**, que já vem
+no Windows 10/11 — o executável fica em ~66 MB com o FFmpeg incluso.
 
 ---
 
-## Licenca
+## Requisitos
 
-MIT License — [Guebly Holding LTDA](https://www.guebly.com.br) · guebly.com.br
+- **Windows 10/11** para o `.exe` (usa o WebView2, nativo do sistema)
+- **Python 3.9+** para rodar pelo código
+- FFmpeg **não** precisa ser instalado — vem via `imageio-ffmpeg`
+
+---
+
+## Privacidade
+
+Nenhum arquivo é enviado para lugar nenhum. O único acesso à internet é a
+checagem de versão no GitHub (e o download de `logo_url`, se você usar logos
+remotas em vez de locais).
+
+---
+
+## Licença
+
+MIT — veja [LICENSE](./LICENSE).
+
+<div align="center">
+<sub>Feito pela <a href="https://www.guebly.com.br">Guebly LTDA</a></sub>
+</div>

@@ -1,0 +1,52 @@
+# Gera o GueblyWatermark.exe e publica um Release quando sai uma tag v*.
+# É esse Release que o app consulta em /api/update-check para avisar
+# "nova versão disponível" e oferecer o download.
+name: Release (.exe)
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:        # permite gerar manualmente pela aba Actions
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instala dependências
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pywebview pyinstaller
+
+      - name: Sincroniza o VERSION com a tag
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          [ -n "$TAG" ] && echo "$TAG" > VERSION
+          echo "Versão: $(cat VERSION)"
+
+      - name: Build do executável
+        run: pyinstaller GueblyWatermark.spec --noconfirm --clean
+
+      - name: Publica o Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/GueblyWatermark.exe
+          name: Guebly Watermark ${{ github.ref_name }}
+          generate_release_notes: true
+          body: |
+            ## Guebly Watermark ${{ github.ref_name }}
+
+            **Como instalar:** baixe o `GueblyWatermark.exe` abaixo e execute. Não precisa
+            instalar Python nem FFmpeg — já vem tudo dentro.
+
+            Se você já tem o app aberto, ele avisa sozinho quando há versão nova.

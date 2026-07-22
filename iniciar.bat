@@ -1,7 +1,7 @@
 @echo off
 echo.
 echo  ============================================
-echo    WatermarkTool v3.0 - Guebly Holding
+echo    Guebly Watermark v3.3 - Guebly LTDA
 echo  ============================================
 echo.
 
