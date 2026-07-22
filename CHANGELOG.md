@@ -1,5 +1,22 @@
 # Changelog
 
+## [3.4.1] — 2026-07-22
+
+### Logo errada no app inteiro
+O app usava o `logo-email.png` — a logo da **Guebly Holding** — salva com o nome
+`guebly.png`, o que escondia a troca. A logo correta é a da **Guebly LTDA**,
+que estava em `Guebly/Guebly/src/assets/images/icons/`.
+
+- Cabeçalho das duas telas, favicon e ícone do `.exe` agora usam a **Guebly LTDA**.
+- Como a logo traz a palavra "Guebly" escrita, o app troca entre a **versão branca
+  (tema escuro)** e a **escura (tema claro)** — antes o texto sumia no fundo.
+- Ícone do `.exe` regerado a partir do símbolo oficial.
+- Em Marcas Guebly: "Guebly LTDA" passou a apontar para a logo certa (apontava
+  para a da Holding), ganhou a variação **só símbolo**, e a Holding foi mantida
+  em entrada própria.
+- Todas as logos agora são **locais**: o favicon vinha de `guebly.com.br`, então
+  não aparecia sem internet.
+
 ## [3.4.0] — 2026-07-22
 
 ### Fila de arquivos (era o maior incômodo)

@@ -3,19 +3,23 @@
   "default_scale_pct": 15,
   "default_margin_pct": 3,
   "default_opacity_pct": 90,
-
   "guebly_companies": [
     {
       "id": "guebly-holding",
       "name": "Guebly Holding",
-      "logo_url": "https://www.guebly.com.br/logo-email.png",
-      "color": "#9854F1"
+      "color": "#9854F1",
+      "logo_file": "guebly-holding.png"
     },
     {
       "id": "guebly-ltda",
       "name": "Guebly LTDA",
-      "logo_file": "guebly.png",
-      "logo_url": "https://www.guebly.com.br/guebly.png",
+      "logo_file": "guebly-ltda-branca.png",
+      "color": "#7c3aed"
+    },
+    {
+      "id": "guebly-ltda-simbolo",
+      "name": "Guebly LTDA (símbolo)",
+      "logo_file": "guebly-ltda-simbolo.png",
       "color": "#7c3aed"
     },
     {

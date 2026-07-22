@@ -4,7 +4,7 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Guebly — Painel Interno de Marca d'Água</title>
-  <link rel="icon" href="https://www.guebly.com.br/guebly.png" type="image/png"/>
+  <link rel="icon" href="/static/img/guebly-ltda-simbolo.png" type="image/png"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <style>
@@ -29,6 +29,11 @@
     .bar{max-width:1380px;margin:0 auto;padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between}
     .logo-w{display:flex;align-items:center;gap:12px}
     .logo-w img{height:28px;width:auto}
+    /* A logo tem o nome "Guebly" embutido, entao precisa da versao branca no tema
+       escuro e da escura no tema claro — senao o texto some no fundo. */
+    .logo-w .lg-claro{display:none}
+    :root[data-theme="light"] .logo-w .lg-escuro{display:none}
+    :root[data-theme="light"] .logo-w .lg-claro{display:block}
     .logo-n{font-family:'Syne',sans-serif;font-weight:900;font-size:14px;letter-spacing:-.02em}
     .logo-sep{width:1px;height:14px;background:var(--b2)}
     .logo-sub{font-size:11.5px;color:var(--m)}
@@ -326,7 +331,8 @@
 <header>
   <div class="bar">
     <div class="logo-w">
-      <img src="/static/img/guebly.png" alt="Guebly"/>
+      <img class="lg-escuro" src="/static/img/guebly-ltda-branca.png" alt="Guebly LTDA"/>
+      <img class="lg-claro" src="/static/img/guebly-ltda.png" alt="Guebly LTDA"/>
       <span class="logo-n">Guebly LTDA</span>
       <span class="logo-sep"></span>
       <span class="logo-sub">Painel de Marca d'Água</span>
