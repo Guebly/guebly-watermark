@@ -19,6 +19,16 @@ BASE = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
 os.chdir(BASE)
 sys.path.insert(0, BASE)
 
+# O Windows agrupa janelas pelo AppUserModelID. Sem definir um proprio, o app
+# herda o do interpretador Python e a barra de tarefas mostra o icone errado.
+if sys.platform == "win32":
+    import ctypes
+    try:
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
+            "Guebly.Watermark")
+    except Exception:
+        pass
+
 import webview  # noqa: E402
 from app import app  # noqa: E402
 
@@ -40,6 +50,24 @@ def espera_subir(porta: int, timeout: float = 20.0) -> bool:
         except OSError:
             time.sleep(0.15)
     return False
+
+
+def _icone_janela(caminho: str) -> None:
+    """Aplica o icone na janela ja criada.
+
+    O pywebview no Windows nao repassa o parametro `icon` para o WebView2, entao
+    a janela ficava com o icone padrao mesmo com o .ico embutido no .exe.
+    """
+    try:
+        import ctypes
+        u, IMAGE_ICON, LR = ctypes.windll.user32, 1, 0x00000010
+        hwnd = u.GetActiveWindow()
+        for wparam, tam in ((1, 32), (0, 16)):      # ICON_BIG, ICON_SMALL
+            h = u.LoadImageW(None, caminho, IMAGE_ICON, tam, tam, LR)
+            if h:
+                u.SendMessageW(hwnd, 0x0080, wparam, h)   # WM_SETICON
+    except Exception:
+        pass
 
 
 def main() -> None:
@@ -64,6 +92,8 @@ def main() -> None:
         min_size=(980, 660),
         background_color="#0f1115",
     )
+    if os.path.exists(icone):
+        webview.windows[0].events.shown += lambda: _icone_janela(icone)
     webview.start(icon=icone if os.path.exists(icone) else None)
 
 

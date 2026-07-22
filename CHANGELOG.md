@@ -1,5 +1,20 @@
 # Changelog
 
+## [3.4.2] — 2026-07-22
+
+### Ícone do app estava invisível
+O ícone tinha sido gerado a partir do símbolo **branco**, então sumia em qualquer
+fundo claro — barra de tarefas, Explorer, aba do navegador. Agora usa o
+**hexágono roxo**, que aparece tanto no claro quanto no escuro.
+
+- Ícone do `.exe` regerado em 7 tamanhos (16 a 256px).
+- Favicon das duas telas trocado para o símbolo roxo.
+- A janela do app não recebia ícone: o pywebview no Windows não repassa o
+  parâmetro `icon` para o WebView2. Resolvido aplicando o ícone via `WM_SETICON`
+  depois que a janela abre.
+- Definido um `AppUserModelID` próprio — sem ele o Windows agrupa o app com o
+  interpretador Python e mostra o ícone do Python na barra de tarefas.
+
 ## [3.4.1] — 2026-07-22
 
 ### Logo errada no app inteiro
