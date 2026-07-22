@@ -1,5 +1,30 @@
 # Changelog
 
+## [3.4.3] — 2026-07-22
+
+### "Logo não configurada" em quem tinha logo
+A tela Marcas Guebly decidia se a empresa tinha logo olhando **só o `logo_url`**.
+Quem tem a logo empacotada no app (`logo_file`) aparecia como não configurada —
+mesmo funcionando no processamento. Atingia Guebly LTDA, Studio e as variações
+de símbolo.
+
+- O backend passou a resolver um endereço único (`logo_src`): usa o arquivo local
+  se ele existir, senão a URL. A tela usa só isso.
+- A bolinha de status agora explica ao passar o mouse se a logo está **empacotada
+  no app** ou vem do **site** (e portanto precisa de internet).
+
+### Empresas que nunca apareciam no seletor
+Os grupos eram **três blocos de HTML com os ids escritos à mão**. Empresa nova no
+`config.json` simplesmente não aparecia:
+
+- **Lirya LTDA, Lirya+ e Lirya Academy** estavam invisíveis desde que foram
+  cadastradas.
+- **Guebly LTDA (símbolo)** e **Guebly Studio (símbolo)** também.
+- Ainda havia referências a **Trocaí, Vendaí e Ayon**, que já tinham sido removidos.
+
+Agora é um bloco só: grupo e descrição vêm do `config.json`, e as 12 empresas
+aparecem. Cadastrar uma nova não exige mais mexer no HTML.
+
 ## [3.4.2] — 2026-07-22
 
 ### Ícone do app estava invisível

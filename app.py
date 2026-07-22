@@ -13,7 +13,7 @@ import json, sys, re, json, math, time, uuid, shutil, zipfile
 import tempfile, threading, datetime, subprocess, urllib.request
 from flask import (Flask, render_template, request, send_file,
                    jsonify, send_from_directory, abort, Response,
-                   stream_with_context)
+                   stream_with_context, url_for)
 from PIL import Image, ImageOps, ImageDraw, ImageFont
 
 # ─── App ──────────────────────────────────────────────────────────────────────
@@ -670,6 +670,9 @@ def logo_from_token(token):
         raise FileNotFoundError("Token de logo invalido.")
     return Image.open(safe_path).convert("RGBA")
 
+STATIC_IMG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "img")
+
+
 def logo_from_file(filename):
     """Carrega uma logo empacotada em static/img/ (funciona 100% offline).
 
@@ -678,7 +681,7 @@ def logo_from_file(filename):
     """
     if not re.fullmatch(r"[A-Za-z0-9._-]+", filename or ""):
         raise FileNotFoundError("Nome de arquivo de logo invalido.")
-    base = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "img")
+    base = STATIC_IMG
     caminho = os.path.join(base, filename)
     if not os.path.abspath(caminho).startswith(os.path.abspath(base)):
         raise FileNotFoundError("Caminho de logo invalido.")
@@ -1066,10 +1069,43 @@ def api_update_check():
 def index():
     return render_template("index.html", cfg=CFG)
 
+def companies_para_tela():
+    """Empresas com um `logo_src` unico para a interface usar.
+
+    A tela decidia se a logo existia olhando so o `logo_url`. Quem tem a logo
+    empacotada no app (`logo_file`) aparecia como "nao configurada", mesmo
+    funcionando no processamento. Aqui os dois casos viram um endereco so.
+    """
+    saida = []
+    for c in CFG.get("guebly_companies", []):
+        arq = c.get("logo_file", "")
+        src = ""
+        if arq and os.path.exists(os.path.join(STATIC_IMG, arq)):
+            src = url_for("static", filename=f"img/{arq}")
+        elif c.get("logo_url"):
+            src = c["logo_url"]
+        saida.append({**c, "logo_src": src, "logo_local": bool(src and arq)})
+    return saida
+
+
+def companies_por_grupo():
+    """Agrupa as empresas para o seletor, na ordem em que estao no config.json.
+
+    Os grupos eram tres blocos de HTML com os ids escritos a mao. Empresa nova no
+    config.json simplesmente nao aparecia na tela — foi o que aconteceu com a
+    Lirya e com as variacoes "so simbolo".
+    """
+    grupos = {}
+    for c in companies_para_tela():
+        grupos.setdefault(c.get("group") or "Outros", []).append(c)
+    return grupos
+
+
 @app.get("/guebly")
 def guebly_panel():
     return render_template("guebly.html", cfg=CFG,
-                            companies=CFG.get("guebly_companies", []))
+                            companies=companies_para_tela(),
+                            grupos=companies_por_grupo())
 
 @app.post("/guebly/process")
 def guebly_process():

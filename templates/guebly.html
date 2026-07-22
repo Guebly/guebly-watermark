@@ -364,74 +364,27 @@
         <div class="sl">Empresa</div>
         <div class="picker" id="picker">
 
-          <!-- GUEBLY GROUP -->
-          <div class="group-label">Guebly</div>
-          {% for c in companies if c.id in ['guebly-holding','guebly-ltda','guebly-studio','trocai','guebly-games','vendai','guebly-pay'] %}
-          <div class="comp-row" data-id="{{ c.id }}" data-logo="{{ c.logo_url }}" data-color="{{ c.color }}" style="--cc:{{ c.color }}">
-            <div class="comp-avatar" style="background:linear-gradient(135deg,{{ c.color }},color-mix(in srgb,{{ c.color }} 55%,#000 45%))">
-              {% if c.logo_url %}<img src="{{ c.logo_url }}" alt="{{ c.name }}" class="av-logo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/><span class="av-ini" style="display:none">{{ c.name[:2].upper() }}</span>{% else %}<span class="av-ini">{{ c.name[:2].upper() }}</span>{% endif %}
-            </div>
-            <div class="comp-info">
-              <div class="comp-name">{{ c.name }}</div>
-              <div class="comp-meta">
-                {% if c.id == 'guebly-holding' %}[REDACTED]
-                {% elif c.id == 'guebly-ltda' %}[REDACTED]
-                {% elif c.id in ['guebly-studio','trocai','guebly-games','vendai','guebly-pay'] %}Guebly LTDA
-                {% endif %}
+          {# Um bloco so: os grupos e as descricoes vem do config.json.
+             Antes eram tres blocos com os ids fixos no HTML, entao empresa nova
+             no config nao aparecia aqui. #}
+          {% for grupo, empresas in grupos.items() %}
+          <div class="group-label">{{ grupo }}</div>
+            {% for c in empresas %}
+            <div class="comp-row" data-id="{{ c.id }}" data-logo="{{ c.logo_src }}" data-color="{{ c.color }}" style="--cc:{{ c.color }}">
+              <div class="comp-avatar" style="background:linear-gradient(135deg,{{ c.color }},color-mix(in srgb,{{ c.color }} 55%,#000 45%))">
+                {% if c.logo_src %}<img src="{{ c.logo_src }}" alt="{{ c.name }}" class="av-logo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/><span class="av-ini" style="display:none">{{ c.name[:2].upper() }}</span>{% else %}<span class="av-ini">{{ c.name[:2].upper() }}</span>{% endif %}
+              </div>
+              <div class="comp-info">
+                <div class="comp-name">{{ c.name }}</div>
+                <div class="comp-meta">{{ c.meta }}</div>
+              </div>
+              <div class="comp-right">
+                <div class="logo-dot {% if c.logo_src %}vis{% endif %}" title="{% if c.logo_local %}Logo empacotada no app{% elif c.logo_src %}Logo carregada do site (precisa de internet){% else %}Sem logo cadastrada{% endif %}"></div>
+                <div class="comp-check">✓</div>
               </div>
             </div>
-            <div class="comp-right">
-              <div class="logo-dot {% if c.logo_url %}vis{% endif %}"></div>
-              <div class="comp-check">✓</div>
-            </div>
-          </div>
+            {% endfor %}
           {% endfor %}
-
-          <!-- AYON GROUP -->
-          <div class="group-label">Ayon</div>
-          {% for c in companies if c.id in ['ayon-ltda','ayon-studios','ayon-plus','ayon-academy'] %}
-          <div class="comp-row" data-id="{{ c.id }}" data-logo="{{ c.logo_url }}" data-color="{{ c.color }}" style="--cc:{{ c.color }}">
-            <div class="comp-avatar" style="background:linear-gradient(135deg,{{ c.color }},color-mix(in srgb,{{ c.color }} 55%,#000 45%))">
-              {% if c.logo_url %}<img src="{{ c.logo_url }}" alt="{{ c.name }}" class="av-logo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/><span class="av-ini" style="display:none">{{ c.name[:2].upper() }}</span>{% else %}<span class="av-ini">{{ c.name[:2].upper() }}</span>{% endif %}
-            </div>
-            <div class="comp-info">
-              <div class="comp-name">{{ c.name }}</div>
-              <div class="comp-meta">
-                {% if c.id == 'ayon-ltda' %}[REDACTED]
-                {% else %}Ayon LTDA
-                {% endif %}
-              </div>
-            </div>
-            <div class="comp-right">
-              <div class="logo-dot {% if c.logo_url %}vis{% endif %}"></div>
-              <div class="comp-check">✓</div>
-            </div>
-          </div>
-          {% endfor %}
-
-          <!-- OUTROS -->
-          <div class="group-label">Outros</div>
-          {% for c in companies if c.id in ['guebly-contabil','sentrion'] %}
-          <div class="comp-row" data-id="{{ c.id }}" data-logo="{{ c.logo_url }}" data-color="{{ c.color }}" style="--cc:{{ c.color }}">
-            <div class="comp-avatar" style="background:linear-gradient(135deg,{{ c.color }},color-mix(in srgb,{{ c.color }} 55%,#000 45%))">
-              {% if c.logo_url %}<img src="{{ c.logo_url }}" alt="{{ c.name }}" class="av-logo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/><span class="av-ini" style="display:none">{{ c.name[:2].upper() }}</span>{% else %}<span class="av-ini">{{ c.name[:2].upper() }}</span>{% endif %}
-            </div>
-            <div class="comp-info">
-              <div class="comp-name">{{ c.name }}</div>
-              <div class="comp-meta">
-                {% if c.id == 'guebly-contabil' %}[REDACTED]
-                {% elif c.id == 'sentrion' %}[REDACTED]
-                {% endif %}
-              </div>
-            </div>
-            <div class="comp-right">
-              <div class="logo-dot {% if c.logo_url %}vis{% endif %}"></div>
-              <div class="comp-check">✓</div>
-            </div>
-          </div>
-          {% endfor %}
-
-        </div>
 
         <!-- Selected banner -->
         <div class="sel-banner" id="selBanner">
@@ -615,8 +568,8 @@ picker.querySelectorAll('.comp-row').forEach(row=>{
     const avatarImg = document.getElementById('selAvatarImg');
     const avatarTxt = document.getElementById('selAvatarText');
     selAvatar.style.background = `linear-gradient(135deg,${color},color-mix(in srgb,${color} 55%,#000 45%))`;
-    if(selectedCompany.logo_url){
-      avatarImg.src = selectedCompany.logo_url;
+    if(selectedCompany.logo_src){
+      avatarImg.src = selectedCompany.logo_src;
       avatarImg.style.display = 'block';
       avatarTxt.style.display = 'none';
       avatarTxt.textContent = initials(selectedCompany.name);
@@ -632,7 +585,7 @@ picker.querySelectorAll('.comp-row').forEach(row=>{
       selStatus.className='sel-banner-status ok';
       loadCompanyLogo(logo);
     } else {
-      selStatus.textContent='⚠ Logo não configurada — use o override abaixo ou preencha logo_url no config.json';
+      selStatus.textContent='⚠ Sem logo ainda — envie uma no override abaixo, ou cadastre em config.json (logo_file para uma imagem em static/img, ou logo_url)';
       selStatus.className='sel-banner-status miss';
       companyLogoImg=null;
       if(!logoToken.value&&!logoUrlH.value){ logoImg=null; draw(); }
