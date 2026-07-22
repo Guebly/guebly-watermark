@@ -7,408 +7,36 @@
   <link rel="icon" href="/static/img/guebly-ltda-simbolo-roxo.png" type="image/png"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
-  <style>
-    /* ─── Tokens ──────────────────────────────────────────────────────────── */
-    :root{
-      --bg:#060610;--bg2:#0d0d22;
-      --s:rgba(255,255,255,.036);--s2:rgba(255,255,255,.058);
-      --b:rgba(255,255,255,.082);--b2:rgba(255,255,255,.14);
-      --bh:rgba(152,84,241,.55);
-      --p:#9854F1;--pl:#b47ef7;--pd:#7038c8;--pll:#d4b0ff;
-      --t:#f0eaff;--t2:#c4b5e8;--m:#7a74a0;--md:#52506e;
-      --g:#4ade80;--r:#f87171;--y:#fbbf24;
-    }
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{
-      font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);
-      min-height:100vh;overflow-x:hidden;line-height:1.5;
-    }
-    body::before{
-      content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
-      background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.022'/%3E%3C/svg%3E");
-    }
-
-    /* ─── Blobs ──────────────────────────────────────────────────────────── */
-    .blob{position:fixed;z-index:0;pointer-events:none;border-radius:50%;filter:blur(130px)}
-    .ba{width:700px;height:700px;top:-280px;left:-200px;background:radial-gradient(circle at 40% 40%,#4c1d95,#12102a);opacity:.22}
-    .bb{width:580px;height:580px;bottom:-200px;right:-180px;background:radial-gradient(circle at 60% 60%,#3b1375,#0f0820);opacity:.18}
-    .bc{width:360px;height:360px;top:45%;left:48%;transform:translate(-50%,-50%);background:radial-gradient(circle,#6d28d9,transparent);opacity:.07}
-
-    /* ─── Header ──────────────────────────────────────────────────────────── */
-    header{position:sticky;top:0;z-index:40;background:rgba(6,6,16,.84);backdrop-filter:blur(22px);border-bottom:1px solid var(--b)}
-    .bar{max-width:1380px;margin:0 auto;padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between}
-    .logo-w{display:flex;align-items:center;gap:12px}
-    .logo-w img{height:28px;width:auto}
-    /* A logo tem o nome "Guebly" embutido, entao precisa da versao branca no tema
-       escuro e da escura no tema claro — senao o texto some no fundo. */
-    .logo-w .lg-claro{display:none}
-    :root[data-theme="light"] .logo-w .lg-escuro{display:none}
-    :root[data-theme="light"] .logo-w .lg-claro{display:block}
-    .logo-n{font-family:'Syne',sans-serif;font-weight:900;font-size:14px;letter-spacing:-.02em}
-    .logo-sep{width:1px;height:14px;background:var(--b2)}
-    .logo-sub{font-size:11.5px;color:var(--m)}
-    .pills{display:flex;gap:6px}
-    .pill{padding:4px 10px;border-radius:999px;font-size:10.5px;font-weight:500;border:1px solid var(--b);color:var(--m)}
-    .pill.p{background:rgba(152,84,241,.1);border-color:rgba(152,84,241,.28);color:var(--pl)}
-
-    /* ─── Hero ────────────────────────────────────────────────────────────── */
-    .hero{position:relative;z-index:1;max-width:1380px;margin:0 auto;padding:48px 32px 20px}
-    .eyebrow{
-      display:inline-flex;align-items:center;gap:7px;
-      background:rgba(152,84,241,.09);border:1px solid rgba(152,84,241,.22);
-      color:var(--pl);font-size:10.5px;font-weight:600;letter-spacing:.08em;
-      text-transform:uppercase;padding:4px 12px;border-radius:999px;margin-bottom:16px;
-    }
-    .eyebrow::before{
-      content:'';width:5px;height:5px;border-radius:50%;background:var(--p);
-      animation:pulse 2.2s infinite;
-    }
-    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.75)}}
-    .hero h1{
-      font-family:'Syne',sans-serif;font-weight:900;
-      font-size:clamp(28px,3.8vw,48px);line-height:1.06;
-      letter-spacing:-.04em;margin-bottom:14px;
-    }
-    .hero h1 em{
-      font-style:normal;
-      background:linear-gradient(135deg,#a265f5,#c98fff);
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-    }
-    .hero p{font-size:13.5px;color:var(--m);max-width:520px;line-height:1.7}
-
-    /* ─── Shell ───────────────────────────────────────────────────────────── */
-    .shell{position:relative;z-index:1;max-width:1380px;margin:0 auto;padding:22px 32px 60px}
-    .grid{display:grid;grid-template-columns:476px minmax(0,1fr);gap:20px;align-items:start}
-    @media(max-width:1100px){.grid{grid-template-columns:1fr}}
-
-    /* ─── Panel ───────────────────────────────────────────────────────────── */
-    .panel{
-      position:relative;background:var(--s);border:1px solid var(--b);
-      border-radius:24px;padding:28px;
-      box-shadow:0 8px 40px rgba(0,0,0,.42);
-      backdrop-filter:blur(6px);
-      transition:box-shadow .35s;
-    }
-    .panel:hover{box-shadow:0 16px 56px rgba(0,0,0,.55)}
-
-    /* Panel title */
-    .pt{
-      font-family:'Syne',sans-serif;font-weight:700;font-size:9.5px;
-      text-transform:uppercase;letter-spacing:.13em;color:var(--p);
-      margin-bottom:22px;display:flex;align-items:center;gap:10px;
-    }
-    .pt::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--b),transparent)}
-
-    /* Section labels */
-    .sl{font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--m);margin-bottom:8px;margin-top:20px}
-    .sl:first-child{margin-top:0}
-
-    /* ─── Divider ─────────────────────────────────────────────────────────── */
-    .div{height:1px;background:linear-gradient(90deg,transparent,var(--b) 30%,var(--b) 70%,transparent);margin:20px 0}
-
-    /* ─── Drag zones ──────────────────────────────────────────────────────── */
-    .dz{
-      position:relative;border:1.5px dashed var(--b);border-radius:14px;
-      padding:20px 14px;text-align:center;cursor:pointer;
-      transition:border-color .2s,background .2s,box-shadow .2s;
-    }
-    .dz:hover,.dz.over{border-color:var(--p);background:rgba(152,84,241,.05);box-shadow:0 0 0 3px rgba(152,84,241,.07)}
-    .dz input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0}
-    .dz-i{font-size:24px;margin-bottom:5px;opacity:.65}
-    .dz-t{font-size:12px;font-weight:500;color:var(--t2)}
-    .dz-h{font-size:10.5px;color:var(--m);margin-top:3px}
-
-    /* ─── File list ───────────────────────────────────────────────────────── */
-    .flist{display:flex;flex-direction:column;gap:4px;margin-top:8px}
-    .fi{
-      display:flex;align-items:center;gap:8px;font-size:11px;color:var(--m);
-      background:rgba(0,0,0,.28);padding:6px 10px;border-radius:9px;
-      border:1px solid rgba(255,255,255,.038);
-    }
-    .fi-n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--t2)}
-    .fi-sz{font-size:10px;white-space:nowrap;color:var(--md)}
-
-    /* ─── Tabs ────────────────────────────────────────────────────────────── */
-    .tabs{display:flex;gap:3px;background:rgba(0,0,0,.42);border-radius:12px;padding:3px;margin-bottom:12px}
-    .tab{
-      flex:1;padding:8px 6px;border-radius:9px;text-align:center;
-      font-size:10.5px;font-weight:600;cursor:pointer;color:var(--m);
-      transition:background .2s,color .2s,box-shadow .2s;user-select:none;white-space:nowrap;
-    }
-    .tab.active{background:rgba(152,84,241,.22);color:var(--t);box-shadow:0 2px 10px rgba(152,84,241,.15)}
-    .tp{display:none}.tp.active{display:block}
-
-    /* ─── Logo thumb ──────────────────────────────────────────────────────── */
-    .lthumb{display:none;margin-top:8px;background:rgba(0,0,0,.3);border-radius:12px;padding:10px;text-align:center;border:1px solid var(--b)}
-    .lthumb.vis{display:block}
-    .lthumb img{max-height:52px;max-width:100%;object-fit:contain;border-radius:6px}
-    .lthumb-n{font-size:10px;color:var(--m);margin-top:4px}
-
-    /* ─── URL row ─────────────────────────────────────────────────────────── */
-    .urow{display:flex;gap:7px}.urow input{flex:1}
-
-    /* ─── Small button ────────────────────────────────────────────────────── */
-    .bsm{
-      padding:9px 14px;border-radius:10px;border:1px solid var(--b);
-      background:rgba(255,255,255,.055);color:var(--t);font-size:11px;
-      font-weight:600;cursor:pointer;white-space:nowrap;
-      transition:background .15s,border-color .15s;font-family:inherit;
-    }
-    .bsm:hover{background:rgba(255,255,255,.1);border-color:var(--b2)}
-
-    /* ─── Fields ──────────────────────────────────────────────────────────── */
-    .field{
-      width:100%;padding:9px 13px;background:rgba(0,0,0,.32);
-      border:1px solid var(--b);border-radius:11px;color:var(--t);
-      font-family:'Inter',sans-serif;font-size:13px;
-      transition:border-color .2s,box-shadow .2s;appearance:none;
-    }
-    .field:focus{outline:none;border-color:var(--bh);box-shadow:0 0 0 3px rgba(152,84,241,.1)}
-    input[type=range].field{padding:3px 0;background:transparent;border:none;cursor:pointer;accent-color:var(--p)}
-    input[type=color].field{padding:2px 4px;height:38px;cursor:pointer;border-radius:8px}
-
-    /* ─── Font picker ─────────────────────────────────────────────────────── */
-    .fontgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:4px}
-    .fchip{
-      padding:10px 6px;border-radius:11px;text-align:center;
-      border:1.5px solid var(--b);cursor:pointer;font-size:13px;
-      transition:background .15s,border-color .15s,transform .1s;
-      user-select:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-    }
-    .fchip:hover{border-color:var(--pl);transform:scale(1.03)}
-    .fchip.active{background:rgba(152,84,241,.18);border-color:rgba(152,84,241,.55);color:var(--pl)}
-
-    /* ─── Text watermark row ──────────────────────────────────────────────── */
-    .trow{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:end;margin-top:10px}
-    .ccol{display:flex;flex-direction:column;gap:3px}
-
-    /* ─── Position grid ───────────────────────────────────────────────────── */
-    .pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
-    .chip{
-      padding:9px 4px;border-radius:11px;text-align:center;border:1.5px solid var(--b);
-      cursor:pointer;font-size:17px;transition:background .15s,border-color .15s,transform .1s;user-select:none;
-    }
-    .chip:hover{border-color:var(--pl);transform:scale(1.05)}
-    .chip.active{background:rgba(152,84,241,.18);border-color:rgba(152,84,241,.55)}
-
-    /* ─── Motion grid ─────────────────────────────────────────────────────── */
-    .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:2px}
-    .mchip{
-      padding:9px 8px;border-radius:11px;text-align:center;border:1.5px solid var(--b);
-      cursor:pointer;font-size:11px;font-weight:600;
-      transition:background .15s,border-color .15s;user-select:none;line-height:1.4;
-    }
-    .mchip .sub{font-size:9px;opacity:.5;display:block;margin-top:1px}
-    .mchip:hover{border-color:var(--pl)}
-    .mchip.active{background:rgba(152,84,241,.18);border-color:rgba(152,84,241,.55);color:var(--pl)}
-
-    /* ─── Sliders ─────────────────────────────────────────────────────────── */
-    .slrow{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-    .slb .slh{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-    .sl-label{font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--m)}
-    .sl-val{
-      font-size:11px;font-weight:700;color:var(--pl);
-      background:rgba(152,84,241,.12);border:1px solid rgba(152,84,241,.2);
-      padding:2px 7px;border-radius:5px;min-width:36px;text-align:center;
-    }
-
-    /* ─── Info box ────────────────────────────────────────────────────────── */
-    .info-box{
-      background:rgba(152,84,241,.07);border:1px solid rgba(152,84,241,.18);
-      border-radius:10px;padding:9px 12px;font-size:11px;color:var(--pl);
-      margin-top:8px;line-height:1.55;
-    }
-
-    /* ─── Action Cards ────────────────────────────────────────────────────── */
-    .acards{display:flex;flex-direction:column;gap:8px}
-    .acard{border:1.5px solid var(--b);border-radius:14px;overflow:hidden;transition:border-color .25s,box-shadow .25s}
-    .acard.open{border-color:rgba(152,84,241,.35);box-shadow:0 0 0 3px rgba(152,84,241,.06)}
-    .acard-h{display:flex;align-items:center;gap:10px;padding:14px 16px;cursor:pointer;transition:background .15s;user-select:none}
-    .acard-h:hover{background:rgba(255,255,255,.03)}
-    .acard-ico{font-size:20px;flex-shrink:0}
-    .acard-mid{flex:1;min-width:0}
-    .acard-t{font-size:13px;font-weight:600;color:var(--t);line-height:1.2}
-    .acard-d{font-size:10px;color:var(--md);margin-top:2px}
-    .acard-badge{width:7px;height:7px;border-radius:50%;background:var(--g);display:none;flex-shrink:0;box-shadow:0 0 6px rgba(74,222,128,.5)}
-    .acard-badge.vis{display:block}
-    .acard-arr{font-size:11px;color:var(--m);transition:transform .25s;flex-shrink:0}
-    .acard.open .acard-arr{transform:rotate(90deg)}
-    .acard-b{display:none;padding:0 16px 16px}
-    .acard.open .acard-b{display:block}
-
-    /* ─── CTA ─────────────────────────────────────────────────────────────── */
-    .cta{
-      width:100%;padding:15px;
-      background:linear-gradient(135deg,#9854F1 0%,#6f30c5 100%);
-      border:none;border-radius:14px;color:#fff;
-      font-family:'Syne',sans-serif;font-weight:900;font-size:14px;
-      cursor:pointer;margin-top:22px;letter-spacing:-.01em;
-      box-shadow:0 4px 24px rgba(152,84,241,.28),0 0 0 1px rgba(152,84,241,.18);
-      transition:filter .15s,transform .1s,box-shadow .15s;
-      position:relative;overflow:hidden;
-    }
-    .cta::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.12),transparent);pointer-events:none}
-    .cta:hover{filter:brightness(1.12);box-shadow:0 8px 32px rgba(152,84,241,.42),0 0 0 1px rgba(152,84,241,.28)}
-    .cta:active{transform:translateY(1px)}
-    .cta:disabled{opacity:.36;cursor:not-allowed;filter:none;box-shadow:none}
-    .cta-m{font-size:10.5px;color:var(--m);text-align:center;margin-top:8px}
-
-    /* ─── Preview ─────────────────────────────────────────────────────────── */
-    .prev-wrap{
-      background:rgba(0,0,0,.44);border-radius:18px;
-      display:flex;align-items:center;justify-content:center;
-      min-height:340px;overflow:hidden;position:relative;
-      border:1px solid var(--b);
-    }
-    canvas{max-width:100%;border-radius:10px;display:block}
-    .prev-empty{text-align:center;padding:60px 20px;display:flex;flex-direction:column;align-items:center;gap:12px}
-    .pe-i{font-size:50px;opacity:.16}
-    .pe-t{font-size:13px;font-weight:500;color:var(--t);opacity:.32}
-    .pe-s{font-size:11px;color:var(--m);opacity:.28}
-    .prev-meta{font-size:10px;color:var(--m);margin-top:9px;opacity:.65}
-    .vbadge{
-      position:absolute;top:10px;right:10px;background:rgba(152,84,241,.88);
-      color:#fff;font-size:9px;font-weight:700;padding:3px 9px;
-      border-radius:999px;text-transform:uppercase;pointer-events:none;letter-spacing:.06em;
-    }
-    .abadge{
-      position:absolute;bottom:10px;left:50%;transform:translateX(-50%);
-      background:rgba(0,0,0,.65);color:var(--pl);font-size:9px;font-weight:600;
-      padding:4px 12px;border-radius:999px;pointer-events:none;white-space:nowrap;
-      display:none;border:1px solid rgba(152,84,241,.25);
-    }
-    .abadge.vis{display:block}
-
-    /* ─── Progress modal ──────────────────────────────────────────────────── */
-    .overlay{
-      position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.8);
-      backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;
-      opacity:0;pointer-events:none;transition:opacity .25s;
-    }
-    .overlay.vis{opacity:1;pointer-events:all}
-    .pcard{
-      background:#0d0d22;border:1px solid rgba(152,84,241,.18);
-      border-radius:24px;padding:36px 40px;width:min(460px,90vw);
-      box-shadow:0 32px 80px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.04);
-    }
-    .ptitle{font-family:'Syne',sans-serif;font-weight:900;font-size:18px;margin-bottom:4px;letter-spacing:-.02em}
-    .psub{font-size:12px;color:var(--m);margin-bottom:28px;line-height:1.5}
-    .ptrack{background:rgba(255,255,255,.06);border-radius:999px;height:6px;overflow:hidden;margin-bottom:14px}
-    .pbar{
-      height:100%;border-radius:999px;
-      background:linear-gradient(90deg,#7038c8,#b47ef7);
-      width:0%;transition:width .5s ease;
-      box-shadow:0 0 14px rgba(152,84,241,.5);
-    }
-    .prow{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-    .pmsg{font-size:12px;color:var(--m);flex:1;margin-right:12px}
-    .ppct{font-family:'Syne',sans-serif;font-weight:900;font-size:24px;color:var(--pl)}
-    .pfiles{display:flex;flex-direction:column;gap:5px;max-height:110px;overflow-y:auto}
-    .pfile{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--m);background:rgba(0,0,0,.32);padding:6px 10px;border-radius:9px}
-    .pcancel{
-      margin-top:20px;width:100%;padding:10px;background:transparent;
-      border:1px solid rgba(248,113,113,.22);border-radius:10px;
-      color:rgba(248,113,113,.55);font-family:'Inter',sans-serif;font-size:12px;
-      cursor:pointer;transition:border-color .15s,color .15s,background .15s;
-    }
-    .pcancel:hover{border-color:var(--r);color:var(--r);background:rgba(248,113,113,.06)}
-
-    /* ─── Toast ───────────────────────────────────────────────────────────── */
-    .toast{
-      position:fixed;bottom:24px;right:24px;z-index:300;
-      padding:11px 16px;border-radius:12px;background:rgba(10,10,28,.97);
-      border:1px solid var(--b);font-size:12px;font-weight:500;
-      box-shadow:0 8px 32px rgba(0,0,0,.5);
-      transform:translateY(18px);opacity:0;transition:opacity .25s,transform .25s;max-width:320px;
-    }
-    .toast.show{opacity:1;transform:translateY(0)}
-    .toast.ok{border-color:rgba(74,222,128,.3);color:var(--g)}
-    .toast.err{border-color:rgba(248,113,113,.3);color:var(--r)}
-
-    /* ─── Spinner ─────────────────────────────────────────────────────────── */
-    .spin{display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,.18);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
-    @keyframes spin{to{transform:rotate(360deg)}}
-
-    /* ─── Footer ──────────────────────────────────────────────────────────── */
-    footer{
-      position:relative;z-index:1;border-top:1px solid var(--b);
-      padding:18px 32px;text-align:center;font-size:11px;color:var(--md);
-    }
-    footer a{color:var(--m);text-decoration:none}
-    footer a:hover{color:var(--pl)}
-
-    /* ─── Responsive ──────────────────────────────────────────────────────── */
-    @media(max-width:640px){
-      .bar,.hero,.shell{padding-left:16px;padding-right:16px}
-      .mgrid,.slrow{grid-template-columns:1fr}
-      .fontgrid{grid-template-columns:repeat(2,1fr)}
-    }
-  
-    /* ── seletor de ferramenta + aviso de atualizacao ───────────────── */
-    .modes{display:flex;gap:4px;background:var(--b);border:1px solid var(--b2);border-radius:10px;padding:3px}
-    .modes a{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:7px;font-size:13px;
-      font-weight:600;color:var(--m);text-decoration:none;transition:.15s;white-space:nowrap}
-    .modes a:hover{color:var(--t)}
-    .modes a.on{background:var(--c);color:#fff;box-shadow:0 2px 8px rgba(152,84,241,.35)}
-    .updbar{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;
-      padding:11px 18px;background:linear-gradient(90deg,#9854F1,#7c3aed);color:#fff;font-size:13.5px;font-weight:500}
-    .updbar a{color:#fff;background:rgba(255,255,255,.2);padding:5px 13px;border-radius:7px;
-      text-decoration:none;font-weight:700}
-    .updbar a:hover{background:rgba(255,255,255,.32)}
-    .updbar button{background:none;border:none;color:#fff;opacity:.7;cursor:pointer;font-size:15px}
-  
-    /* ── TEMA CLARO ─────────────────────────────────────────────────────
-       O app nasceu só escuro. Aqui as mesmas variáveis ganham valores
-       claros; nada mais no CSS precisou mudar porque tudo já usa var(). */
-    :root[data-theme="light"]{
-      --bg:#faf9ff;--bg2:#f1eefb;
-      --s:rgba(24,12,56,.035);--s2:rgba(24,12,56,.055);
-      --b:rgba(24,12,56,.10);--b2:rgba(24,12,56,.17);
-      --bh:rgba(124,58,237,.5);
-      --p:#7c3aed;--pl:#9854F1;--pd:#5b21b6;--pll:#6d28d9;
-      --t:#171227;--t2:#3d3357;--m:#6b6488;--md:#8f89ab;
-      --g:#16a34a;--r:#dc2626;--y:#d97706;
-    }
-    :root[data-theme="light"] body{background:var(--bg)}
-    .tema-btn{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;
-      border:1px solid var(--b2);background:var(--s);color:var(--t2);cursor:pointer;
-      font-size:15px;transition:.15s;flex:none}
-    .tema-btn:hover{border-color:var(--bh);color:var(--t)}
-  
-    /* ── fila de arquivos: miniatura, remover item, item em preview ───── */
-    .fq-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px}
-    .fq-count{font-size:11.5px;color:var(--m)}
-    .fq-clear{background:none;border:1px solid var(--b2);color:var(--m);border-radius:8px;
-      padding:4px 10px;font-size:11px;cursor:pointer}
-    .fq-clear:hover{border-color:var(--r);color:var(--r)}
-    .fi{position:relative;cursor:pointer}
-    .fi:hover{border-color:var(--bh)}
-    .fi.sel{border-color:rgba(152,84,241,.6);background:rgba(152,84,241,.10)}
-    .fi-th{width:30px;height:30px;border-radius:7px;object-fit:cover;flex:none;background:var(--s2)}
-    .fi-ic{width:30px;height:30px;border-radius:7px;display:grid;place-items:center;
-      background:var(--s2);font-size:14px;flex:none}
-    .fi-x{background:none;border:none;color:var(--m);font-size:15px;cursor:pointer;
-      padding:0 2px;line-height:1;flex:none}
-    .fi-x:hover{color:var(--r)}
-    .fi-badge{font-size:9.5px;color:var(--pl);font-weight:700;letter-spacing:.04em}
-  </style>
+  <link rel="stylesheet" href="/static/css/app.css"/>
 
 <script>
-// Tema claro/escuro — segue o sistema na primeira visita e lembra a escolha.
+// Tema. O padrao agora e o CLARO: ele vale no :root do CSS, e o escuro entra
+// com data-theme="dark". Assim a pagina ja nasce clara, sem piscar antes do JS.
+// Ordem: escolha salva > preferencia do sistema > claro.
 (function(){
   var salvo = localStorage.getItem('gw_tema');
-  var claro = salvo ? salvo === 'light'
-            : window.matchMedia('(prefers-color-scheme: light)').matches;
-  if(claro) document.documentElement.setAttribute('data-theme','light');
-  window.alternarTema = function(){
-    var atual = document.documentElement.getAttribute('data-theme') === 'light';
-    if(atual){ document.documentElement.removeAttribute('data-theme'); localStorage.setItem('gw_tema','dark'); }
-    else { document.documentElement.setAttribute('data-theme','light'); localStorage.setItem('gw_tema','light'); }
-    var b = document.getElementById('temaBtn'); if(b) b.textContent = atual ? '☾' : '☀';
-  };
-  document.addEventListener('DOMContentLoaded', function(){
+  var escuro = salvo ? salvo === 'dark'
+             : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  var raiz = document.documentElement;
+  function aplicar(e){
+    raiz.setAttribute('data-theme', e ? 'dark' : 'light');
     var b = document.getElementById('temaBtn');
-    if(b) b.textContent = document.documentElement.getAttribute('data-theme')==='light' ? '☀' : '☾';
+    if(b){ b.textContent = e ? '☀' : '☾';
+           b.title = e ? 'Mudar para o tema claro' : 'Mudar para o tema escuro';
+           b.setAttribute('aria-label', b.title); }
+  }
+  aplicar(escuro);
+  window.alternarTema = function(){
+    var e = raiz.getAttribute('data-theme') !== 'dark';
+    localStorage.setItem('gw_tema', e ? 'dark' : 'light');
+    aplicar(e);
+  };
+  // se o usuario nunca escolheu, acompanha a troca no Windows
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(ev){
+    if(!localStorage.getItem('gw_tema')) aplicar(ev.matches);
+  });
+  document.addEventListener('DOMContentLoaded', function(){
+    aplicar(raiz.getAttribute('data-theme') === 'dark');
   });
 })();
 </script>
@@ -429,7 +57,7 @@
       <img class="lg-claro" src="/static/img/guebly-ltda.png" alt="Guebly LTDA"/>
       <span class="logo-n">WatermarkTool</span>
       <span class="logo-sep"></span>
-      <span class="logo-sub">Imagens &amp; Videos</span>
+      <span class="logo-sub">Imagens &amp; Vídeos</span>
     </div>
     <nav class="modes">
       <a href="/" class="on">🎨 Ferramenta livre</a>
@@ -445,7 +73,7 @@
 
 <div class="hero">
   <div class="eyebrow">Ferramenta gratuita &amp; open source</div>
-  <h1>Marca d'agua em imagens<br/>e <em>videos</em></h1>
+  <h1>Marca d'água em imagens<br/>e <em>vídeos</em></h1>
   <p>Upload em lote, logo ou texto animado, progresso em tempo real. Processado localmente com FFmpeg.</p>
 </div>
 
@@ -454,18 +82,18 @@
 
     <!-- ── Painel esquerdo ─────────────────────────────────────────────── -->
     <div class="panel">
-      <div class="pt">Configuracao</div>
+      <div class="pt">Configuração</div>
       <form id="mainForm">
 
         <!-- Arquivos -->
-        <div class="sl">Imagens e/ou Videos</div>
+        <div class="sl">Imagens e/ou Vídeos</div>
         <div class="dz" id="mediaDrop">
           <input type="file" name="images" id="mediaInput"
             accept="image/*,video/mp4,video/avi,video/quicktime,video/x-matroska,video/webm,.mkv,.mov,.avi,.flv,.wmv"
             multiple required/>
           <div class="dz-i">&#128444; &#127916;</div>
           <div class="dz-t">Arraste ou clique para selecionar</div>
-          <div class="dz-h">PNG JPG MP4 MOV MKV AVI WEBM &mdash; varios = ZIP automatico</div>
+          <div class="dz-h">PNG JPG MP4 MOV MKV AVI WEBM &mdash; vários = ZIP automático</div>
         </div>
         <div class="fq-head" id="fqHead" style="display:none">
           <span class="fq-count" id="fqCount"></span>
@@ -483,8 +111,8 @@
             <div class="acard-h" data-card="acWm">
               <span class="acard-ico">&#127991;</span>
               <div class="acard-mid">
-                <div class="acard-t">Marca d'Agua</div>
-                <div class="acard-d">Logo, texto ou imagem sobre a midia</div>
+                <div class="acard-t">Marca d'Água</div>
+                <div class="acard-d">Logo, texto ou imagem sobre a mídia</div>
               </div>
               <span class="acard-badge" id="badgeWm"></span>
               <span class="acard-arr">&#9654;</span>
@@ -502,7 +130,7 @@
                   <input type="file" id="logoFileIn" accept="image/png,image/jpeg,image/webp"/>
                   <div class="dz-i">&#127991;</div>
                   <div class="dz-t">Arraste a logo ou clique</div>
-                  <div class="dz-h">PNG com transparencia recomendado</div>
+                  <div class="dz-h">PNG com transparência recomendado</div>
                 </div>
                 <div class="lthumb" id="uploadThumb">
                   <img id="uploadThumbImg" src="" alt=""/>
@@ -557,7 +185,7 @@
 
               <!-- Posicao (imagem) -->
               <div id="imgSection">
-                <div class="sl" style="margin-top:0">Posicao</div>
+                <div class="sl" style="margin-top:0">Posição</div>
                 <div class="pgrid" id="posGrid">
                   <div class="chip" data-pos="top-left"      title="Superior esquerdo">&#8598;</div>
                   <div class="chip" data-pos="top-center"    title="Superior centro">&#8593;</div>
@@ -574,9 +202,9 @@
 
               <!-- Animacao (video) -->
               <div id="vidSection" style="display:none">
-                <div class="sl" style="margin-top:0">Animacao no video</div>
+                <div class="sl" style="margin-top:0">Animação no vídeo</div>
                 <div class="mgrid" id="motGrid">
-                  <div class="mchip active" data-mot="none">Estatico<span class="sub">posicao fixa</span></div>
+                  <div class="mchip active" data-mot="none">Estatico<span class="sub">posição fixa</span></div>
                   <div class="mchip" data-mot="left-to-right">Esq &#8594; Dir<span class="sub">ticker horizontal</span></div>
                   <div class="mchip" data-mot="right-to-left">Dir &#8594; Esq<span class="sub">ticker invertido</span></div>
                   <div class="mchip" data-mot="bottom-to-top">Baixo &#8593; Cima<span class="sub">creditos / legenda</span></div>
@@ -590,7 +218,7 @@
                 </div>
                 <input type="hidden" name="wm_motion" id="wmMotion" value="none"/>
                 <div id="vidPosWrap" style="margin-top:12px">
-                  <div class="sl" style="margin-top:0">Posicao (quando estatico)</div>
+                  <div class="sl" style="margin-top:0">Posição (quando estatico)</div>
                   <div class="pgrid" id="posGridV">
                     <div class="chip" data-pos="top-left">&#8598;</div>
                     <div class="chip" data-pos="top-center">&#8593;</div>
@@ -628,7 +256,7 @@
               <span class="acard-ico">&#127902;</span>
               <div class="acard-mid">
                 <div class="acard-t">Inserir Video</div>
-                <div class="acard-d">Adiciona outro video no inicio, meio ou final</div>
+                <div class="acard-d">Adiciona outro vídeo no inicio, meio ou final</div>
               </div>
               <span class="acard-badge" id="badgeInsert"></span>
               <span class="acard-arr">&#9654;</span>
@@ -637,7 +265,7 @@
               <div class="dz" id="ivDrop" style="padding:12px 10px">
                 <input type="file" id="ivFileIn" accept="video/mp4,video/quicktime,video/x-matroska,video/webm,.mp4,.mov,.mkv,.avi,.webm,.flv,.wmv"/>
                 <div class="dz-i">&#127902;</div>
-                <div class="dz-t">Arraste o video para inserir</div>
+                <div class="dz-t">Arraste o vídeo para inserir</div>
                 <div class="dz-h">MP4 MOV MKV AVI WEBM &mdash; ate 200 MB</div>
               </div>
               <div class="lthumb" id="ivThumb">
@@ -645,11 +273,11 @@
               </div>
               <input type="hidden" name="insert_video_token" id="ivToken"/>
 
-              <div class="sl" style="margin-top:12px">Posicao da insercao</div>
+              <div class="sl" style="margin-top:12px">Posição da insercao</div>
               <div class="mgrid" id="ivPosGrid" style="grid-template-columns:1fr 1fr 1fr">
-                <div class="mchip" data-ivpos="inicio">Inicio<span class="sub">antes do video</span></div>
+                <div class="mchip" data-ivpos="inicio">Inicio<span class="sub">antes do vídeo</span></div>
                 <div class="mchip" data-ivpos="meio">Meio<span class="sub">no tempo escolhido</span></div>
-                <div class="mchip active" data-ivpos="final">Final<span class="sub">apos o video</span></div>
+                <div class="mchip active" data-ivpos="final">Final<span class="sub">apos o vídeo</span></div>
               </div>
               <input type="hidden" name="insert_position" id="ivPosH" value="final"/>
 
@@ -659,7 +287,7 @@
                 <div style="font-size:10px;color:var(--md);margin-top:4px" id="ivTimeSec"></div>
               </div>
 
-              <div class="info-box" id="ivInfo" style="margin-top:8px">&#9432; O video sera inserido no <strong>final</strong> do video principal.</div>
+              <div class="info-box" id="ivInfo" style="margin-top:8px">&#9432; O vídeo sera inserido no <strong>final</strong> do vídeo principal.</div>
             </div>
           </div>
 
@@ -669,7 +297,7 @@
               <span class="acard-ico">&#128247;</span>
               <div class="acard-mid">
                 <div class="acard-t">Tela Final</div>
-                <div class="acard-d">Imagem estatica exibida no final do video</div>
+                <div class="acard-d">Imagem estatica exibida no final do vídeo</div>
               </div>
               <span class="acard-badge" id="badgeEnd"></span>
               <span class="acard-arr">&#9654;</span>
@@ -679,7 +307,7 @@
                 <input type="file" id="esFileIn" accept="image/png,image/jpeg,image/webp"/>
                 <div class="dz-i">&#128247;</div>
                 <div class="dz-t">Arraste a imagem da tela final</div>
-                <div class="dz-h">PNG JPG WEBP &mdash; aparece no final do video</div>
+                <div class="dz-h">PNG JPG WEBP &mdash; aparece no final do vídeo</div>
               </div>
               <div class="lthumb" id="esThumb">
                 <img id="esThumbImg" src="" alt=""/>
@@ -690,31 +318,31 @@
                 <div class="slh"><span class="sl-label">Duracao da tela final</span><span class="sl-val" id="esDurV">5s</span></div>
                 <input type="range" class="field" name="endscreen_duration" id="esDurIn" min="0" max="15" step="1" value="5"/>
               </div>
-              <div class="info-box" id="esInfo">&#9432; A imagem sera exibida por <strong>5 segundos</strong> no final do video. Coloque 0 para desativar.</div>
+              <div class="info-box" id="esInfo">&#9432; A imagem sera exibida por <strong>5 segundos</strong> no final do vídeo. Coloque 0 para desativar.</div>
             </div>
           </div>
 
         </div><!-- .acards -->
 
         <button class="cta" type="submit" id="submitBtn">&#8595; Aplicar e baixar</button>
-        <div class="cta-m">1 arquivo = PNG/MP4 &nbsp;&middot;&nbsp; Varios = ZIP automatico</div>
+        <div class="cta-m">1 arquivo = PNG/MP4 &nbsp;&middot;&nbsp; Varios = ZIP automático</div>
       </form>
     </div>
 
     <!-- ── Preview ─────────────────────────────────────────────────────── -->
     <div class="panel" style="position:sticky;top:80px">
-      <div class="pt">Pre-visualizacao ao vivo</div>
+      <div class="pt">Pré-visualização ao vivo</div>
       <div class="prev-wrap">
         <div class="prev-empty" id="prevEmpty">
           <div class="pe-i">&#128444; &#127916;</div>
-          <div class="pe-t">Selecione uma imagem ou video</div>
+          <div class="pe-t">Selecione uma imagem ou vídeo</div>
           <div class="pe-s">Carregue logo ou texto para ver o resultado</div>
         </div>
         <canvas id="canvas" style="display:none"></canvas>
         <div class="vbadge" id="vbadge" style="display:none">&#127916; frame preview</div>
         <div class="abadge" id="abadge"></div>
       </div>
-      <div class="prev-meta" id="prevMeta">Pre-visualizacao local &mdash; nada e enviado antes de clicar em Aplicar</div>
+      <div class="prev-meta" id="prevMeta">Pré-visualização local &mdash; nada e enviado antes de clicar em Aplicar</div>
     </div>
 
   </div><!-- .grid -->

@@ -82,8 +82,9 @@ python app.py         # abre em http://127.0.0.1:5000 no navegador
 
 ### Tema claro e escuro
 
-Botão **☾ / ☀** no topo. Na primeira vez segue o tema do Windows; depois lembra
-a sua escolha.
+O app abre no **tema claro**. O botão **☾ / ☀** no topo alterna para o escuro e
+lembra a sua escolha. Na primeira vez, se você nunca escolheu, ele segue o tema
+do Windows.
 
 ---
 

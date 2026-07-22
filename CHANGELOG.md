@@ -1,5 +1,40 @@
 # Changelog
 
+## [3.5.0] — 2026-07-22
+
+### Redesign completo + tema claro de verdade
+
+**Tema claro agora é o padrão.** O app abre no claro; o escuro entra pela chavinha
+☾/☀ (e é lembrado). Antes ele piscava escuro antes do JS decidir.
+
+**O tema claro estava "meio falhado" — e a causa era estrutural.** Havia cerca de
+90 cores fixas fora do sistema de temas: fundos pretos translúcidos, brancos,
+sombras. Elas não mudavam ao trocar de tema, então no claro sobravam manchas
+escuras e textos sem contraste. Agora **toda** superfície, borda, sombra e brilho
+vem de variáveis — o claro e o escuro são só dois conjuntos de valores.
+
+**Uma folha de estilo única.** As duas telas carregavam CSS embutido, com ~50
+classes idênticas duplicadas. Qualquer ajuste tinha que ser feito duas vezes e na
+prática escapava. Extraí tudo para `static/css/app.css`, compartilhado pelas duas.
+
+**Redesign das telas:**
+- Superfícies com hierarquia real (cartão → campo rebaixado → trilho), sombras
+  suaves no claro e profundas no escuro.
+- Prévia com fundo quadriculado — fica claro o que é transparência da imagem.
+- Coluna da prévia acompanha a rolagem; botões, chips e campos com estados de
+  foco/hover acessíveis; contraste do texto secundário corrigido nos dois temas.
+- Barra de rolagem, seleção de texto e foco combinando com o tema.
+- Responsivo até o celular; respeita "reduzir movimento" do sistema.
+
+### Corrigido
+- **Layout da tela Marcas quebrado:** um `</div>` do seletor de empresas tinha
+  sido removido por engano na 3.4.3, e o painel de prévia caía dentro da lista
+  rolante. Os dois painéis voltam a ficar lado a lado.
+- **Aba ativa do seletor sem cor de fundo:** apontava para uma variável que não
+  existia (`--c`).
+- **Acentuação:** dezenas de textos estavam sem acento (Água, vídeo, posição,
+  configuração, pré-visualização…).
+
 ## [3.4.3] — 2026-07-22
 
 ### "Logo não configurada" em quem tinha logo

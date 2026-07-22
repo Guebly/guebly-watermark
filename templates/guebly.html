@@ -7,313 +7,36 @@
   <link rel="icon" href="/static/img/guebly-ltda-simbolo-roxo.png" type="image/png"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
-  <style>
-    :root{
-      --bg:#060610;--bg2:#0d0d22;
-      --s:rgba(255,255,255,.036);--s2:rgba(255,255,255,.056);
-      --b:rgba(255,255,255,.082);--b2:rgba(255,255,255,.14);
-      --bh:rgba(152,84,241,.55);--p:#9854F1;--pl:#b47ef7;--pd:#7038c8;
-      --t:#f0eaff;--t2:#c4b5e8;--m:#7a74a0;--md:#52506e;
-      --g:#4ade80;--r:#f87171;--y:#fbbf24;
-    }
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);min-height:100vh;overflow-x:hidden;line-height:1.5}
-    body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
-      background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.022'/%3E%3C/svg%3E")}
-    .blob{position:fixed;z-index:0;pointer-events:none;border-radius:50%;filter:blur(130px)}
-    .ba{width:700px;height:700px;top:-280px;left:-200px;background:radial-gradient(circle at 40% 40%,#4c1d95,#12102a);opacity:.2}
-    .bb{width:580px;height:580px;bottom:-200px;right:-180px;background:radial-gradient(circle at 60% 60%,#3b1375,#0f0820);opacity:.16}
-
-    /* Header */
-    header{position:sticky;top:0;z-index:40;background:rgba(6,6,16,.84);backdrop-filter:blur(22px);border-bottom:1px solid var(--b)}
-    .bar{max-width:1380px;margin:0 auto;padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between}
-    .logo-w{display:flex;align-items:center;gap:12px}
-    .logo-w img{height:28px;width:auto}
-    /* A logo tem o nome "Guebly" embutido, entao precisa da versao branca no tema
-       escuro e da escura no tema claro — senao o texto some no fundo. */
-    .logo-w .lg-claro{display:none}
-    :root[data-theme="light"] .logo-w .lg-escuro{display:none}
-    :root[data-theme="light"] .logo-w .lg-claro{display:block}
-    .logo-n{font-family:'Syne',sans-serif;font-weight:900;font-size:14px;letter-spacing:-.02em}
-    .logo-sep{width:1px;height:14px;background:var(--b2)}
-    .logo-sub{font-size:11.5px;color:var(--m)}
-    .pill{padding:4px 10px;border-radius:999px;font-size:10.5px;font-weight:500;border:1px solid var(--b);color:var(--m)}
-    .pill.warn{background:rgba(251,191,36,.08);border-color:rgba(251,191,36,.28);color:var(--y)}
-
-    /* Hero */
-    .hero{position:relative;z-index:1;max-width:1380px;margin:0 auto;padding:48px 32px 20px}
-    .eyebrow{display:inline-flex;align-items:center;gap:7px;background:rgba(251,191,36,.07);
-      border:1px solid rgba(251,191,36,.2);color:var(--y);font-size:10.5px;font-weight:600;
-      letter-spacing:.08em;text-transform:uppercase;padding:4px 12px;border-radius:999px;margin-bottom:16px}
-    .eyebrow::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--y)}
-    .hero h1{font-family:'Syne',sans-serif;font-weight:900;font-size:clamp(26px,3.2vw,42px);
-      line-height:1.07;letter-spacing:-.04em;margin-bottom:12px}
-    .hero h1 em{color:var(--p);font-style:normal}
-    .hero p{font-size:13.5px;color:var(--m);max-width:500px;line-height:1.7}
-
-    /* Shell */
-    .shell{position:relative;z-index:1;max-width:1380px;margin:0 auto;padding:22px 32px 60px}
-    .grid{display:grid;grid-template-columns:500px minmax(0,1fr);gap:20px;align-items:start}
-    @media(max-width:1100px){.grid{grid-template-columns:1fr}}
-
-    /* Panel */
-    .panel{
-      background:var(--s);border:1px solid var(--b);border-radius:24px;padding:28px;
-      box-shadow:0 8px 40px rgba(0,0,0,.42);backdrop-filter:blur(6px);
-      transition:box-shadow .35s;
-    }
-    .panel:hover{box-shadow:0 16px 56px rgba(0,0,0,.55)}
-    .pt{font-family:'Syne',sans-serif;font-weight:700;font-size:9.5px;text-transform:uppercase;
-      letter-spacing:.13em;color:var(--p);margin-bottom:22px;display:flex;align-items:center;gap:10px}
-    .pt::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--b),transparent)}
-    .sl{font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--m);margin-bottom:8px;margin-top:20px}
-    .sl:first-child{margin-top:0}
-    .div{height:1px;background:linear-gradient(90deg,transparent,var(--b) 30%,var(--b) 70%,transparent);margin:20px 0}
-
-    /* ══ Company picker ══ */
-    .picker{display:flex;flex-direction:column;gap:6px}
-
-    /* Group header */
-    .group-label{
-      font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;
-      color:var(--m);padding:10px 4px 4px;opacity:.7
-    }
-
-    /* Company row */
-    .comp-row{
-      display:flex;align-items:center;gap:12px;
-      padding:11px 14px;border-radius:14px;
-      border:1.5px solid var(--b);cursor:pointer;
-      transition:background .18s,border-color .18s,transform .1s;
-      position:relative;overflow:hidden;
-    }
-    .comp-row::before{
-      content:'';position:absolute;inset:0;
-      background:linear-gradient(135deg, var(--cc,#9854F1) 0%, transparent 60%);
-      opacity:0;transition:opacity .25s;
-    }
-    .comp-row:hover::before{opacity:.06}
-    .comp-row:hover{background:rgba(255,255,255,.04);transform:translateX(2px)}
-    .comp-row:active{transform:translateX(3px) scale(.99)}
-    .comp-row.active{
-      border-color:var(--cc,#9854F1);
-      background:rgba(255,255,255,.05);
-      transform:translateX(4px);
-    }
-    .comp-row.active::before{opacity:.1}
-
-    /* Avatar */
-    .comp-avatar{
-      width:42px;height:42px;border-radius:11px;flex-shrink:0;
-      display:flex;align-items:center;justify-content:center;
-      font-family:'Syne',sans-serif;font-weight:900;font-size:13px;
-      color:#fff;letter-spacing:-.02em;
-      background:linear-gradient(135deg, var(--cc,#9854F1), color-mix(in srgb, var(--cc,#9854F1) 60%, #000));
-      box-shadow:0 4px 12px rgba(0,0,0,.3);
-      position:relative;z-index:1;overflow:hidden;
-      transition:transform .18s,box-shadow .18s;
-    }
-    .av-logo{width:100%;height:100%;object-fit:contain;padding:6px;display:block}
-    .av-ini{display:flex;align-items:center;justify-content:center;width:100%;height:100%}
-    .comp-row:hover .comp-avatar{transform:scale(1.08);box-shadow:0 6px 18px rgba(0,0,0,.4)}
-    .comp-row.active .comp-avatar{transform:scale(1.1);box-shadow:0 6px 20px color-mix(in srgb,var(--cc,#9854F1) 40%,transparent)}
-
-    /* Info */
-    .comp-info{flex:1;min-width:0;position:relative;z-index:1}
-    .comp-name{font-size:13px;font-weight:700;line-height:1.2;color:var(--t)}
-    .comp-row.active .comp-name{color:#fff}
-    .comp-meta{font-size:10px;color:var(--m);margin-top:2px}
-
-    /* Right indicator */
-    .comp-right{position:relative;z-index:1;display:flex;align-items:center;gap:6px}
-    .comp-check{
-      width:18px;height:18px;border-radius:50%;border:1.5px solid var(--b);
-      display:flex;align-items:center;justify-content:center;
-      font-size:10px;transition:background .2s,border-color .2s;
-    }
-    .comp-row.active .comp-check{
-      background:var(--cc,#9854F1);border-color:var(--cc,#9854F1);color:#fff;
-    }
-    .logo-dot{
-      width:6px;height:6px;border-radius:50%;
-      background:var(--g);box-shadow:0 0 6px var(--g);
-      display:none;
-    }
-    .logo-dot.vis{display:block}
-
-    /* Selected company banner */
-    .sel-banner{
-      display:none;margin-top:0;padding:12px 14px;border-radius:12px;
-      background:rgba(255,255,255,.04);border:1px solid var(--b);
-      align-items:center;gap:12px;
-    }
-    .sel-banner.vis{display:flex}
-    .sel-banner-avatar{
-      width:36px;height:36px;border-radius:9px;flex-shrink:0;
-      display:flex;align-items:center;justify-content:center;
-      font-family:'Syne',sans-serif;font-weight:900;font-size:11px;color:#fff;
-      overflow:hidden;
-    }
-    .sel-banner-avatar img{width:100%;height:100%;object-fit:contain;padding:5px}
-    .sel-banner-avatar span{display:flex;align-items:center;justify-content:center;width:100%;height:100%}
-    .sel-banner-info{flex:1}
-    .sel-banner-name{font-size:12px;font-weight:700}
-    .sel-banner-status{font-size:10px;color:var(--m);margin-top:1px}
-    .sel-banner-status.ok{color:var(--g)}
-    .sel-banner-status.miss{color:var(--y)}
-
-    /* Override box */
-    .override-box{
-      padding:14px;border-radius:14px;
-      border:1px dashed rgba(255,255,255,.1);background:rgba(255,255,255,.02);
-    }
-    .override-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--m);margin-bottom:10px}
-    .tabs{display:flex;gap:3px;background:rgba(0,0,0,.42);border-radius:12px;padding:3px;margin-bottom:12px}
-    .tab{flex:1;padding:8px 6px;border-radius:9px;text-align:center;font-size:10.5px;font-weight:600;
-      cursor:pointer;color:var(--m);transition:background .2s,color .2s,box-shadow .2s;user-select:none}
-    .tab.active{background:rgba(152,84,241,.22);color:var(--t);box-shadow:0 2px 10px rgba(152,84,241,.15)}
-    .tp{display:none}
-    .tp.active{display:block}
-
-    .dz{position:relative;border:1.5px dashed var(--b);border-radius:14px;padding:16px;
-      text-align:center;cursor:pointer;transition:border-color .2s,background .2s,box-shadow .2s}
-    .dz:hover,.dz.over{border-color:var(--p);background:rgba(152,84,241,.05);box-shadow:0 0 0 3px rgba(152,84,241,.07)}
-    .dz input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0}
-    .dz-i{font-size:22px;margin-bottom:4px;opacity:.65}
-    .dz-t{font-size:11.5px;font-weight:500;color:var(--t2)}
-    .dz-h{font-size:10px;color:var(--m);margin-top:3px}
-    .lthumb{display:none;margin-top:8px;background:rgba(0,0,0,.3);border-radius:12px;padding:10px;text-align:center;border:1px solid var(--b)}
-    .lthumb.vis{display:block}
-    .lthumb img{max-height:52px;max-width:100%;object-fit:contain;border-radius:6px}
-    .lthumb-n{font-size:10px;color:var(--m);margin-top:4px}
-    .urow{display:flex;gap:7px}
-    .urow input{flex:1}
-    .bsm{padding:9px 14px;border-radius:10px;border:1px solid var(--b);background:rgba(255,255,255,.055);
-      color:var(--t);font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;
-      transition:background .15s,border-color .15s;font-family:inherit}
-    .bsm:hover{background:rgba(255,255,255,.1);border-color:var(--b2)}
-    .field{width:100%;padding:9px 13px;background:rgba(0,0,0,.32);border:1px solid var(--b);
-      border-radius:11px;color:var(--t);font-family:'Inter',sans-serif;font-size:13px;
-      transition:border-color .2s,box-shadow .2s;appearance:none}
-    .field:focus{outline:none;border-color:var(--bh);box-shadow:0 0 0 3px rgba(152,84,241,.1)}
-    input[type=range].field{padding:3px 0;background:transparent;border:none;cursor:pointer;accent-color:var(--p)}
-
-    /* Image drop */
-    .flist{display:flex;flex-direction:column;gap:4px;margin-top:8px}
-    .fi{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--m);
-      background:rgba(0,0,0,.28);padding:6px 10px;border-radius:9px;
-      border:1px solid rgba(255,255,255,.038)}
-    .fi-n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--t2)}
-
-    /* Position */
-    .pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
-    .chip{padding:9px 4px;border-radius:11px;text-align:center;border:1.5px solid var(--b);
-      cursor:pointer;font-size:16px;transition:background .15s,border-color .15s,transform .1s;user-select:none}
-    .chip:hover{border-color:var(--pl);transform:scale(1.05)}
-    .chip.active{background:rgba(152,84,241,.18);border-color:rgba(152,84,241,.55)}
-
-    /* Sliders */
-    .slrow{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-    .slb .slh{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-    .sl-label{font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--m)}
-    .sl-val{
-      font-size:11px;font-weight:700;color:var(--pl);
-      background:rgba(152,84,241,.12);border:1px solid rgba(152,84,241,.2);
-      padding:2px 7px;border-radius:5px;min-width:36px;text-align:center;
-    }
-
-    /* CTA */
-    .cta{
-      width:100%;padding:15px;
-      background:linear-gradient(135deg,#9854F1 0%,#6f30c5 100%);
-      border:none;border-radius:14px;color:#fff;
-      font-family:'Syne',sans-serif;font-weight:900;font-size:14px;
-      cursor:pointer;margin-top:22px;letter-spacing:-.01em;
-      box-shadow:0 4px 24px rgba(152,84,241,.28),0 0 0 1px rgba(152,84,241,.18);
-      transition:filter .15s,transform .1s,box-shadow .15s;
-      position:relative;overflow:hidden;
-    }
-    .cta::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.12),transparent);pointer-events:none}
-    .cta:hover{filter:brightness(1.12);box-shadow:0 8px 32px rgba(152,84,241,.42),0 0 0 1px rgba(152,84,241,.28)}
-    .cta:active{transform:translateY(1px)}
-    .cta:disabled{opacity:.36;cursor:not-allowed;filter:none;box-shadow:none}
-    .cta-m{font-size:10.5px;color:var(--m);text-align:center;margin-top:8px}
-
-    /* Preview */
-    .prev-wrap{
-      background:rgba(0,0,0,.44);border-radius:18px;display:flex;align-items:center;
-      justify-content:center;min-height:340px;overflow:hidden;
-      border:1px solid var(--b);
-    }
-    canvas{max-width:100%;border-radius:10px;display:block}
-    .prev-empty{color:var(--m);text-align:center;padding:60px 20px;
-      display:flex;flex-direction:column;align-items:center;gap:12px}
-    .pe-i{font-size:50px;opacity:.16}
-    .pe-t{font-size:13px;font-weight:500;color:var(--t);opacity:.32}
-    .prev-meta{font-size:10px;color:var(--m);margin-top:9px;opacity:.65}
-
-    /* Toast */
-    .toast{position:fixed;bottom:24px;right:24px;z-index:100;padding:11px 16px;
-      border-radius:12px;background:rgba(10,10,28,.97);border:1px solid var(--b);
-      font-size:12px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.5);
-      transform:translateY(18px);opacity:0;transition:opacity .25s,transform .25s;max-width:320px}
-    .toast.show{opacity:1;transform:translateY(0)}
-    .toast.ok{border-color:rgba(74,222,128,.3);color:var(--g)}
-    .toast.err{border-color:rgba(248,113,113,.3);color:var(--r)}
-    .toast.warn{border-color:rgba(251,191,36,.3);color:var(--y)}
-    .spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.15);
-      border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    @media(max-width:640px){.bar,.hero,.shell{padding-left:16px;padding-right:16px}.slrow{grid-template-columns:1fr}}
-  
-    /* ── seletor de ferramenta + aviso de atualizacao ───────────────── */
-    .modes{display:flex;gap:4px;background:var(--b);border:1px solid var(--b2);border-radius:10px;padding:3px}
-    .modes a{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:7px;font-size:13px;
-      font-weight:600;color:var(--m);text-decoration:none;transition:.15s;white-space:nowrap}
-    .modes a:hover{color:var(--t)}
-    .modes a.on{background:var(--c);color:#fff;box-shadow:0 2px 8px rgba(152,84,241,.35)}
-    .updbar{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;
-      padding:11px 18px;background:linear-gradient(90deg,#9854F1,#7c3aed);color:#fff;font-size:13.5px;font-weight:500}
-    .updbar a{color:#fff;background:rgba(255,255,255,.2);padding:5px 13px;border-radius:7px;
-      text-decoration:none;font-weight:700}
-    .updbar a:hover{background:rgba(255,255,255,.32)}
-    .updbar button{background:none;border:none;color:#fff;opacity:.7;cursor:pointer;font-size:15px}
-  
-    /* ── TEMA CLARO ─────────────────────────────────────────────────────
-       O app nasceu só escuro. Aqui as mesmas variáveis ganham valores
-       claros; nada mais no CSS precisou mudar porque tudo já usa var(). */
-    :root[data-theme="light"]{
-      --bg:#faf9ff;--bg2:#f1eefb;
-      --s:rgba(24,12,56,.035);--s2:rgba(24,12,56,.055);
-      --b:rgba(24,12,56,.10);--b2:rgba(24,12,56,.17);
-      --bh:rgba(124,58,237,.5);
-      --p:#7c3aed;--pl:#9854F1;--pd:#5b21b6;--pll:#6d28d9;
-      --t:#171227;--t2:#3d3357;--m:#6b6488;--md:#8f89ab;
-      --g:#16a34a;--r:#dc2626;--y:#d97706;
-    }
-    :root[data-theme="light"] body{background:var(--bg)}
-    .tema-btn{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;
-      border:1px solid var(--b2);background:var(--s);color:var(--t2);cursor:pointer;
-      font-size:15px;transition:.15s;flex:none}
-    .tema-btn:hover{border-color:var(--bh);color:var(--t)}
-  </style>
+  <link rel="stylesheet" href="/static/css/app.css"/>
 
 <script>
-// Tema claro/escuro — segue o sistema na primeira visita e lembra a escolha.
+// Tema. O padrao agora e o CLARO: ele vale no :root do CSS, e o escuro entra
+// com data-theme="dark". Assim a pagina ja nasce clara, sem piscar antes do JS.
+// Ordem: escolha salva > preferencia do sistema > claro.
 (function(){
   var salvo = localStorage.getItem('gw_tema');
-  var claro = salvo ? salvo === 'light'
-            : window.matchMedia('(prefers-color-scheme: light)').matches;
-  if(claro) document.documentElement.setAttribute('data-theme','light');
-  window.alternarTema = function(){
-    var atual = document.documentElement.getAttribute('data-theme') === 'light';
-    if(atual){ document.documentElement.removeAttribute('data-theme'); localStorage.setItem('gw_tema','dark'); }
-    else { document.documentElement.setAttribute('data-theme','light'); localStorage.setItem('gw_tema','light'); }
-    var b = document.getElementById('temaBtn'); if(b) b.textContent = atual ? '☾' : '☀';
-  };
-  document.addEventListener('DOMContentLoaded', function(){
+  var escuro = salvo ? salvo === 'dark'
+             : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  var raiz = document.documentElement;
+  function aplicar(e){
+    raiz.setAttribute('data-theme', e ? 'dark' : 'light');
     var b = document.getElementById('temaBtn');
-    if(b) b.textContent = document.documentElement.getAttribute('data-theme')==='light' ? '☀' : '☾';
+    if(b){ b.textContent = e ? '☀' : '☾';
+           b.title = e ? 'Mudar para o tema claro' : 'Mudar para o tema escuro';
+           b.setAttribute('aria-label', b.title); }
+  }
+  aplicar(escuro);
+  window.alternarTema = function(){
+    var e = raiz.getAttribute('data-theme') !== 'dark';
+    localStorage.setItem('gw_tema', e ? 'dark' : 'light');
+    aplicar(e);
+  };
+  // se o usuario nunca escolheu, acompanha a troca no Windows
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(ev){
+    if(!localStorage.getItem('gw_tema')) aplicar(ev.matches);
+  });
+  document.addEventListener('DOMContentLoaded', function(){
+    aplicar(raiz.getAttribute('data-theme') === 'dark');
   });
 })();
 </script>
@@ -366,7 +89,7 @@
 
           {# Um bloco so: os grupos e as descricoes vem do config.json.
              Antes eram tres blocos com os ids fixos no HTML, entao empresa nova
-             no config nao aparecia aqui. #}
+             no config não aparecia aqui. #}
           {% for grupo, empresas in grupos.items() %}
           <div class="group-label">{{ grupo }}</div>
             {% for c in empresas %}
@@ -385,6 +108,7 @@
             </div>
             {% endfor %}
           {% endfor %}
+        </div><!-- /.picker -->
 
         <!-- Selected banner -->
         <div class="sel-banner" id="selBanner">
