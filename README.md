@@ -64,7 +64,11 @@ python app.py         # abre em http://127.0.0.1:5000 no navegador
 
 ### 🎨 Ferramenta livre
 
-1. **Escolha os arquivos** — imagens e/ou vídeos (pode soltar vários de uma vez).
+1. **Escolha os arquivos** — imagens e/ou vídeos, vários de uma vez. A lista
+   **acumula**: pode ir juntando de pastas diferentes sem perder o que já
+   escolheu. Cada arquivo tem um **×** para tirar só ele, e clicar num arquivo
+   troca o **preview** para aquela imagem — útil para conferir o resultado numa
+   foto específica antes de processar tudo.
 2. **Defina a marca d'água** — envie uma logo (PNG com transparência fica melhor)
    ou escreva um texto (com fonte, cor e fundo configuráveis).
 3. **Ajuste** posição, tamanho, margem e opacidade — o preview atualiza na hora.
@@ -153,7 +157,8 @@ Padrões em [`config.json`](./config.json):
 | `default_margin_pct` | Distância da borda, em % | `3` |
 | `default_opacity_pct` | Opacidade | `90` |
 
-Posições: `top-left`, `top-right`, `bottom-left`, `bottom-right`, `center`.
+Posições (grade 3×3): `top-left`, `top-center`, `top-right`, `middle-left`,
+`center`, `middle-right`, `bottom-left`, `bottom-center`, `bottom-right`.
 
 ---
 
