@@ -5,20 +5,12 @@
   "default_opacity_pct": 90,
   "guebly_companies": [
     {
-      "id": "guebly-holding",
-      "name": "Guebly Holding",
-      "color": "#9854F1",
-      "logo_file": "guebly-holding.png",
-      "group": "Guebly",
-      "meta": "[REDACTED]"
-    },
-    {
       "id": "guebly-ltda",
       "name": "Guebly LTDA",
       "logo_file": "guebly-ltda-branca.png",
       "color": "#7c3aed",
       "group": "Guebly",
-      "meta": "[REDACTED]"
+      "meta": "Marca principal"
     },
     {
       "id": "guebly-ltda-simbolo",
@@ -26,7 +18,7 @@
       "logo_file": "guebly-ltda-simbolo.png",
       "color": "#7c3aed",
       "group": "Guebly",
-      "meta": "Guebly LTDA · só o símbolo, ideal para marca pequena"
+      "meta": "Só o símbolo · ideal para marca pequena"
     },
     {
       "id": "guebly-studio",
@@ -34,7 +26,7 @@
       "logo_file": "guebly-studio.png",
       "color": "#1d7cf2",
       "group": "Guebly",
-      "meta": "Guebly LTDA"
+      "meta": "Grupo Guebly"
     },
     {
       "id": "guebly-studio-simbolo",
@@ -42,7 +34,7 @@
       "logo_file": "guebly-studio-simbolo.png",
       "color": "#1d7cf2",
       "group": "Guebly",
-      "meta": "Guebly LTDA · só o símbolo, ideal para marca pequena"
+      "meta": "Só o símbolo · ideal para marca pequena"
     },
     {
       "id": "guebly-games",
@@ -50,7 +42,7 @@
       "logo_url": "https://www.guebly.com.br/gueblygames.png",
       "color": "#0ea5e9",
       "group": "Guebly",
-      "meta": "Guebly LTDA"
+      "meta": "Grupo Guebly"
     },
     {
       "id": "guebly-pay",
@@ -58,7 +50,7 @@
       "logo_url": "https://www.guebly.com.br/gueblypay.png",
       "color": "#f59e0b",
       "group": "Guebly",
-      "meta": "Guebly LTDA"
+      "meta": "Grupo Guebly"
     },
     {
       "id": "lirya-ltda",
@@ -66,7 +58,7 @@
       "logo_url": "",
       "color": "#ec4899",
       "group": "Lirya",
-      "meta": "[REDACTED]"
+      "meta": "Marca principal"
     },
     {
       "id": "lirya-plus",
@@ -74,7 +66,7 @@
       "logo_url": "",
       "color": "#be185d",
       "group": "Lirya",
-      "meta": "Lirya LTDA"
+      "meta": "Grupo Lirya"
     },
     {
       "id": "lirya-academy",
@@ -82,7 +74,7 @@
       "logo_url": "",
       "color": "#9d174d",
       "group": "Lirya",
-      "meta": "Lirya LTDA"
+      "meta": "Grupo Lirya"
     },
     {
       "id": "guebly-contabil",
@@ -90,7 +82,7 @@
       "logo_url": "https://www.guebly.com.br/contabil.png",
       "color": "#0891b2",
       "group": "Outros",
-      "meta": "[REDACTED]"
+      "meta": "Grupo Guebly"
     },
     {
       "id": "sentrion",
@@ -98,7 +90,7 @@
       "logo_url": "https://www.guebly.com.br/sentrion.png",
       "color": "#374151",
       "group": "Outros",
-      "meta": "[REDACTED]"
+      "meta": "Grupo Guebly"
     }
   ]
 }

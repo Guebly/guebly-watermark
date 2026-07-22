@@ -107,7 +107,6 @@ Editáveis em [`config.json`](./config.json):
 
 | Empresa | Logo |
 |---|---|
-| Guebly Holding | remota |
 | **Guebly LTDA** | local (`guebly.png`) |
 | **Guebly Studio** | local (`guebly-studio.png`) — logo completa |
 | **Guebly Studio (símbolo)** | local (`guebly-studio-simbolo.png`) — só o símbolo, ideal para marca pequena |

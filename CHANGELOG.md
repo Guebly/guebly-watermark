@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.5.1] — 2026-07-22
+
+- **Removida a Guebly Holding** da lista de marcas (11 empresas agora). Logo órfã
+  `guebly-holding.png` apagada.
+- **Tiradas as informações societárias** das descrições: nada de participação
+  (%), sócios ou repasse. Cada empresa mostra só a identidade/uso (ex.: "Marca
+  principal", "Grupo Guebly", "Só o símbolo · ideal para marca pequena").
+
 ## [3.5.0] — 2026-07-22
 
 ### Redesign completo + tema claro de verdade
