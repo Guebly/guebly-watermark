@@ -369,6 +369,23 @@
       border:1px solid var(--b2);background:var(--s);color:var(--t2);cursor:pointer;
       font-size:15px;transition:.15s;flex:none}
     .tema-btn:hover{border-color:var(--bh);color:var(--t)}
+  
+    /* ── fila de arquivos: miniatura, remover item, item em preview ───── */
+    .fq-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px}
+    .fq-count{font-size:11.5px;color:var(--m)}
+    .fq-clear{background:none;border:1px solid var(--b2);color:var(--m);border-radius:8px;
+      padding:4px 10px;font-size:11px;cursor:pointer}
+    .fq-clear:hover{border-color:var(--r);color:var(--r)}
+    .fi{position:relative;cursor:pointer}
+    .fi:hover{border-color:var(--bh)}
+    .fi.sel{border-color:rgba(152,84,241,.6);background:rgba(152,84,241,.10)}
+    .fi-th{width:30px;height:30px;border-radius:7px;object-fit:cover;flex:none;background:var(--s2)}
+    .fi-ic{width:30px;height:30px;border-radius:7px;display:grid;place-items:center;
+      background:var(--s2);font-size:14px;flex:none}
+    .fi-x{background:none;border:none;color:var(--m);font-size:15px;cursor:pointer;
+      padding:0 2px;line-height:1;flex:none}
+    .fi-x:hover{color:var(--r)}
+    .fi-badge{font-size:9.5px;color:var(--pl);font-weight:700;letter-spacing:.04em}
   </style>
 
 <script>
@@ -443,6 +460,10 @@
           <div class="dz-i">&#128444; &#127916;</div>
           <div class="dz-t">Arraste ou clique para selecionar</div>
           <div class="dz-h">PNG JPG MP4 MOV MKV AVI WEBM &mdash; varios = ZIP automatico</div>
+        </div>
+        <div class="fq-head" id="fqHead" style="display:none">
+          <span class="fq-count" id="fqCount"></span>
+          <button type="button" class="fq-clear" id="fqClear">Limpar tudo</button>
         </div>
         <div class="flist" id="flist"></div>
 
@@ -532,13 +553,15 @@
               <div id="imgSection">
                 <div class="sl" style="margin-top:0">Posicao</div>
                 <div class="pgrid" id="posGrid">
-                  <div class="chip" data-pos="top-left">&#8598;</div>
-                  <div class="chip" data-pos="top-center">&#8593;</div>
-                  <div class="chip" data-pos="top-right">&#8599;</div>
-                  <div class="chip" data-pos="center">&#10022;</div>
-                  <div class="chip" data-pos="bottom-left">&#8601;</div>
-                  <div class="chip" data-pos="bottom-center">&#8595;</div>
-                  <div class="chip" data-pos="bottom-right">&#8600;</div>
+                  <div class="chip" data-pos="top-left"      title="Superior esquerdo">&#8598;</div>
+                  <div class="chip" data-pos="top-center"    title="Superior centro">&#8593;</div>
+                  <div class="chip" data-pos="top-right"     title="Superior direito">&#8599;</div>
+                  <div class="chip" data-pos="middle-left"   title="Meio esquerdo">&#8592;</div>
+                  <div class="chip" data-pos="center"        title="Centro">&#10022;</div>
+                  <div class="chip" data-pos="middle-right"  title="Meio direito">&#8594;</div>
+                  <div class="chip" data-pos="bottom-left"   title="Inferior esquerdo">&#8601;</div>
+                  <div class="chip" data-pos="bottom-center" title="Inferior centro">&#8595;</div>
+                  <div class="chip" data-pos="bottom-right"  title="Inferior direito">&#8600;</div>
                 </div>
                 <input type="hidden" name="position" id="posH" value="{{ cfg.default_position }}"/>
               </div>
@@ -992,21 +1015,82 @@ function updateIvTimeSec(){
 });
 
 // ─── Arquivos de entrada ──────────────────────────────────────────────────────
-mediaInput.addEventListener('change',e=>{
-  selectedFiles=Array.from(e.target.files);
+// ─── Fila de arquivos ────────────────────────────────────────────────────────
+// Antes cada selecao SUBSTITUIA a lista e nao dava para tirar um item.
+// Agora os arquivos se acumulam, cada um tem o seu "x" e clicar troca o preview.
+let previewIdx = 0;
+
+function mesmoArquivo(a,b){
+  return a.name===b.name && a.size===b.size && a.lastModified===b.lastModified;
+}
+
+function addFiles(novos){
+  let ignorados = 0;
+  novos.forEach(f=>{
+    if(selectedFiles.some(x=>mesmoArquivo(x,f))) ignorados++;
+    else selectedFiles.push(f);
+  });
+  if(ignorados) toast(ignorados+(ignorados>1?' arquivos ja estavam na lista':' arquivo ja estava na lista'));
+  renderFila();
+}
+
+window.removerArquivo = function(i){
+  selectedFiles.splice(i,1);
+  if(previewIdx >= selectedFiles.length) previewIdx = Math.max(0, selectedFiles.length-1);
+  renderFila();
+};
+
+window.previewArquivo = function(i){ previewIdx = i; renderFila(); };
+
+function renderFila(){
   flist.innerHTML='';
-  selectedFiles.forEach(f=>{
-    const d=document.createElement('div');d.className='fi';
-    d.innerHTML='<span>'+(isVid(f.name)?'&#127916;':'&#128444;')+'</span><span class="fi-n">'+f.name+'</span><span class="fi-sz">'+formatBytes(f.size)+'</span>';
+  const head = document.getElementById('fqHead');
+  const cnt  = document.getElementById('fqCount');
+
+  if(!selectedFiles.length){
+    head.style.display='none';
+    mediaInput.value='';
+    return;
+  }
+  head.style.display='flex';
+  const total = selectedFiles.reduce((s,f)=>s+f.size,0);
+  cnt.textContent = selectedFiles.length+(selectedFiles.length>1?' arquivos':' arquivo')
+                  + ' · '+formatBytes(total)
+                  + (selectedFiles.length>1?' · sai em ZIP':'');
+
+  selectedFiles.forEach((f,i)=>{
+    const d=document.createElement('div');
+    d.className='fi'+(i===previewIdx?' sel':'');
+    d.onclick=(ev)=>{ if(!ev.target.classList.contains('fi-x')) previewArquivo(i); };
+
+    const vid = isVid(f.name);
+    const mini = document.createElement(vid?'div':'img');
+    mini.className = vid?'fi-ic':'fi-th';
+    if(vid) mini.textContent='🎬';
+    else { mini.src=URL.createObjectURL(f); }
+    d.appendChild(mini);
+
+    const n=document.createElement('span'); n.className='fi-n'; n.textContent=f.name; d.appendChild(n);
+    if(i===previewIdx){ const b=document.createElement('span'); b.className='fi-badge'; b.textContent='PREVIEW'; d.appendChild(b); }
+    const sz=document.createElement('span'); sz.className='fi-sz'; sz.textContent=formatBytes(f.size); d.appendChild(sz);
+    const x=document.createElement('button');
+    x.type='button'; x.className='fi-x'; x.textContent='×'; x.title='Remover da lista';
+    x.onclick=(ev)=>{ ev.stopPropagation(); removerArquivo(i); };
+    d.appendChild(x);
+
     flist.appendChild(d);
   });
-  if(selectedFiles.length>1){
-    const info=document.createElement('div');
-    info.className='fi';info.style.cssText='justify-content:center;color:var(--pl)';
-    info.textContent=selectedFiles.length+' arquivos \u2014 ZIP automatico';
-    flist.appendChild(info);
-  }
-  if(selectedFiles[0]) readBase(selectedFiles[0]);
+
+  if(selectedFiles[previewIdx]) readBase(selectedFiles[previewIdx]);
+}
+
+mediaInput.addEventListener('change',e=>{
+  addFiles(Array.from(e.target.files));
+  mediaInput.value='';
+});
+
+document.getElementById('fqClear').addEventListener('click',()=>{
+  selectedFiles=[]; previewIdx=0; renderFila();
 });
 function formatBytes(b){return b>=1048576?(b/1048576).toFixed(1)+' MB':Math.round(b/1024)+' KB'}
 

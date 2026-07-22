@@ -271,9 +271,9 @@ def apply_opacity(im, opacity):
 def place_logo(bw, bh, lw, lh, margin, position):
     cx, cy = (bw - lw) // 2, (bh - lh) // 2
     r, b, m = bw - lw - margin, bh - lh - margin, margin
-    return {"top-left": (m, m), "top-center": (cx, m), "top-right": (r, m),
-            "center": (cx, cy), "bottom-left": (m, b),
-            "bottom-center": (cx, b), "bottom-right": (r, b)}.get(position, (r, b))
+    return {"top-left": (m, m),     "top-center": (cx, m),    "top-right": (r, m),
+            "middle-left": (m, cy),  "center": (cx, cy),       "middle-right": (r, cy),
+            "bottom-left": (m, b),   "bottom-center": (cx, b), "bottom-right": (r, b)}.get(position, (r, b))
 
 def text_to_wm_image(text, color, bg_color, bg_opacity, ref_size, scale_pct=15, wm_font=None):
     """

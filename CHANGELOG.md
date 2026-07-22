@@ -1,5 +1,25 @@
 # Changelog
 
+## [3.4.0] — 2026-07-22
+
+### Fila de arquivos (era o maior incômodo)
+- **Os arquivos agora se acumulam.** Antes, escolher novos arquivos **apagava** os
+  anteriores — não dava para ir juntando de pastas diferentes.
+- **Cada arquivo tem o seu "×"** para sair da lista, um por um.
+- **Miniatura** de cada imagem, em vez de só o nome.
+- **Clique num arquivo para pré-visualizá-lo** (marcado com "PREVIEW"). Dá para
+  ajustar a marca d'água olhando exatamente a foto que você quer conferir.
+- **"Limpar tudo"** e contador com o tamanho somado.
+- Arquivo repetido é detectado e ignorado, avisando.
+
+### Posicionamento
+- **A grade de posição estava quebrada**: eram 7 opções numa grade de 3 colunas,
+  então o "centro" caía visualmente no lugar do meio-esquerda e as de baixo
+  desalinhavam. Agora é uma **grade 3×3 de verdade**, com as 9 posições.
+- **Meio-esquerda e meio-direita** passaram a existir (não eram suportadas nem no
+  backend).
+- Cada posição tem dica ao passar o mouse.
+
 ## [3.3.0] — 2026-07-22
 
 ### Aplicativo de desktop
