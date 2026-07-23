@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="static/img/guebly.png" alt="Guebly LTDA" width="72" height="72" />
+<img src="static/img/guebly-ltda-simbolo-roxo.png" alt="Guebly LTDA" width="72" />
 
 # Guebly Watermark
 
