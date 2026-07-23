@@ -326,7 +326,7 @@ function toast(msg,type='ok',ms=3500){
   toastTmr=setTimeout(()=>toastEl.classList.remove('show'),ms);
 }
 function mostrarSalvo(nome, path){
-  toast('✓ Salvo em Downloads:  '+nome+'   —   clique aqui para abrir a pasta','ok',9000);
+  toast('✓ Salvo em Downloads › Guebly Watermark:  '+nome+'   —   clique para abrir a pasta','ok',9000);
   toastEl.style.cursor='pointer';
   toastEl.onclick=()=>{ fetch('/api/reveal',{method:'POST',
     headers:{'Content-Type':'application/json'},body:JSON.stringify({path:path})}).catch(()=>{}); };

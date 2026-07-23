@@ -1112,14 +1112,20 @@ def api_download(jid):
     return send_file(path, as_attachment=True, download_name=name, mimetype=mime)
 
 
-def _downloads_dir():
-    """Pasta Downloads do usuário (cria se preciso; cai no home se falhar)."""
-    d = os.path.join(os.path.expanduser("~"), "Downloads")
+def _pasta_saida():
+    """Pasta dos resultados: `Downloads\\Guebly Watermark` (cria se preciso).
+
+    Mantém a Downloads organizada — tudo que o app gera fica junto numa pasta só.
+    """
+    base = os.path.join(os.path.expanduser("~"), "Downloads")
+    if not os.path.isdir(base):                 # se Downloads nao existe, usa o home
+        base = os.path.expanduser("~")
+    d = os.path.join(base, "Guebly Watermark")
     try:
         os.makedirs(d, exist_ok=True)
         return d
     except OSError:
-        return os.path.expanduser("~")
+        return base
 
 
 def _nome_livre(pasta, nome):
@@ -1148,7 +1154,7 @@ def api_save(jid):
     origem, nome = res["path"], res["name"]
     if not os.path.exists(origem):
         abort(410)
-    destino = _nome_livre(_downloads_dir(), nome)
+    destino = _nome_livre(_pasta_saida(), nome)
     shutil.copyfile(origem, destino)
     return jsonify(ok=True, path=destino,
                    nome=os.path.basename(destino), pasta=os.path.dirname(destino))
@@ -1174,7 +1180,7 @@ def _resposta_salva(dados, nome):
 
     `dados` pode ser um BytesIO (imagem/zip) ou um caminho de arquivo (vídeo).
     """
-    destino = _nome_livre(_downloads_dir(), nome)
+    destino = _nome_livre(_pasta_saida(), nome)
     if hasattr(dados, "getvalue"):
         with open(destino, "wb") as f:
             f.write(dados.getvalue())

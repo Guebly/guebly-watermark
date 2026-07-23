@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.7.4] — 2026-07-23
+
+- **Pasta própria:** os resultados agora vão para **`Downloads\Guebly Watermark`**
+  (criada automaticamente), em vez de jogar tudo solto na Downloads. Vale para as
+  duas telas. Clicar no aviso "✓ Salvo" abre essa pasta com o arquivo selecionado.
+
 ## [3.7.3] — 2026-07-23
 
 ### Corrigido — a imagem processada não ia pra lugar nenhum (crítico)
