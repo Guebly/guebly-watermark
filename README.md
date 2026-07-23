@@ -107,12 +107,16 @@ Editáveis em [`config.json`](./config.json):
 
 | Empresa | Logo |
 |---|---|
-| **Guebly LTDA** | local (`guebly.png`) |
+| **Guebly LTDA** | local — `guebly-ltda-branca.png` (tema escuro) / `guebly-ltda.png` (tema claro) |
+| **Guebly LTDA (símbolo)** | local (`guebly-ltda-simbolo.png`) — só o símbolo, ideal para marca pequena |
 | **Guebly Studio** | local (`guebly-studio.png`) — logo completa |
 | **Guebly Studio (símbolo)** | local (`guebly-studio-simbolo.png`) — só o símbolo, ideal para marca pequena |
 | Guebly Games · Pay · Contábil | remotas |
 | **Lirya LTDA · Lirya+ · Lirya Academy** | ⏳ aguardando as artes |
 | Sentrion | remota |
+
+> A **Guebly Holding** foi removida da lista — o app trabalha só com a Guebly LTDA
+> e as marcas do grupo. As descrições não exibem participação societária nem repasse.
 
 ### Adicionar ou trocar uma logo
 
@@ -171,9 +175,9 @@ nunca trava o uso.
 ### Publicando uma versão nova (mantenedor)
 
 ```bash
-echo "3.4.0" > VERSION
-git commit -am "release 3.4.0" && git push
-git tag v3.4.0 && git push --tags
+echo "3.6.0" > VERSION        # nova versão
+git commit -am "release 3.6.0" && git push
+git tag v3.6.0 && git push --tags
 ```
 
 A [GitHub Action](.github/workflows/release.yml) compila o `.exe` no Windows e
