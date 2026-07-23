@@ -1,5 +1,19 @@
 # Changelog
 
+## [3.6.1] — 2026-07-23
+
+### Corrigido — bug que impedia processar (crítico)
+Ao clicar em **Aplicar e baixar**, o navegador mostrava *"Please select one or more
+files"* mesmo com a imagem já na fila. Causa: o campo de arquivo tinha `required`,
+mas a fila guarda os arquivos num array JS e **limpa o input a cada seleção** (para
+poder acumular) — então o input ficava sempre vazio e a validação nativa do navegador
+bloqueava o envio **toda vez**, clicando ou arrastando.
+
+- Removido o `required` do campo de arquivos. A validação real continua no envio
+  (checa a fila `selectedFiles`), com o aviso "Selecione ao menos um arquivo".
+- Verificado com **teste automatizado de navegador** (Playwright) reproduzindo o
+  fluxo: selecionar imagem → Aplicar → processa e baixa, sem bloqueio nativo.
+
 ## [3.6.0] — 2026-07-23
 
 ### Novidades (as duas telas)

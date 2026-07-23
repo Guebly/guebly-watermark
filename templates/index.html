@@ -90,7 +90,11 @@
         <div class="dz" id="mediaDrop">
           <input type="file" name="images" id="mediaInput"
             accept="image/*,video/mp4,video/avi,video/quicktime,video/x-matroska,video/webm,.mkv,.mov,.avi,.flv,.wmv"
-            multiple required/>
+            multiple/>
+            <!-- sem `required`: os arquivos ficam na fila JS (selectedFiles) e o input
+                 é limpo a cada seleção pra permitir acumular. Com `required`, o input
+                 vazio fazia o navegador bloquear o submit ("Please select one or more
+                 files"). A validação real é feita no submit via selectedFiles.length. -->
           <div class="dz-i">&#128444; &#127916;</div>
           <div class="dz-t">Arraste ou clique para selecionar</div>
           <div class="dz-h">PNG JPG MP4 MOV MKV AVI WEBM &mdash; vários = ZIP automático</div>
