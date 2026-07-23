@@ -1,5 +1,14 @@
 # Changelog
 
+## [3.7.2] — 2026-07-23
+
+- **Limpeza automática das sobras do update.** O `.exe` novo, ao abrir, apaga
+  restos da troca (`GueblyWatermark.old.exe`, `.update.exe`, `_gw_update.bat`) —
+  o helper `.bat` nem sempre conseguia apagar o `.old.exe` (lock ainda liberando),
+  o que acumularia ~60 MB a cada atualização.
+- Auto-atualização validada de ponta a ponta: v3.7.0 → v3.7.1 sozinho, binário
+  confirmado por hash.
+
 ## [3.7.1] — 2026-07-23
 
 - Versão de verificação do self-update de ponta a ponta (teste real da

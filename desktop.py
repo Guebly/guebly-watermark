@@ -70,7 +70,27 @@ def _icone_janela(caminho: str) -> None:
         pass
 
 
+def _limpar_restos_update() -> None:
+    """Apaga sobras da auto-atualização ao abrir.
+
+    O helper .bat às vezes não consegue apagar o `.old.exe` (o arquivo ainda está
+    liberando o lock quando ele tenta). Como agora somos o app novo já rodando,
+    aqui a exclusão é confiável — evita acumular um backup de ~60 MB a cada update.
+    """
+    if not getattr(sys, "frozen", False):
+        return
+    pasta = os.path.dirname(sys.executable)
+    for resto in ("GueblyWatermark.old.exe", "GueblyWatermark.update.exe", "_gw_update.bat"):
+        try:
+            p = os.path.join(pasta, resto)
+            if os.path.exists(p):
+                os.remove(p)
+        except OSError:
+            pass
+
+
 def main() -> None:
+    _limpar_restos_update()
     porta = porta_livre()
 
     def servidor() -> None:
