@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.7.1] — 2026-07-23
+
+- Versão de verificação do self-update de ponta a ponta (teste real da
+  atualização de um clique). Sem mudanças funcionais.
+
 ## [3.7.0] — 2026-07-23
 
 ### Atualização de um clique (self-update)
