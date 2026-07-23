@@ -65,7 +65,7 @@
     </nav>
     <button class="tema-btn" id="temaBtn" onclick="alternarTema()" title="Alternar tema claro/escuro">☾</button>
     <div class="pills">
-      <span class="pill">v3.3</span>
+      <span class="pill">v{{ versao }}</span>
       <span class="pill p">Open Source</span>
     </div>
   </div>
@@ -185,7 +185,10 @@
 
               <!-- Posicao (imagem) -->
               <div id="imgSection">
-                <div class="sl" style="margin-top:0">Posição</div>
+                <div class="sl" style="margin-top:0;display:flex;justify-content:space-between;align-items:center">
+                  <span>Posição</span>
+                  <label class="tilechk"><input type="checkbox" id="tileChk"/> Ladrilho (proteção)</label>
+                </div>
                 <div class="pgrid" id="posGrid">
                   <div class="chip" data-pos="top-left"      title="Superior esquerdo">&#8598;</div>
                   <div class="chip" data-pos="top-center"    title="Superior centro">&#8593;</div>
@@ -198,6 +201,23 @@
                   <div class="chip" data-pos="bottom-right"  title="Inferior direito">&#8600;</div>
                 </div>
                 <input type="hidden" name="position" id="posH" value="{{ cfg.default_position }}"/>
+                <input type="hidden" name="pos_x_pct" id="posXH"/>
+                <input type="hidden" name="pos_y_pct" id="posYH"/>
+                <input type="hidden" name="tile" id="tileH" value="0"/>
+                <div class="hint" id="posHint">Dica: arraste a marca no preview para posicionar livremente.</div>
+                <!-- Opcoes do ladrilho (aparecem so quando ligado) -->
+                <div id="tileOpts" style="display:none;margin-top:10px">
+                  <div class="slrow">
+                    <div class="slb">
+                      <div class="slh"><span class="sl-label">Espaçamento</span><span class="sl-val" id="tileGapV">60%</span></div>
+                      <input type="range" class="field" name="tile_gap_pct" id="tileGapIn" min="0" max="200" step="5" value="60"/>
+                    </div>
+                    <div class="slb">
+                      <div class="slh"><span class="sl-label">Ângulo</span><span class="sl-val" id="tileAngV">30°</span></div>
+                      <input type="range" class="field" name="tile_angle" id="tileAngIn" min="-90" max="90" step="5" value="30"/>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <!-- Animacao (video) -->
@@ -246,6 +266,43 @@
               <div class="slb" style="margin-top:14px">
                 <div class="slh"><span class="sl-label">Margem</span><span class="sl-val" id="marginV">{{ cfg.default_margin_pct }}%</span></div>
                 <input type="range" class="field" name="margin_pct" id="marginIn" min="0" max="12" step="0.5" value="{{ cfg.default_margin_pct }}"/>
+              </div>
+
+              <div class="div" style="margin:16px 0"></div>
+
+              <!-- Saida: formato, qualidade, tamanho (so imagem) -->
+              <div id="outSection">
+                <div class="sl" style="margin-top:0">Saída (imagens)</div>
+                <div class="slrow">
+                  <div class="ccol">
+                    <span class="sl-label">Formato</span>
+                    <select class="field" name="out_format" id="outFmt">
+                      <option value="png">PNG (sem perdas, com transparência)</option>
+                      <option value="jpg">JPG (menor, ideal para fotos)</option>
+                      <option value="keep">Manter o original</option>
+                    </select>
+                  </div>
+                  <div class="ccol">
+                    <span class="sl-label">Largura máx. (px)</span>
+                    <input type="number" class="field" name="max_dim" id="maxDim" min="0" max="12000" step="100" value="0" placeholder="0 = original"/>
+                  </div>
+                </div>
+                <div class="slb" id="qualityWrap" style="margin-top:12px;display:none">
+                  <div class="slh"><span class="sl-label">Qualidade JPG</span><span class="sl-val" id="qualV">90</span></div>
+                  <input type="range" class="field" name="jpg_quality" id="qualIn" min="40" max="100" step="1" value="90"/>
+                </div>
+                <div class="hint">0 na largura mantém o tamanho original. JPG reduz muito o arquivo de fotos.</div>
+              </div>
+
+              <div class="div" style="margin:16px 0"></div>
+
+              <!-- Presets: salvar/carregar os ajustes -->
+              <div id="presetSection">
+                <div class="sl" style="margin-top:0;display:flex;justify-content:space-between;align-items:center">
+                  <span>Presets</span>
+                  <button type="button" class="bsm" id="presetSave">+ Salvar atual</button>
+                </div>
+                <div class="presets" id="presetList"><span class="hint" id="presetEmpty">Nenhum preset salvo. Ajuste tudo como quer e clique em "Salvar atual".</span></div>
               </div>
             </div>
           </div>
@@ -409,6 +466,23 @@ const wmFontH     = document.getElementById('wmFontH');
 const posGrid     = document.getElementById('posGrid');
 const posGridV    = document.getElementById('posGridV');
 const posH        = document.getElementById('posH');
+const posXH       = document.getElementById('posXH');
+const posYH       = document.getElementById('posYH');
+const tileH       = document.getElementById('tileH');
+const tileChk     = document.getElementById('tileChk');
+const tileOpts    = document.getElementById('tileOpts');
+const tileGapIn   = document.getElementById('tileGapIn');
+const tileAngIn   = document.getElementById('tileAngIn');
+const tileGapV    = document.getElementById('tileGapV');
+const tileAngV    = document.getElementById('tileAngV');
+const posHint     = document.getElementById('posHint');
+const outFmt      = document.getElementById('outFmt');
+const qualIn      = document.getElementById('qualIn');
+const qualV       = document.getElementById('qualV');
+const qualityWrap = document.getElementById('qualityWrap');
+const maxDim      = document.getElementById('maxDim');
+const prevWrap    = document.querySelector('.prev-wrap');
+let lastWmRect    = null;
 const motGrid     = document.getElementById('motGrid');
 const wmMotion    = document.getElementById('wmMotion');
 const scaleIn     = document.getElementById('scaleIn');
@@ -550,11 +624,130 @@ setPos(posH.value||'bottom-right',posGrid);
 setPos(posH.value||'bottom-right',posGridV);
 [posGrid,posGridV].forEach(g=>{
   g.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{
+    posXH.value='';posYH.value='';           // escolher um canto sai do modo livre
     setPos(c.dataset.pos,posGrid);
     setPos(c.dataset.pos,posGridV);
-    schedDraw();
+    schedDraw();saveLast();
   }));
 });
+
+// ─── Ladrilho ───────────────────────────────────────────────────────────────
+function syncTile(){
+  const on=tileChk.checked;
+  tileH.value=on?'1':'0';
+  tileOpts.style.display=on?'block':'none';
+  posGrid.classList.toggle('disabled',on);
+  posHint.style.display=on?'none':'block';
+}
+tileChk.addEventListener('change',()=>{syncTile();schedDraw();saveLast();});
+tileGapIn.addEventListener('input',()=>{tileGapV.textContent=tileGapIn.value+'%';schedDraw();saveLast();});
+tileAngIn.addEventListener('input',()=>{tileAngV.textContent=tileAngIn.value+'°';schedDraw();saveLast();});
+
+// ─── Saida: formato / qualidade / tamanho ─────────────────────────────────────
+function syncFmt(){qualityWrap.style.display=(outFmt.value==='jpg')?'block':'none';}
+outFmt.addEventListener('change',()=>{syncFmt();saveLast();});
+qualIn.addEventListener('input',()=>{qualV.textContent=qualIn.value;saveLast();});
+maxDim.addEventListener('input',saveLast);
+
+// ─── Arrastar a marca no preview (posicao livre) ──────────────────────────────
+let dragging=false;
+function canvasPoint(ev){
+  const r=canvas.getBoundingClientRect();
+  const t=ev.touches?ev.touches[0]:ev;
+  return {x:(t.clientX-r.left)/r.width, y:(t.clientY-r.top)/r.height};
+}
+function onDragStart(ev){
+  if(isVideoBase||tileChk.checked||!lastWmRect)return;
+  const p=canvasPoint(ev);
+  const rx=lastWmRect.x/canvas.width, ry=lastWmRect.y/canvas.height;
+  const rw=lastWmRect.w/canvas.width, rh=lastWmRect.h/canvas.height;
+  // só inicia arrasto se clicou em cima da marca
+  if(p.x>=rx&&p.x<=rx+rw&&p.y>=ry&&p.y<=ry+rh){
+    dragging=true;prevWrap.classList.add('dragging');ev.preventDefault();
+  }
+}
+function onDragMove(ev){
+  if(!dragging)return;
+  const p=canvasPoint(ev);
+  posXH.value=Math.max(0,Math.min(1,p.x)).toFixed(4);
+  posYH.value=Math.max(0,Math.min(1,p.y)).toFixed(4);
+  posH.value='custom';
+  posGrid.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  ev.preventDefault();schedDraw();
+}
+function onDragEnd(){if(dragging){dragging=false;prevWrap.classList.remove('dragging');saveLast();}}
+canvas.addEventListener('mousedown',onDragStart);
+window.addEventListener('mousemove',onDragMove);
+window.addEventListener('mouseup',onDragEnd);
+canvas.addEventListener('touchstart',onDragStart,{passive:false});
+window.addEventListener('touchmove',onDragMove,{passive:false});
+window.addEventListener('touchend',onDragEnd);
+
+// ─── Presets + lembrar ultimos ajustes ────────────────────────────────────────
+const SKEY_LAST='gw_last', SKEY_PRESETS='gw_presets';
+const presetSave=document.getElementById('presetSave');
+const presetList=document.getElementById('presetList');
+
+function currentSettings(){
+  return {position:posH.value, pos_x:posXH.value, pos_y:posYH.value,
+    scale:scaleIn.value, opacity:opacityIn.value, margin:marginIn.value,
+    tile:tileChk.checked, tile_gap:tileGapIn.value, tile_angle:tileAngIn.value,
+    fmt:outFmt.value, quality:qualIn.value, max_dim:maxDim.value, font:wmFontH.value};
+}
+function applySettings(s){
+  if(!s)return;
+  if(s.scale)scaleIn.value=s.scale;
+  if(s.opacity)opacityIn.value=s.opacity;
+  if(s.margin!=null)marginIn.value=s.margin;
+  if(s.tile_gap!=null)tileGapIn.value=s.tile_gap;
+  if(s.tile_angle!=null)tileAngIn.value=s.tile_angle;
+  if(s.fmt)outFmt.value=s.fmt;
+  if(s.quality)qualIn.value=s.quality;
+  if(s.max_dim!=null)maxDim.value=s.max_dim;
+  tileChk.checked=!!s.tile;
+  posXH.value=s.pos_x||''; posYH.value=s.pos_y||'';
+  posGrid.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  posGridV.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  if(s.position && s.position!=='custom'){setPos(s.position,posGrid);setPos(s.position,posGridV);}
+  else if(s.position==='custom'){posH.value='custom';}
+  if(s.font){wmFontH.value=s.font;
+    document.querySelectorAll('#fontGrid .fchip').forEach(c=>c.classList.toggle('active',c.dataset.font===s.font));}
+  upLabels();
+  tileGapV.textContent=tileGapIn.value+'%';tileAngV.textContent=tileAngIn.value+'°';qualV.textContent=qualIn.value;
+  syncTile();syncFmt();schedDraw();
+}
+let lastTmr=null;
+function saveLast(){clearTimeout(lastTmr);lastTmr=setTimeout(()=>{
+  try{localStorage.setItem(SKEY_LAST,JSON.stringify(currentSettings()));}catch(e){}
+},300);}
+function loadPresets(){try{return JSON.parse(localStorage.getItem(SKEY_PRESETS)||'[]');}catch(e){return[];}}
+function storePresets(a){try{localStorage.setItem(SKEY_PRESETS,JSON.stringify(a));}catch(e){}}
+function renderPresets(){
+  const a=loadPresets();presetList.innerHTML='';
+  if(!a.length){
+    const e=document.createElement('span');e.className='hint';
+    e.textContent='Nenhum preset salvo. Ajuste tudo como quer e clique em "Salvar atual".';
+    presetList.appendChild(e);return;
+  }
+  a.forEach((p,i)=>{
+    const chip=document.createElement('span');chip.className='preset';
+    const name=document.createElement('span');name.textContent=p.name;
+    name.addEventListener('click',()=>{applySettings(p.s);saveLast();toast('Preset "'+p.name+'" aplicado');});
+    const x=document.createElement('button');x.className='px';x.type='button';x.innerHTML='&times;';x.title='Excluir preset';
+    x.addEventListener('click',ev=>{ev.stopPropagation();const arr=loadPresets();arr.splice(i,1);storePresets(arr);renderPresets();});
+    chip.appendChild(name);chip.appendChild(x);presetList.appendChild(chip);
+  });
+}
+presetSave.addEventListener('click',()=>{
+  let nome; try{nome=window.prompt('Nome do preset:','Meu preset');}catch(e){nome=null;}
+  if(nome===null)return;                       // cancelou
+  nome=(nome||'').trim()||('Preset '+(loadPresets().length+1));
+  const a=loadPresets();a.push({name:nome,s:currentSettings()});storePresets(a);
+  renderPresets();toast('Preset "'+nome+'" salvo');
+});
+renderPresets();
+// restaura os ultimos ajustes usados (nao mexe na logo/arquivos)
+try{const last=JSON.parse(localStorage.getItem(SKEY_LAST)||'null'); if(last) applySettings(last);}catch(e){}
 
 // ─── Grade animacao ───────────────────────────────────────────────────────────
 motGrid.querySelectorAll('.mchip').forEach(c=>{
@@ -576,7 +769,7 @@ function upLabels(){
   bgOpV.textContent    = wmBgOp.value+'%';
 }
 upLabels();
-[scaleIn,opacityIn,marginIn,wmBgOp].forEach(r=>r.addEventListener('input',()=>{upLabels();schedDraw();}));
+[scaleIn,opacityIn,marginIn,wmBgOp].forEach(r=>r.addEventListener('input',()=>{upLabels();schedDraw();saveLast();}));
 [wmText,wmColor,wmBgColor].forEach(el=>el.addEventListener('input',()=>{schedDraw();updateBadges();}));
 
 // ─── Tela final ───────────────────────────────────────────────────────────────
@@ -794,9 +987,26 @@ function loadFromUrl(){
 // ─── Canvas helpers ───────────────────────────────────────────────────────────
 function calcStaticPos(cw,ch,lw,lh,mp,pos){
   const cx=(cw-lw)/2|0,cy=(ch-lh)/2|0,r=cw-lw-mp,b=ch-lh-mp;
+  if(pos==='custom' && posXH.value!=='' && posYH.value!==''){
+    // centro da marca em fracao 0..1 -> canto superior-esquerdo, preso na imagem
+    let x=Math.round(parseFloat(posXH.value)*cw - lw/2);
+    let y=Math.round(parseFloat(posYH.value)*ch - lh/2);
+    return [Math.max(0,Math.min(cw-lw,x)),Math.max(0,Math.min(ch-lh,y))];
+  }
   return {'top-left':[mp,mp],'top-center':[cx,mp],'top-right':[r,mp],
-          'center':[cx,cy],'bottom-left':[mp,b],
-          'bottom-center':[cx,b],'bottom-right':[r,b]}[pos]||[r,b];
+          'middle-left':[mp,cy],'center':[cx,cy],'middle-right':[r,cy],
+          'bottom-left':[mp,b],'bottom-center':[cx,b],'bottom-right':[r,b]}[pos]||[r,b];
+}
+// Desenha a marca repetida em ladrilho no canvas (espelha o backend).
+function drawTile(wm,cw,ch,lw,lh,gapPct,angle,op){
+  const gap=Math.max(0,lw*gapPct/100), cellW=lw+gap, cellH=lh+gap;
+  const diag=Math.ceil(Math.hypot(cw,ch))+Math.max(cellW,cellH);
+  ctx.save();ctx.globalAlpha=op;
+  ctx.translate(cw/2,ch/2);ctx.rotate(-angle*Math.PI/180);
+  for(let y=-diag/2;y<diag/2;y+=cellH)
+    for(let x=-diag/2;x<diag/2;x+=cellW)
+      ctx.drawImage(wm,x,y,lw,lh);
+  ctx.restore();
 }
 function getMotionPos(cw,ch,lw,lh,mp,t,motion){
   const P=PREV_PERIOD,tm=((t%P)+P)%P,cx=(cw-lw)/2|0,cy=(ch-lh)/2|0;
@@ -866,15 +1076,26 @@ function drawFrame(t=0){
   let lw,lh;
   if(activeWm==='text'){lw=wmW;lh=wmH;}
   else{lw=Math.max(1,Math.round(ref*parseFloat(scaleIn.value)/100));lh=Math.max(1,Math.round(lw/(wmW/wmH)));}
+  // Ladrilho: só para imagem, cobre tudo (ignora posição/margem).
+  if(!isVideoBase && tileChk && tileChk.checked){
+    drawTile(wm,canvas.width,canvas.height,lw,lh,
+             parseFloat(tileGapIn.value),parseFloat(tileAngIn.value),op);
+    lastWmRect=null;
+    return;
+  }
   const motion=isVideoBase?activeMotion:'none';
   const [x,y]=getMotionPos(canvas.width,canvas.height,lw,lh,mp,t,motion);
   ctx.save();ctx.globalAlpha=op;ctx.drawImage(wm,x,y,lw,lh);ctx.restore();
+  // guarda o retangulo da marca para permitir arrastar (só imagem estatica)
+  lastWmRect=(!isVideoBase)?{x,y,w:lw,h:lh}:null;
 }
 
 // ─── Animacao preview ─────────────────────────────────────────────────────────
 function stopAnim(){if(animFrame){cancelAnimationFrame(animFrame);animFrame=null;}}
 function schedDraw(){
   stopAnim();updateSections();
+  // cursor de "arrastar" só quando faz sentido (imagem, sem ladrilho)
+  if(prevWrap) prevWrap.classList.toggle('draggable', !isVideoBase && !(tileChk&&tileChk.checked));
   const motion=isVideoBase?activeMotion:'none';
   if(motion==='none'){abadge.classList.remove('vis');drawFrame(0);}
   else{
@@ -930,9 +1151,17 @@ document.getElementById('mainForm').addEventListener('submit',async e=>{
   fd.append('wm_font',wmFontH.value||'arial-bold');
   fd.append('wm_motion',isVideoBase?wmMotion.value:'none');
   fd.append('position',posH.value);
+  fd.append('pos_x_pct',posXH.value||'');
+  fd.append('pos_y_pct',posYH.value||'');
+  fd.append('tile',tileChk.checked?'1':'0');
+  fd.append('tile_gap_pct',tileGapIn.value);
+  fd.append('tile_angle',tileAngIn.value);
   fd.append('scale_pct',scaleIn.value);
   fd.append('opacity_pct',opacityIn.value);
   fd.append('margin_pct',marginIn.value);
+  fd.append('out_format',outFmt.value);
+  fd.append('jpg_quality',qualIn.value);
+  fd.append('max_dim',maxDim.value||'0');
   fd.append('endscreen_token',esToken.value||'');
   fd.append('endscreen_duration',isVideoBase?esDurIn.value:'0');
   if(isVideoBase&&esFileIn.files[0]&&parseInt(esDurIn.value)>0) fd.append('endscreen_file',esFileIn.files[0]);

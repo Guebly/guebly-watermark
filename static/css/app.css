@@ -340,6 +340,30 @@ select.field{cursor:pointer}
 
 .info-box{background:var(--p-soft);border:1px solid var(--p-soft2);border-radius:var(--r-md);padding:10px 12px;font-size:11px;color:var(--pl);margin-top:8px;line-height:1.55}
 
+/* dica curta abaixo de um controle */
+.hint{font-size:10.5px;color:var(--md);margin-top:7px;line-height:1.5}
+
+/* checkbox "ladrilho" no cabeçalho da posição */
+.tilechk{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:600;
+  color:var(--m);text-transform:none;letter-spacing:0;cursor:pointer}
+.tilechk input{accent-color:var(--p);cursor:pointer}
+
+/* grade de posição desabilitada enquanto o ladrilho está ligado */
+.pgrid.disabled{opacity:.4;pointer-events:none;filter:grayscale(.5)}
+
+/* marca arrastável no preview */
+.prev-wrap.draggable canvas{cursor:grab}
+.prev-wrap.dragging canvas{cursor:grabbing}
+
+/* presets */
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.preset{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border-radius:999px;
+  border:1px solid var(--b2);background:var(--well);font-size:11.5px;font-weight:600;
+  color:var(--t2);cursor:pointer;transition:.15s var(--ease)}
+.preset:hover{border-color:var(--bh);color:var(--p);background:var(--p-soft)}
+.preset .px{border:none;background:none;color:var(--md);font-size:14px;line-height:1;cursor:pointer;padding:0;border-radius:4px}
+.preset .px:hover{color:var(--r)}
+
 /* ─── Cartoes recolhiveis ─────────────────────────────────────────────── */
 .acards{display:flex;flex-direction:column;gap:8px}
 .acard{border:1.5px solid var(--b);border-radius:var(--r-lg);overflow:hidden;background:var(--well);transition:border-color .25s var(--ease),box-shadow .25s var(--ease)}

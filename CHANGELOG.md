@@ -1,5 +1,34 @@
 # Changelog
 
+## [3.6.0] — 2026-07-23
+
+### Novidades (as duas telas)
+- **Formato e qualidade de saída (imagens):** escolha **PNG**, **JPG** (com controle
+  de qualidade) ou **manter o original**. JPG reduz muito o tamanho de fotos — antes
+  toda imagem saía como PNG, sempre.
+- **Redimensionar:** campo "largura máx." limita o maior lado (0 = tamanho original).
+  Ótimo para preparar imagens leves para a web.
+- **Marca em ladrilho (proteção):** repete a marca cobrindo a imagem inteira, com
+  **espaçamento** e **ângulo** ajustáveis. É o padrão de quem protege portfólio.
+
+### Novidades (Ferramenta livre)
+- **Arrastar a marca no preview:** posicione livremente em qualquer ponto, além dos
+  9 cantos. Clicar num canto volta ao modo fixo.
+- **Presets:** salve o conjunto de ajustes (posição, escala, formato, ladrilho…) com
+  um nome e reaplique com um clique. Ideal para o time repetir a mesma marca.
+- **Lembra os últimos ajustes:** ao reabrir, o app volta como você deixou (a logo e
+  os arquivos não são guardados).
+
+### Corrigido
+- **Meio-esquerda / meio-direita não funcionavam:** as posições existiam na grade,
+  mas o backend (`_VALID_POSITIONS`) e o preview não as reconheciam e caíam no canto
+  padrão. Agora as 9 posições funcionam de verdade, nas duas telas.
+- **Versão no cabeçalho estava fixa** em "v3.3"; agora reflete a versão real.
+
+### Notas
+- Ladrilho e posição livre valem para **imagens**. Em vídeo, a marca usa os cantos
+  padrão (o overlay do FFmpeg não cobre esses modos).
+
 ## [3.5.1] — 2026-07-22
 
 - **Removida a Guebly Holding** da lista de marcas (11 empresas agora). Logo órfã

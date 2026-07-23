@@ -72,13 +72,25 @@ python app.py         # abre em http://127.0.0.1:5000 no navegador
 2. **Defina a marca d'água** — envie uma logo (PNG com transparência fica melhor)
    ou escreva um texto (com fonte, cor e fundo configuráveis).
 3. **Ajuste** posição, tamanho, margem e opacidade — o preview atualiza na hora.
-4. **Processe.** Vários arquivos saem num `.zip`.
+   Você pode **arrastar a marca** no preview para posicioná-la livremente, ou usar
+   os 9 cantos. Para proteção, ligue o **Ladrilho**: a marca se repete cobrindo a
+   imagem inteira (com espaçamento e ângulo ajustáveis).
+4. **Saída:** escolha **PNG**, **JPG** (com qualidade) ou manter o formato original,
+   e opcionalmente uma **largura máxima** para gerar arquivos leves.
+5. **Presets:** salve os ajustes com um nome e reaplique com um clique. O app também
+   **lembra os últimos ajustes** ao reabrir.
+6. **Processe.** Vários arquivos saem num `.zip`.
+
+> **Ladrilho** e **posição livre** valem para imagens. Em vídeo, a marca usa os
+> cantos padrão.
 
 ### 🏢 Marcas Guebly
 
 1. **Selecione a empresa** (Guebly LTDA, Studio, Games, Pay, Contábil, Lirya…).
 2. **Solte as imagens.**
-3. **Processe** — a logo daquela empresa é aplicada com os padrões configurados.
+3. **Ajuste** posição (9 cantos ou ladrilho), escala, opacidade e **saída** (PNG/JPG,
+   qualidade, largura máxima) — as mesmas opções da ferramenta livre.
+4. **Processe** — a logo daquela empresa é aplicada com os padrões configurados.
 
 ### Tema claro e escuro
 
@@ -92,7 +104,7 @@ do Windows.
 
 | Tipo | Entrada | Saída |
 |---|---|---|
-| **Imagens** | PNG, JPG, WEBP, BMP, TIFF | PNG |
+| **Imagens** | PNG, JPG, WEBP, BMP, TIFF | PNG ou JPG (à sua escolha) |
 | **Vídeos** | MP4, MOV, AVI, MKV, WEBM, FLV, WMV | MP4 |
 | **Marca d'água** | PNG, JPG, WEBP (ou texto) | — |
 

@@ -172,17 +172,35 @@
         <div class="div"></div>
 
         <!-- Posição -->
-        <div class="sl" style="margin-top:0">Posição da logo</div>
+        <div class="sl" style="margin-top:0;display:flex;justify-content:space-between;align-items:center">
+          <span>Posição da logo</span>
+          <label class="tilechk"><input type="checkbox" id="tileChk"/> Ladrilho (proteção)</label>
+        </div>
         <div class="pgrid" id="posGrid">
-          <div class="chip" data-pos="top-left">↖</div>
-          <div class="chip" data-pos="top-center">↑</div>
-          <div class="chip" data-pos="top-right">↗</div>
-          <div class="chip" data-pos="center">✦</div>
-          <div class="chip" data-pos="bottom-left">↙</div>
-          <div class="chip" data-pos="bottom-center">↓</div>
-          <div class="chip" data-pos="bottom-right">↘</div>
+          <div class="chip" data-pos="top-left"      title="Superior esquerdo">↖</div>
+          <div class="chip" data-pos="top-center"    title="Superior centro">↑</div>
+          <div class="chip" data-pos="top-right"     title="Superior direito">↗</div>
+          <div class="chip" data-pos="middle-left"   title="Meio esquerdo">←</div>
+          <div class="chip" data-pos="center"        title="Centro">✦</div>
+          <div class="chip" data-pos="middle-right"  title="Meio direito">→</div>
+          <div class="chip" data-pos="bottom-left"   title="Inferior esquerdo">↙</div>
+          <div class="chip" data-pos="bottom-center" title="Inferior centro">↓</div>
+          <div class="chip" data-pos="bottom-right"  title="Inferior direito">↘</div>
         </div>
         <input type="hidden" name="position" id="posHidden" value="{{ cfg.default_position }}"/>
+        <input type="hidden" name="tile" id="tileH" value="0"/>
+        <div id="tileOpts" style="display:none;margin-top:10px">
+          <div class="slrow">
+            <div class="slb">
+              <div class="slh"><span class="sl-label">Espaçamento</span><span class="sl-val" id="tileGapV">60%</span></div>
+              <input type="range" class="field" name="tile_gap_pct" id="tileGapIn" min="0" max="200" step="5" value="60"/>
+            </div>
+            <div class="slb">
+              <div class="slh"><span class="sl-label">Ângulo</span><span class="sl-val" id="tileAngV">30°</span></div>
+              <input type="range" class="field" name="tile_angle" id="tileAngIn" min="-90" max="90" step="5" value="30"/>
+            </div>
+          </div>
+        </div>
 
         <div class="div"></div>
 
@@ -200,6 +218,29 @@
         <div class="slb" style="margin-top:14px">
           <div class="slh"><span class="sl-label">Margem</span><span class="sl-val" id="marginV">{{ cfg.default_margin_pct }}%</span></div>
           <input type="range" class="field" name="margin_pct" id="marginIn" min="0" max="12" step="0.5" value="{{ cfg.default_margin_pct }}"/>
+        </div>
+
+        <div class="div"></div>
+
+        <!-- Saída -->
+        <div class="sl" style="margin-top:0">Saída (imagens)</div>
+        <div class="slrow">
+          <div class="ccol">
+            <span class="sl-label">Formato</span>
+            <select class="field" name="out_format" id="outFmt">
+              <option value="png">PNG (sem perdas)</option>
+              <option value="jpg">JPG (menor)</option>
+              <option value="keep">Manter original</option>
+            </select>
+          </div>
+          <div class="ccol">
+            <span class="sl-label">Largura máx. (px)</span>
+            <input type="number" class="field" name="max_dim" id="maxDim" min="0" max="12000" step="100" value="0" placeholder="0 = original"/>
+          </div>
+        </div>
+        <div class="slb" id="qualityWrap" style="margin-top:12px;display:none">
+          <div class="slh"><span class="sl-label">Qualidade JPG</span><span class="sl-val" id="qualV">90</span></div>
+          <input type="range" class="field" name="jpg_quality" id="qualIn" min="40" max="100" step="1" value="90"/>
         </div>
 
         <button class="cta" type="submit" id="submitBtn" disabled>← Selecione uma empresa</button>
@@ -257,6 +298,17 @@ const marginIn   = document.getElementById('marginIn');
 const scaleV     = document.getElementById('scaleV');
 const opacityV   = document.getElementById('opacityV');
 const marginV    = document.getElementById('marginV');
+const tileChk    = document.getElementById('tileChk');
+const tileOpts   = document.getElementById('tileOpts');
+const tileGapIn  = document.getElementById('tileGapIn');
+const tileAngIn  = document.getElementById('tileAngIn');
+const tileGapV   = document.getElementById('tileGapV');
+const tileAngV   = document.getElementById('tileAngV');
+const tileH      = document.getElementById('tileH');
+const outFmt     = document.getElementById('outFmt');
+const qualIn     = document.getElementById('qualIn');
+const qualV      = document.getElementById('qualV');
+const qualityWrap= document.getElementById('qualityWrap');
 const canvas     = document.getElementById('canvas');
 const ctx        = canvas.getContext('2d');
 const prevEmpty  = document.getElementById('prevEmpty');
@@ -370,6 +422,19 @@ function upLabels(){
 upLabels();
 [scaleIn,opacityIn,marginIn].forEach(r=>r.addEventListener('input',()=>{ upLabels(); draw(); }));
 
+// Ladrilho + saída
+function syncTile(){
+  const on=tileChk.checked;
+  tileH.value=on?'1':'0';
+  tileOpts.style.display=on?'block':'none';
+  posGrid.classList.toggle('disabled',on);
+}
+tileChk.addEventListener('change',()=>{ syncTile(); draw(); });
+tileGapIn.addEventListener('input',()=>{ tileGapV.textContent=tileGapIn.value+'%'; draw(); });
+tileAngIn.addEventListener('input',()=>{ tileAngV.textContent=tileAngIn.value+'°'; draw(); });
+outFmt.addEventListener('change',()=>{ qualityWrap.style.display=(outFmt.value==='jpg')?'block':'none'; });
+qualIn.addEventListener('input',()=>{ qualV.textContent=qualIn.value; });
+
 // ── Drag
 [imgDrop,logoDrop].forEach(dz=>{
   dz.addEventListener('dragover',e=>{ e.preventDefault(); dz.classList.add('over'); });
@@ -456,16 +521,24 @@ function draw(){
   const lh=Math.max(1,Math.round(lw/(logoImg.naturalWidth/logoImg.naturalHeight)));
   const mp=Math.round(ref*parseFloat(marginIn.value)/100);
   const op=parseFloat(opacityIn.value)/100;
-  const pos=posHidden.value;
   const cw=canvas.width,ch=canvas.height;
+  // Ladrilho: cobre tudo, ignora posição/margem.
+  if(tileChk && tileChk.checked){
+    const gap=Math.max(0,lw*parseFloat(tileGapIn.value)/100),cellW=lw+gap,cellH=lh+gap;
+    const diag=Math.ceil(Math.hypot(cw,ch))+Math.max(cellW,cellH);
+    ctx.save();ctx.globalAlpha=op;
+    ctx.translate(cw/2,ch/2);ctx.rotate(-parseFloat(tileAngIn.value)*Math.PI/180);
+    for(let ty=-diag/2;ty<diag/2;ty+=cellH)
+      for(let tx=-diag/2;tx<diag/2;tx+=cellW)
+        ctx.drawImage(logoImg,tx,ty,lw,lh);
+    ctx.restore();return;
+  }
+  const pos=posHidden.value;
   const cx=Math.round((cw-lw)/2),cy=Math.round((ch-lh)/2);
-  let x=cw-lw-mp,y=ch-lh-mp;
-  if(pos==='top-left'){x=mp;y=mp;}
-  if(pos==='top-center'){x=cx;y=mp;}
-  if(pos==='top-right'){x=cw-lw-mp;y=mp;}
-  if(pos==='center'){x=cx;y=cy;}
-  if(pos==='bottom-left'){x=mp;y=ch-lh-mp;}
-  if(pos==='bottom-center'){x=cx;y=ch-lh-mp;}
+  const map={'top-left':[mp,mp],'top-center':[cx,mp],'top-right':[cw-lw-mp,mp],
+             'middle-left':[mp,cy],'center':[cx,cy],'middle-right':[cw-lw-mp,cy],
+             'bottom-left':[mp,ch-lh-mp],'bottom-center':[cx,ch-lh-mp],'bottom-right':[cw-lw-mp,ch-lh-mp]};
+  const [x,y]=map[pos]||[cw-lw-mp,ch-lh-mp];
   ctx.save(); ctx.globalAlpha=op;
   ctx.drawImage(logoImg,x,y,lw,lh);
   ctx.restore();

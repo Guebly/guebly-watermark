@@ -268,12 +268,40 @@ def apply_opacity(im, opacity):
     im.putalpha(a)
     return im
 
-def place_logo(bw, bh, lw, lh, margin, position):
+def place_logo(bw, bh, lw, lh, margin, position, cx_pct=None, cy_pct=None):
+    # Posicao livre: cx_pct/cy_pct = centro da marca como fracao (0..1) da base.
+    if position == "custom" and cx_pct is not None and cy_pct is not None:
+        x = int(round(cx_pct * bw - lw / 2))
+        y = int(round(cy_pct * bh - lh / 2))
+        return (max(0, min(bw - lw, x)), max(0, min(bh - lh, y)))
     cx, cy = (bw - lw) // 2, (bh - lh) // 2
     r, b, m = bw - lw - margin, bh - lh - margin, margin
     return {"top-left": (m, m),     "top-center": (cx, m),    "top-right": (r, m),
             "middle-left": (m, cy),  "center": (cx, cy),       "middle-right": (r, cy),
             "bottom-left": (m, b),   "bottom-center": (cx, b), "bottom-right": (r, b)}.get(position, (r, b))
+
+
+def _tile_layer(base_w, base_h, wm, gap_pct, angle_deg):
+    """Camada RGBA do tamanho da base com a marca repetida em ladrilho.
+
+    Usada para proteção de imagem (marca cobrindo tudo, opcionalmente na
+    diagonal). `wm` já vem com a opacidade aplicada. `gap_pct` é o espaço entre
+    marcas como % da largura da marca; `angle_deg` gira o padrão inteiro.
+    """
+    gap = max(0, int(wm.width * gap_pct / 100))
+    cell_w, cell_h = wm.width + gap, wm.height + gap
+    # Camada maior que a base para, ao girar, não deixar cantos vazios.
+    diag = int((base_w ** 2 + base_h ** 2) ** 0.5) + max(cell_w, cell_h)
+    layer = Image.new("RGBA", (diag, diag), (0, 0, 0, 0))
+    for y in range(0, diag, cell_h):
+        for x in range(0, diag, cell_w):
+            layer.alpha_composite(wm, (x, y))
+    if angle_deg:
+        layer = layer.rotate(angle_deg, resample=Image.BICUBIC, expand=False)
+    # Recorta o centro no tamanho da base.
+    left = (layer.width - base_w) // 2
+    top = (layer.height - base_h) // 2
+    return layer.crop((left, top, left + base_w, top + base_h))
 
 def text_to_wm_image(text, color, bg_color, bg_opacity, ref_size, scale_pct=15, wm_font=None):
     """
@@ -300,27 +328,63 @@ def text_to_wm_image(text, color, bg_color, bg_opacity, ref_size, scale_pct=15, 
 
 def process_image_pil(image_file, wm: Image.Image,
                       position, scale_pct, margin_pct, opacity_pct,
-                      is_text=False) -> BytesIO:
+                      is_text=False, out_opts=None, orig_ext=".png"):
+    """Aplica a marca e devolve (BytesIO, extensao_de_saida).
+
+    out_opts (dict, opcional):
+      fmt        "png" | "jpg" | "keep"   — formato de saida
+      quality    1..100                    — qualidade do JPG
+      max_dim    0 = original, senao limita o maior lado (px)
+      tile       bool                      — marca repetida em ladrilho
+      tile_gap   % da largura da marca entre repeticoes
+      tile_angle graus de rotacao do padrao
+      pos_x/pos_y fracao 0..1 do centro da marca (posicao "custom")
+    """
+    o = out_opts or {}
     im = ImageOps.exif_transpose(Image.open(image_file)).convert("RGBA")
     bw, bh = im.size
     ref = min(bw, bh)
     if is_text:
-        # Texto: ja esta no tamanho certo relativo ao ref_size do video/imagem
-        # Apenas aplica opacidade, sem redimensionar
+        # Texto ja vem no tamanho certo relativo ao ref; so aplica opacidade.
         lw, lh = wm.width, wm.height
         wm_r = apply_opacity(wm.copy(), opacity_pct / 100)
     else:
         lw = max(1, int(ref * scale_pct / 100))
         lh = max(1, int(lw / (wm.width / wm.height)))
         wm_r = apply_opacity(wm.resize((lw, lh), Image.LANCZOS), opacity_pct / 100)
-    mg = int(ref * margin_pct / 100)
-    x, y = place_logo(bw, bh, lw, lh, mg, position)
+
     out = im.copy()
-    out.alpha_composite(wm_r, (x, y))
+    if position == "tile" or o.get("tile"):
+        out.alpha_composite(_tile_layer(bw, bh, wm_r,
+                                        o.get("tile_gap", 60), o.get("tile_angle", 30)))
+    else:
+        mg = int(ref * margin_pct / 100)
+        x, y = place_logo(bw, bh, lw, lh, mg, position,
+                          o.get("pos_x"), o.get("pos_y"))
+        out.alpha_composite(wm_r, (x, y))
+
+    # Redimensiona o resultado (útil para web / arquivos menores).
+    max_dim = o.get("max_dim", 0) or 0
+    if max_dim and max(out.size) > max_dim:
+        r = max_dim / max(out.size)
+        out = out.resize((max(1, int(out.width * r)), max(1, int(out.height * r))), Image.LANCZOS)
+
+    # Formato de saida.
+    fmt = (o.get("fmt") or "png").lower()
+    if fmt == "keep":
+        fmt = "jpg" if orig_ext.lower() in (".jpg", ".jpeg") else "png"
     buf = BytesIO()
-    out.convert("RGBA").save(buf, "PNG", optimize=True)
+    if fmt == "jpg":
+        # JPG não tem alpha: achata sobre branco.
+        bg = Image.new("RGB", out.size, (255, 255, 255))
+        bg.paste(out, mask=out.split()[-1])
+        bg.save(buf, "JPEG", quality=int(o.get("quality", 90)), optimize=True, progressive=True)
+        ext = ".jpg"
+    else:
+        out.save(buf, "PNG", optimize=True)
+        ext = ".png"
     buf.seek(0)
-    return buf
+    return buf, ext
 
 # ─── Video com FFmpeg ─────────────────────────────────────────────────────────
 # Periodo de animacao em segundos (loop)
@@ -728,8 +792,10 @@ def resolve_watermark(form, files_dict, ref_size=500, scale_pct=15):
 
 _VALID_POSITIONS = frozenset({
     "top-left", "top-center", "top-right",
-    "center",
+    "middle-left", "center", "middle-right",
     "bottom-left", "bottom-center", "bottom-right",
+    "custom",   # posicao livre: usa pos_x_pct/pos_y_pct (arrastar no preview)
+    "tile",     # marca repetida em ladrilho cobrindo a imagem (protecao)
 })
 
 def get_params(form):
@@ -750,6 +816,37 @@ def get_params(form):
         _clamp("opacity_pct", CFG["default_opacity_pct"],  1,   100),
     )
 
+def get_output_opts(form):
+    """Opções de saída e modos extras, partilhadas pelas duas telas."""
+    def _int(key, default, lo, hi):
+        try:
+            return max(lo, min(hi, int(float(form.get(key) or default))))
+        except (ValueError, TypeError):
+            return default
+
+    def _frac(key):
+        try:
+            v = form.get(key)
+            return None if v in (None, "") else max(0.0, min(1.0, float(v)))
+        except (ValueError, TypeError):
+            return None
+
+    fmt = (form.get("out_format") or "png").strip().lower()
+    if fmt not in ("png", "jpg", "keep"):
+        fmt = "png"
+    tile = str(form.get("tile") or "").lower() in ("1", "true", "on", "yes")
+    return {
+        "fmt":        fmt,
+        "quality":    _int("jpg_quality", 90, 40, 100),
+        "max_dim":    _int("max_dim", 0, 0, 12000),   # 0 = mantém o tamanho
+        "tile":       tile,
+        "tile_gap":   _int("tile_gap_pct", 60, 0, 400),
+        "tile_angle": _int("tile_angle", 30, -90, 90),
+        "pos_x":      _frac("pos_x_pct"),
+        "pos_y":      _frac("pos_y_pct"),
+    }
+
+
 def file_ext(name):
     return os.path.splitext(name or "")[1].lower()
 
@@ -767,7 +864,8 @@ def run_job(jid, tmp_files, watermark, position, scale_pct,
             endscreen_path=None, endscreen_duration=5,
             endscreen_owned=False,
             insert_video_path=None, insert_position="final",
-            insert_at_pct=50, insert_video_owned=False):
+            insert_at_pct=50, insert_video_owned=False,
+            out_opts=None):
     """Processa todos os arquivos em background.
     endscreen_owned=True indica que este job criou o arquivo e deve deletá-lo ao terminar.
     """
@@ -790,8 +888,11 @@ def run_job(jid, tmp_files, watermark, position, scale_pct,
             cb(1, f"Processando {orig_name}...")
 
             if ext in VIDEO_EXTS:
+                # Ladrilho e posicao livre valem para imagem; no video cai no
+                # posicionamento padrao (o overlay do FFmpeg usa os 9 cantos).
+                vpos = "bottom-right" if position in ("tile", "custom") else position
                 out = process_video_ffmpeg(
-                    tmp_path, watermark, position,
+                    tmp_path, watermark, vpos,
                     scale_pct, margin_pct, opacity_pct, motion, cb,
                     endscreen_path=endscreen_path,
                     endscreen_duration=endscreen_duration,
@@ -805,14 +906,16 @@ def run_job(jid, tmp_files, watermark, position, scale_pct,
                     # Sem watermark em imagem — pula
                     results.append((f"{base}.png", tmp_path))
                     continue
-                buf = process_image_pil(tmp_path, watermark, position,
-                                        scale_pct, margin_pct, opacity_pct,
-                                        is_text=getattr(watermark, "_is_text_wm", False))
-                fd, out = tempfile.mkstemp(suffix=".png")
+                buf, out_ext = process_image_pil(
+                    tmp_path, watermark, position,
+                    scale_pct, margin_pct, opacity_pct,
+                    is_text=getattr(watermark, "_is_text_wm", False),
+                    out_opts=out_opts, orig_ext=ext)
+                fd, out = tempfile.mkstemp(suffix=out_ext)
                 os.close(fd)
                 with open(out, "wb") as fh:
                     fh.write(buf.getvalue())
-                results.append((f"{base}_watermark.png", out))
+                results.append((f"{base}_watermark{out_ext}", out))
 
             try:
                 os.unlink(tmp_path)
@@ -857,6 +960,7 @@ def run_job(jid, tmp_files, watermark, position, scale_pct,
 @app.post("/api/process")
 def api_process():
     position, scale_pct, margin_pct, opacity_pct = get_params(request.form)
+    out_opts = get_output_opts(request.form)
     motion = request.form.get("wm_motion", "none")
 
     all_files = [f for f in request.files.getlist("images") if f.filename]
@@ -952,6 +1056,7 @@ def api_process():
             "insert_position":    insert_position,
             "insert_at_pct":      insert_at_pct,
             "insert_video_owned": insert_video_owned,
+            "out_opts":           out_opts,
         },
         daemon=True,
     ).start()
@@ -1067,7 +1172,7 @@ def api_update_check():
 
 @app.get("/")
 def index():
-    return render_template("index.html", cfg=CFG)
+    return render_template("index.html", cfg=CFG, versao=APP_VERSION)
 
 def companies_para_tela():
     """Empresas com um `logo_src` unico para a interface usar.
@@ -1115,6 +1220,8 @@ def guebly_process():
         abort(400, "Empresa nao encontrada.")
     company = companies[company_id]
     position, scale_pct, margin_pct, opacity_pct = get_params(request.form)
+    out_opts = get_output_opts(request.form)
+    vpos = "bottom-right" if position in ("tile", "custom") else position  # vídeo
     try:
         wm = resolve_watermark(request.form, request.files)
     except ValueError:
@@ -1153,15 +1260,17 @@ def guebly_process():
             fd_in, ti = tempfile.mkstemp(suffix=ext)
             os.close(fd_in)
             f.save(ti)
-            out = process_video_ffmpeg(ti, wm, position, scale_pct, margin_pct, opacity_pct, "none")
+            out = process_video_ffmpeg(ti, wm, vpos, scale_pct, margin_pct, opacity_pct, "none")
             try: os.unlink(ti)
             except Exception: pass
             return send_file(out, as_attachment=True,
                              download_name=f"{base}_watermark.mp4", mimetype="video/mp4")
-        buf = process_image_pil(f, wm, position, scale_pct, margin_pct, opacity_pct,
-                                 is_text=getattr(wm, "_is_text_wm", False))
+        buf, out_ext = process_image_pil(f, wm, position, scale_pct, margin_pct, opacity_pct,
+                                         is_text=getattr(wm, "_is_text_wm", False),
+                                         out_opts=out_opts, orig_ext=ext)
+        mime = "image/jpeg" if out_ext == ".jpg" else "image/png"
         return send_file(buf, as_attachment=True,
-                         download_name=f"{base}_watermark.png", mimetype="image/png")
+                         download_name=f"{base}_watermark{out_ext}", mimetype=mime)
 
     zip_buf = BytesIO()
     with zipfile.ZipFile(zip_buf, "w", zipfile.ZIP_DEFLATED) as zf:
@@ -1173,16 +1282,17 @@ def guebly_process():
                     fd_in, ti = tempfile.mkstemp(suffix=ext)
                     os.close(fd_in)
                     f.save(ti)
-                    out = process_video_ffmpeg(ti, wm, position, scale_pct, margin_pct, opacity_pct, "none")
+                    out = process_video_ffmpeg(ti, wm, vpos, scale_pct, margin_pct, opacity_pct, "none")
                     with open(out, "rb") as fh:
                         zf.writestr(f"{base}_watermark.mp4", fh.read())
                     for p in (ti, out):
                         try: os.unlink(p)
                         except Exception: pass
                 else:
-                    buf = process_image_pil(f, wm, position, scale_pct, margin_pct, opacity_pct,
-                                             is_text=getattr(wm, "_is_text_wm", False))
-                    zf.writestr(f"{base}_watermark.png", buf.getvalue())
+                    buf, out_ext = process_image_pil(f, wm, position, scale_pct, margin_pct, opacity_pct,
+                                                     is_text=getattr(wm, "_is_text_wm", False),
+                                                     out_opts=out_opts, orig_ext=ext)
+                    zf.writestr(f"{base}_watermark{out_ext}", buf.getvalue())
             except Exception as e:
                 zf.writestr(f"ERRO_{f.filename}.txt", str(e))
     zip_buf.seek(0)
