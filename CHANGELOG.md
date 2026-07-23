@@ -1,5 +1,22 @@
 # Changelog
 
+## [3.7.3] — 2026-07-23
+
+### Corrigido — a imagem processada não ia pra lugar nenhum (crítico)
+Ao clicar em Aplicar, o arquivo era processado mas **não aparecia na Downloads**.
+Causa: o "download" era feito pelo navegador (`<a download>` / blob), e dentro da
+janela do app (WebView2) esse download **não cai em lugar nenhum** — sumia.
+
+- Agora o **próprio app salva o resultado na pasta Downloads** (é local, tem acesso
+  ao disco) e mostra **"✓ Salvo em Downloads: <nome>"**. Clicar no aviso **abre a
+  pasta** com o arquivo já selecionado.
+- Vale para as **duas telas** (Ferramenta livre e Marcas Guebly).
+- O nome mantém o original + `_watermark` (ex.: `foto_watermark.png`); vários viram
+  um `.zip`. Não sobrescreve: repete vira `foto_watermark (1).png`.
+- Novos endpoints `POST /api/save/<job>` e `POST /api/reveal` (abre o Explorer).
+- Verificado com teste automatizado: os arquivos aparecem mesmo em
+  `C:\Users\...\Downloads` nas duas telas.
+
 ## [3.7.2] — 2026-07-23
 
 - **Limpeza automática das sobras do update.** O `.exe` novo, ao abrir, apaga

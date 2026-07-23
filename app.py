@@ -1112,6 +1112,79 @@ def api_download(jid):
     return send_file(path, as_attachment=True, download_name=name, mimetype=mime)
 
 
+def _downloads_dir():
+    """Pasta Downloads do usuário (cria se preciso; cai no home se falhar)."""
+    d = os.path.join(os.path.expanduser("~"), "Downloads")
+    try:
+        os.makedirs(d, exist_ok=True)
+        return d
+    except OSError:
+        return os.path.expanduser("~")
+
+
+def _nome_livre(pasta, nome):
+    """Evita sobrescrever: foto_watermark.png -> foto_watermark (1).png ..."""
+    base, ext = os.path.splitext(nome)
+    alvo = os.path.join(pasta, nome)
+    i = 1
+    while os.path.exists(alvo):
+        alvo = os.path.join(pasta, f"{base} ({i}){ext}")
+        i += 1
+    return alvo
+
+
+@app.post("/api/save/<jid>")
+def api_save(jid):
+    """Salva o resultado direto na pasta Downloads.
+
+    O download do navegador NÃO é confiável dentro da janela do app (WebView2):
+    o arquivo simplesmente não aparecia. Como o app roda local, salvamos nós
+    mesmos e devolvemos o caminho para mostrar/abrir a pasta.
+    """
+    j = job_get(jid)
+    if not j or j.get("status") != "done":
+        abort(404)
+    res = json.loads(j["result"])
+    origem, nome = res["path"], res["name"]
+    if not os.path.exists(origem):
+        abort(410)
+    destino = _nome_livre(_downloads_dir(), nome)
+    shutil.copyfile(origem, destino)
+    return jsonify(ok=True, path=destino,
+                   nome=os.path.basename(destino), pasta=os.path.dirname(destino))
+
+
+@app.post("/api/reveal")
+def api_reveal():
+    """Abre o Explorer com o arquivo selecionado (Windows)."""
+    if os.name != "nt":
+        return jsonify(ok=False, error="Só no Windows."), 400
+    p = (request.get_json(silent=True) or {}).get("path", "")
+    if not p or not os.path.exists(p):
+        return jsonify(ok=False, error="arquivo não encontrado"), 404
+    try:
+        subprocess.Popen(["explorer", "/select,", os.path.normpath(p)])
+        return jsonify(ok=True)
+    except Exception as e:
+        return jsonify(ok=False, error=str(e)[:120]), 500
+
+
+def _resposta_salva(dados, nome):
+    """Salva o resultado em Downloads e devolve JSON com o caminho (tela Marcas).
+
+    `dados` pode ser um BytesIO (imagem/zip) ou um caminho de arquivo (vídeo).
+    """
+    destino = _nome_livre(_downloads_dir(), nome)
+    if hasattr(dados, "getvalue"):
+        with open(destino, "wb") as f:
+            f.write(dados.getvalue())
+    else:
+        shutil.copyfile(dados, destino)
+        _try_unlink(dados)
+    return jsonify(ok=True, path=destino,
+                   nome=os.path.basename(destino), pasta=os.path.dirname(destino))
+
+
 # ─── Rotas principais ─────────────────────────────────────────────────────────
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1335,14 +1408,11 @@ def guebly_process():
             out = process_video_ffmpeg(ti, wm, vpos, scale_pct, margin_pct, opacity_pct, "none")
             try: os.unlink(ti)
             except Exception: pass
-            return send_file(out, as_attachment=True,
-                             download_name=f"{base}_watermark.mp4", mimetype="video/mp4")
+            return _resposta_salva(out, f"{base}_watermark.mp4")
         buf, out_ext = process_image_pil(f, wm, position, scale_pct, margin_pct, opacity_pct,
                                          is_text=getattr(wm, "_is_text_wm", False),
                                          out_opts=out_opts, orig_ext=ext)
-        mime = "image/jpeg" if out_ext == ".jpg" else "image/png"
-        return send_file(buf, as_attachment=True,
-                         download_name=f"{base}_watermark{out_ext}", mimetype=mime)
+        return _resposta_salva(buf, f"{base}_watermark{out_ext}")
 
     zip_buf = BytesIO()
     with zipfile.ZipFile(zip_buf, "w", zipfile.ZIP_DEFLATED) as zf:
@@ -1369,9 +1439,7 @@ def guebly_process():
                 zf.writestr(f"ERRO_{f.filename}.txt", str(e))
     zip_buf.seek(0)
     stamp = datetime.datetime.now().strftime("%Y%m%d_%H%M")
-    return send_file(zip_buf, as_attachment=True,
-                     download_name=f"watermarked_{stamp}.zip",
-                     mimetype="application/zip")
+    return _resposta_salva(zip_buf, f"watermarked_{stamp}.zip")
 
 
 # ─── Upload logo temp ─────────────────────────────────────────────────────────

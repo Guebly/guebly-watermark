@@ -553,9 +553,17 @@ const isVid = n => VIDEO_EXTS.has(fExt(n));
 // ─── Toast ────────────────────────────────────────────────────────────────────
 function toast(msg,type='ok',ms=3500){
   clearTimeout(toastTmr);
+  toastEl.onclick=null; toastEl.style.cursor='';   // reseta (toasts normais nao clicam)
   toastEl.textContent=msg;
   toastEl.className='toast '+type+' show';
   toastTmr=setTimeout(()=>toastEl.classList.remove('show'),ms);
+}
+// Mostra "salvo" com o nome do arquivo; clicar abre a pasta com ele marcado.
+function mostrarSalvo(nome, path){
+  toast('✓ Salvo em Downloads:  '+nome+'   —   clique aqui para abrir a pasta','ok',9000);
+  toastEl.style.cursor='pointer';
+  toastEl.onclick=()=>{ fetch('/api/reveal',{method:'POST',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify({path:path})}).catch(()=>{}); };
 }
 
 // ─── Font picker ──────────────────────────────────────────────────────────────
@@ -1188,9 +1196,19 @@ document.getElementById('mainForm').addEventListener('submit',async e=>{
     upProg(d.progress||0,d.message||'');
     if(d.status==='done'){
       currentSSE.close();currentSSE=null;
-      upProg(100,'Iniciando download...');
-      const a=document.createElement('a');a.href='/api/download/'+jobId;a.download='';a.click();
-      setTimeout(()=>{hideProg();submitBtn.disabled=false;submitBtn.textContent='\u2193 Aplicar e baixar';toast('Download iniciado!');},500);
+      upProg(100,'Salvando na pasta Downloads...');
+      // Salva no PC via servidor local (o "download" do WebView2 nao caia em lugar
+      // nenhum). Devolve o caminho e a gente abre a pasta com o arquivo marcado.
+      try{
+        const sr=await fetch('/api/save/'+jobId,{method:'POST'});
+        const sj=await sr.json();
+        hideProg();submitBtn.disabled=false;submitBtn.textContent='\u2193 Aplicar e baixar';
+        if(sj.ok){ mostrarSalvo(sj.nome, sj.path); }
+        else { const a=document.createElement('a');a.href='/api/download/'+jobId;a.download='';a.click();toast('Baixado'); }
+      }catch(e){
+        hideProg();submitBtn.disabled=false;submitBtn.textContent='\u2193 Aplicar e baixar';
+        const a=document.createElement('a');a.href='/api/download/'+jobId;a.download='';a.click();toast('Baixado');
+      }
     }else if(d.status==='error'){
       currentSSE.close();currentSSE=null;hideProg();
       submitBtn.disabled=false;submitBtn.textContent='\u2193 Aplicar e baixar';

@@ -320,9 +320,16 @@ let activeTab='upload', toastTmr=null, selectedCompany=null;
 
 function toast(msg,type='ok',ms=3500){
   clearTimeout(toastTmr);
+  toastEl.onclick=null; toastEl.style.cursor='';
   toastEl.textContent=msg;
   toastEl.className='toast '+type+' show';
   toastTmr=setTimeout(()=>toastEl.classList.remove('show'),ms);
+}
+function mostrarSalvo(nome, path){
+  toast('✓ Salvo em Downloads:  '+nome+'   —   clique aqui para abrir a pasta','ok',9000);
+  toastEl.style.cursor='pointer';
+  toastEl.onclick=()=>{ fetch('/api/reveal',{method:'POST',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify({path:path})}).catch(()=>{}); };
 }
 
 function initials(name){ return name.replace(/[^a-zA-ZÀ-ú0-9+]/g,' ').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
@@ -554,15 +561,11 @@ document.getElementById('mainForm').addEventListener('submit',async e=>{
   submitBtn.innerHTML='<span class="spin"></span>Processando…';
   try{
     const res=await fetch('/guebly/process',{method:'POST',body:new FormData(e.target)});
-    if(!res.ok){ toast('Erro: '+(await res.text()),'err'); return; }
-    const blob=await res.blob();
-    const cd=res.headers.get('Content-Disposition')||'';
-    const m=cd.match(/filename="?([^";]+)"?/);
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url; a.download=m?m[1]:'watermarked.png'; a.click();
-    URL.revokeObjectURL(url);
-    toast('Download iniciado ✓');
+    if(!res.ok){ toast('Erro ao processar','err'); return; }
+    const j=await res.json();
+    // Salvo no PC pelo servidor local (o download do WebView2 nao funciona).
+    if(j.ok){ mostrarSalvo(j.nome, j.path); }
+    else { toast('Erro: '+(j.error||'falha'),'err'); }
   }catch(err){
     toast('Falha: '+err.message,'err');
   }finally{
