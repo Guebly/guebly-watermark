@@ -1165,10 +1165,82 @@ def api_update_check():
             "tem_update": _num(ultima) > _num(APP_VERSION),
             "download": exe or data.get("html_url", ""),
             "notas": (data.get("body") or "")[:600],
+            "can_selfupdate": IS_FROZEN,   # só o .exe consegue se trocar sozinho
         })
     except Exception:
         return jsonify({"version": APP_VERSION, "latest": APP_VERSION,
-                        "tem_update": False, "download": "", "notas": ""})
+                        "tem_update": False, "download": "", "notas": "",
+                        "can_selfupdate": IS_FROZEN})
+
+
+# Rodando como .exe (PyInstaller) vs. pelo código (dev). Só o .exe se auto-atualiza.
+IS_FROZEN = getattr(sys, "frozen", False)
+
+
+def _latest_exe_url():
+    """URL de download e tag do último Release (o .exe)."""
+    req = urllib.request.Request(
+        f"https://api.github.com/repos/{REPO_GITHUB}/releases/latest",
+        headers={"User-Agent": "GueblyWatermark", "Accept": "application/vnd.github+json"})
+    with urllib.request.urlopen(req, timeout=12) as r:
+        data = json.loads(r.read().decode("utf-8"))
+    for a in data.get("assets", []):
+        if str(a.get("name", "")).lower().endswith(".exe"):
+            return a.get("browser_download_url", ""), (data.get("tag_name") or "")
+    return "", ""
+
+
+@app.post("/api/self-update")
+def api_self_update():
+    """Baixa o novo .exe e agenda a troca + reabertura por um helper .bat.
+
+    O Windows não deixa sobrescrever um .exe em execução, então: baixamos o novo
+    ao lado, disparamos um .bat destacado que ESPERA este processo sair, renomeia
+    o atual, põe o novo no lugar e reabre. A URL é buscada no servidor (não confia
+    em URL vinda do cliente, que baixaria e executaria um binário).
+    """
+    if not IS_FROZEN:
+        return jsonify(ok=False, error="A auto-atualização só funciona no aplicativo (.exe). "
+                                       "Rodando pelo código, use git pull."), 400
+    try:
+        url, tag = _latest_exe_url()
+        if not url:
+            return jsonify(ok=False, error="Release sem .exe."), 502
+        exe_atual = sys.executable
+        pasta = os.path.dirname(exe_atual)
+        nome = os.path.basename(exe_atual)
+        novo = os.path.join(pasta, "GueblyWatermark.update.exe")
+
+        req = urllib.request.Request(url, headers={"User-Agent": "GueblyWatermark"})
+        with urllib.request.urlopen(req, timeout=180) as r, open(novo, "wb") as f:
+            shutil.copyfileobj(r, f)
+        if os.path.getsize(novo) < 10_000_000:      # .exe real tem ~60 MB
+            _try_unlink(novo)
+            return jsonify(ok=False, error="Download incompleto — tente de novo."), 502
+
+        bat = os.path.join(pasta, "_gw_update.bat")
+        with open(bat, "w", encoding="ascii", newline="\r\n") as f:
+            # `ping` em vez de `timeout`: o processo é destacado (sem console),
+            # e `timeout` exige console — `ping -n 4` espera ~3s sem precisar de um.
+            f.write(
+                "@echo off\n"
+                'cd /d "%~dp0"\n'
+                "ping 127.0.0.1 -n 4 >nul\n"
+                f'move /y "{nome}" "GueblyWatermark.old.exe" >nul 2>&1\n'
+                f'move /y "GueblyWatermark.update.exe" "{nome}" >nul 2>&1\n'
+                f'start "" "{nome}"\n'
+                "ping 127.0.0.1 -n 3 >nul\n"
+                'del "GueblyWatermark.old.exe" >nul 2>&1\n'
+                'del "%~f0"\n')
+
+        DETACHED = 0x00000008 | 0x00000200  # DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP
+        subprocess.Popen(["cmd", "/c", bat], cwd=pasta,
+                         creationflags=DETACHED, close_fds=True)
+        # responde e sai logo depois, pra liberar o .exe pro helper
+        threading.Timer(1.2, lambda: os._exit(0)).start()
+        return jsonify(ok=True, versao=tag)
+    except Exception as e:
+        return jsonify(ok=False, error=str(e)[:200]), 500
 
 @app.get("/")
 def index():

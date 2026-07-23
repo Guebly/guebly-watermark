@@ -1209,12 +1209,31 @@ document.getElementById('mainForm').addEventListener('submit',async e=>{
 <script>
 // Avisa quando sai versao nova no GitHub. Falha calada: sem internet nao atrapalha.
 fetch('/api/update-check').then(r=>r.json()).then(d=>{
-  if(d && d.tem_update){
-    document.getElementById('updVer').textContent = d.latest;
-    document.getElementById('updCur').textContent = d.version;
-    document.getElementById('updLink').href = d.download || '#';
-    document.getElementById('updateBar').style.display = 'flex';
+  if(!d || !d.tem_update) return;
+  document.getElementById('updVer').textContent = d.latest;
+  document.getElementById('updCur').textContent = d.version;
+  const link = document.getElementById('updLink');
+  if(d.can_selfupdate){
+    // No .exe: um clique baixa, troca e reabre sozinho.
+    link.textContent = '⚡ Atualizar agora';
+    link.href = '#';
+    link.addEventListener('click', async e=>{
+      e.preventDefault();
+      link.textContent = 'Baixando e instalando…';
+      link.style.pointerEvents = 'none';
+      try{
+        const r = await fetch('/api/self-update', {method:'POST'});
+        const j = await r.json();
+        if(j.ok){ link.textContent = 'Reiniciando o app…'; }
+        else { link.textContent = 'Falhou — baixar manual'; link.href = d.download||'#';
+               link.style.pointerEvents=''; if(typeof toast==='function') toast('Erro: '+(j.error||'falha'),'err'); }
+      }catch(err){ link.textContent = 'Baixar manual'; link.href = d.download||'#'; link.style.pointerEvents=''; }
+    });
+  } else {
+    // Rodando pelo codigo/navegador: so o link de download.
+    link.href = d.download || '#';
   }
+  document.getElementById('updateBar').style.display = 'flex';
 }).catch(()=>{});
 </script>
 </body>

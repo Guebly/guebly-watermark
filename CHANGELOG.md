@@ -1,5 +1,23 @@
 # Changelog
 
+## [3.7.0] — 2026-07-23
+
+### Atualização de um clique (self-update)
+Antes o app só **avisava** que saiu versão nova e dava o link — você tinha que
+baixar e trocar o `.exe` na mão. Agora, quando há atualização, a faixa mostra
+**"⚡ Atualizar agora"**: o app **baixa o novo `.exe`, se troca e reabre sozinho**,
+sem você mexer em nada.
+
+- Novo endpoint `POST /api/self-update`: baixa o `.exe` do último Release (URL
+  buscada no servidor, não confia em URL do cliente), valida o tamanho, e dispara
+  um helper que espera o app fechar, substitui o binário e relança.
+- O `update-check` informa `can_selfupdate` — só o **aplicativo (.exe)** se
+  atualiza sozinho; rodando pelo código, continua sendo `git pull`.
+- Usa `ping` (não `timeout`) no helper, porque o processo é destacado e não tem
+  console. Mantém um backup momentâneo (`.old.exe`) durante a troca.
+- Verificado com teste automatizado: a troca do binário + relançamento + limpeza
+  funcionam num processo destacado real.
+
 ## [3.6.1] — 2026-07-23
 
 ### Corrigido — bug que impedia processar (crítico)
