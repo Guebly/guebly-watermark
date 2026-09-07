@@ -1,5 +1,11 @@
 # Changelog
 
+## [Documentação] — 2026-09-07
+
+- Documentação atualizada: README com stack real e instruções de setup
+  (menção ao `iniciar.bat` como atalho de dev no Windows, exemplo de release
+  corrigido para a versão atual).
+
 ## [3.7.4] — 2026-07-23
 
 - **Pasta própria:** os resultados agora vão para **`Downloads\Guebly Watermark`**

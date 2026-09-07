@@ -58,6 +58,9 @@ python desktop.py     # abre em janela própria (como o app)
 python app.py         # abre em http://127.0.0.1:5000 no navegador
 ```
 
+No Windows, `iniciar.bat` faz isso por você: instala as dependências na primeira
+vez (se faltarem) e sobe `app.py` em `http://localhost:5000`.
+
 ---
 
 ## Como usar
@@ -187,9 +190,9 @@ nunca trava o uso.
 ### Publicando uma versão nova (mantenedor)
 
 ```bash
-echo "3.6.0" > VERSION        # nova versão
-git commit -am "release 3.6.0" && git push
-git tag v3.6.0 && git push --tags
+echo "3.8.0" > VERSION        # nova versão
+git commit -am "release 3.8.0" && git push
+git tag v3.8.0 && git push --tags
 ```
 
 A [GitHub Action](.github/workflows/release.yml) compila o `.exe` no Windows e
